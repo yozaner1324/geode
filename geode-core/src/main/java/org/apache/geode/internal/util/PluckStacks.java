@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.geode.i18n.ManagementStrings;
 import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand;
 
 /**
  * PluckStacks is a replacement for the old pluckstacks.pl Perl script that we've used for years.
@@ -113,7 +113,7 @@ public class PluckStacks {
     try {
       while ((line = reader.readLine()) != null) {
         if (line.startsWith("Full thread dump")
-            || line.startsWith(ExportStackTraceCommand.STACK_TRACE_FOR_MEMBER)) {
+            || line.startsWith(ManagementStrings.STACK_TRACE_FOR_MEMBER)) {
           int lineNumber = reader.getLineNumber();
           List<ThreadStack> stacks = getStacks(reader);
           if (stacks.size() > 0) {
@@ -147,7 +147,7 @@ public class PluckStacks {
         if ((line = reader.readLine()) == null) {
           break;
         }
-        if (line.startsWith(ExportStackTraceCommand.STACK_TRACE_FOR_MEMBER)) {
+        if (line.startsWith(ManagementStrings.STACK_TRACE_FOR_MEMBER)) {
           reader.reset();
           Collections.sort(result);
           return result;

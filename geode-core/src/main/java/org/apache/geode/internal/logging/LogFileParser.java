@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.internal.ExitCode;
 
 /**
  * Parses a log file written by a {@link LogWriter} into {@link LogFileParser.LogEntry}s. It
@@ -358,7 +357,7 @@ public class LogFileParser {
   public static void main(final String[] args) throws Exception {
     if (args.length < 1) {
       System.err.println("** Missing log file name");
-      ExitCode.FATAL.doSystemExit();
+      System.exit(1);
     }
 
     String logFileName = args[0];

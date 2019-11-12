@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.internal.ExitCode;
-
 /**
  * A class used for detecting deadlocks. The static method
  * {@link #collectAllDependencies(Serializable)} will find all dependencies between threads and
@@ -306,7 +304,7 @@ public class DeadlockDetector {
     File file = new File(filename);
     if (!file.exists()) {
       System.err.println("unable to find " + filename);
-      ExitCode.DEPENDENCY_GRAPH_FAILURE.doSystemExit();
+      System.exit(-1);
     }
 
     ObjectInputStream ois =

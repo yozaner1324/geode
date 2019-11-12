@@ -33,13 +33,13 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.i18n.ManagementStrings;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.converters.RegionConverter;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
@@ -119,13 +119,13 @@ public class RegionConfigRealizer
     final String valueConstraint = regionAttributes.getValueConstraint();
     if (keyConstraint != null && !keyConstraint.isEmpty()) {
       Class<Object> keyConstraintClass =
-          CliUtil.forName(keyConstraint, CliStrings.CREATE_REGION__KEYCONSTRAINT);
+          CliUtil.forName(keyConstraint, ManagementStrings.CREATE_REGION__KEYCONSTRAINT);
       ((RegionFactory<Object, Object>) factory).setKeyConstraint(keyConstraintClass);
     }
 
     if (valueConstraint != null && !valueConstraint.isEmpty()) {
       Class<Object> valueConstraintClass =
-          CliUtil.forName(valueConstraint, CliStrings.CREATE_REGION__VALUECONSTRAINT);
+          CliUtil.forName(valueConstraint, ManagementStrings.CREATE_REGION__VALUECONSTRAINT);
       ((RegionFactory<Object, Object>) factory).setValueConstraint(valueConstraintClass);
     }
 
@@ -187,7 +187,7 @@ public class RegionConfigRealizer
             EvictionAttributesImpl.fromConfig(regionAttributes.getEvictionAttributes()));
       } catch (Exception e) {
         throw new IllegalArgumentException(
-            CliStrings.CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE);
+            ManagementStrings.CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE);
       }
     }
 

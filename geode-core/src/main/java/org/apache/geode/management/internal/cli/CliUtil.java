@@ -20,13 +20,13 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +53,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.ManagementStrings;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
@@ -61,12 +62,9 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.UserErrorException;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 
 /**
@@ -288,7 +286,7 @@ public class CliUtil {
     }
 
     if ((members.length > 0) && (groups.length > 0)) {
-      throw new UserErrorException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
+      throw new UserErrorException(ManagementStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
     }
 
     if (members.length == 0 && groups.length == 0) {
@@ -458,12 +456,12 @@ public class CliUtil {
       }
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.ERROR__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+          MessageFormat.format(ManagementStrings.ERROR__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
               classToLoadName, neededFor),
           e);
     } catch (ClassCastException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.ERROR__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
+      throw new RuntimeException(MessageFormat.format(
+          ManagementStrings.ERROR__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
           classToLoadName, neededFor), e);
     }
 
@@ -479,12 +477,12 @@ public class CliUtil {
     try {
       instance = klass.newInstance();
     } catch (InstantiationException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.ERROR__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, klass,
+      throw new RuntimeException(MessageFormat.format(
+          ManagementStrings.ERROR__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, klass,
           neededFor), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.ERROR__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
+          MessageFormat.format(ManagementStrings.ERROR__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
               klass, neededFor),
           e);
     }
@@ -525,37 +523,6 @@ public class CliUtil {
 
     ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
     return execution.execute(function);
-  }
-
-
-  public static void runLessCommandAsExternalViewer(Result commandResult) {
-    StringBuilder sb = new StringBuilder();
-    String NEW_LINE = System.getProperty("line.separator");
-
-    while (commandResult.hasNextLine()) {
-      sb.append(commandResult.nextLine()).append(NEW_LINE);
-    }
-    commandResult.resetToFirstLine();
-
-    File file = null;
-    FileWriter fw;
-    try {
-      file = File.createTempFile("gfsh_output", "less");
-      fw = new FileWriter(file);
-      fw.append(sb.toString());
-      fw.close();
-      File workingDir = file.getParentFile();
-      Process p = Runtime.getRuntime().exec(
-          new String[] {"sh", "-c",
-              "LESSOPEN=\"|color %s\" less -SR " + file.getName() + " < /dev/tty > /dev/tty "},
-          null, workingDir);
-      p.waitFor();
-    } catch (IOException | InterruptedException e) {
-      Gfsh.println(e.getMessage());
-    } finally {
-      if (file != null)
-        file.delete();
-    }
   }
 
   static class CustomFileFilter implements FileFilter {

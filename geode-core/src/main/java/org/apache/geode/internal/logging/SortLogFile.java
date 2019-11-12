@@ -30,7 +30,6 @@ import java.util.TreeSet;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.ExitCode;
 
 /**
  * This program sorts the entries in a GemFire log file (one written using a {@link LogWriter}) by
@@ -88,7 +87,7 @@ public class SortLogFile {
     err.println(
         "Sorts a GemFire log file by timestamp. The merged log file is written to System.out (or a file).");
     err.println();
-    ExitCode.FATAL.doSystemExit();
+    System.exit(1);
   }
 
   public static void main(String... args) throws IOException {
@@ -132,6 +131,6 @@ public class SortLogFile {
 
     sortLogFile(logFileStream, new PrintWriter(ps, true));
 
-    ExitCode.NORMAL.doSystemExit();
+    System.exit(0);
   }
 }

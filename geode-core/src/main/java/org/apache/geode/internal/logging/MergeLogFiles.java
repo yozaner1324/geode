@@ -46,7 +46,6 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.LogFileParser.LogEntry;
 
 /**
@@ -168,8 +167,7 @@ public class MergeLogFiles {
     err.println(
         "If a directory is specified, all .log files in that directory are merged.");
     err.println();
-    ExitCode.FATAL.doSystemExit();
-  }
+    System.exit(1);  }
 
   /**
    * Find all of the .log files in the given directory
@@ -337,7 +335,7 @@ public class MergeLogFiles {
     mergeLogFiles(logFiles, mergedFile, tabOut, suppressBlanks, multithreaded,
         patterns);
 
-    ExitCode.NORMAL.doSystemExit();
+    System.exit(1);
   }
 
   /**

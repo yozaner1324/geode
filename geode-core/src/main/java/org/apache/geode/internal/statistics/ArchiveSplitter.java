@@ -30,8 +30,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.internal.ExitCode;
-
 
 /**
  * ArchiveSplitter provides APIs to read statistic snapshots from an archive file.
@@ -546,7 +544,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
     if (args.length != 1) {
       System.err
           .println("Usage: org.apache.geode.internal.statistics.ArchiveSplitter <archive.gfs>");
-      ExitCode.FATAL.doSystemExit();
+      System.exit(1);
     }
     ArchiveSplitter as = new ArchiveSplitter(new File(args[0]));
     as.split();

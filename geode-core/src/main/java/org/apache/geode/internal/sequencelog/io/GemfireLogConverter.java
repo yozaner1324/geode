@@ -29,7 +29,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.Transition;
@@ -74,7 +73,7 @@ public class GemfireLogConverter {
 
     if (args.length == 0) {
       usage();
-      ExitCode.FATAL.doSystemExit();
+      System.exit(1);
     }
 
     File outputFile = new File(args[0]);

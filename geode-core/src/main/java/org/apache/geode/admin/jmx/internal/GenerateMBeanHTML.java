@@ -34,7 +34,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.ExitCode;
 
 /**
  * A tool that reads the XML description of MBeans used with the Jakarta Commons Modeler and
@@ -459,7 +458,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
     err.println("");
 
-    ExitCode.FATAL.doSystemExit();
+    System.exit(1);
   }
 
   public static void main(String[] args) throws Exception {

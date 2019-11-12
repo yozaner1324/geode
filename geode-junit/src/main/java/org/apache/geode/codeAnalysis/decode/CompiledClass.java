@@ -29,7 +29,6 @@ import org.apache.geode.codeAnalysis.decode.cp.Cp;
 import org.apache.geode.codeAnalysis.decode.cp.CpClass;
 import org.apache.geode.codeAnalysis.decode.cp.CpDouble;
 import org.apache.geode.codeAnalysis.decode.cp.CpLong;
-import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.PureLogWriter;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
@@ -253,7 +252,7 @@ public class CompiledClass implements Comparable {
       System.err.println("Error reading file: " + e.getMessage());
       System.exit(3);
     }
-    ExitCode.NORMAL.doSystemExit();
+    System.exit(0);
   }
 
 }

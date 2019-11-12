@@ -57,7 +57,6 @@ import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.admin.jmx.AgentFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -1040,7 +1039,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     } catch (RuntimeException ex) {
       System.err
           .println(String.format("Failed reading configuration: %s", ex));
-      ExitCode.FATAL.doSystemExit();
+      System.exit(1);
       return;
     }
 
@@ -1061,7 +1060,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       // is still usable:
       SystemFailure.checkFailure();
       t.printStackTrace();
-      ExitCode.FATAL.doSystemExit();
+      System.exit(1);
     }
   }
 

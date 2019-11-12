@@ -45,7 +45,6 @@ import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.admin.jmx.AgentFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.util.IOUtils;
@@ -175,7 +174,7 @@ public class AgentLauncher {
     }
     out.println("");
 
-    ExitCode.FATAL.doSystemExit();
+    System.exit(1);
   }
 
   /**
@@ -262,7 +261,7 @@ public class AgentLauncher {
     // the status file was not successfully written to
     pollAgentUntilRunning();
 
-    ExitCode.NORMAL.doSystemExit();
+    System.exit(0);
   }
 
   private void verifyAndClearStatus() throws Exception {
@@ -446,7 +445,7 @@ public class AgentLauncher {
           OSProcess.getId(), message, cause));
     } catch (Exception e) {
       logger.fatal(e.getMessage(), e);
-      ExitCode.FATAL.doSystemExit();
+      System.exit(1);
     }
   }
 
@@ -457,10 +456,9 @@ public class AgentLauncher {
 
       if (isStatus(SHUTDOWN_PENDING, SHUTDOWN_PENDING_AFTER_FAILED_STARTUP)) {
         agent.stop();
-        final ExitCode exitCode =
-            (isStatus(SHUTDOWN_PENDING_AFTER_FAILED_STARTUP) ? ExitCode.FATAL : ExitCode.NORMAL);
+        final int exitCode = (isStatus(SHUTDOWN_PENDING_AFTER_FAILED_STARTUP) ? 1 : 0);
         writeStatus(createStatus(this.status, SHUTDOWN));
-        exitCode.doSystemExit();
+        System.exit(exitCode);
       }
     }
   }
@@ -496,7 +494,7 @@ public class AgentLauncher {
 
     workingDirectory = IOUtils.tryGetCanonicalFileElseGetAbsoluteFile((File) options.get(DIR));
 
-    ExitCode exitCode = ExitCode.FATAL;
+    int exitCode = 1;
 
     if (new File(workingDirectory, statusFileName).exists()) {
       spinReadStatus();
@@ -511,7 +509,7 @@ public class AgentLauncher {
         System.out
             .println(String.format("The %s has shut down.", this.basename));
         deleteStatus();
-        exitCode = ExitCode.NORMAL;
+        exitCode = 0;
       } else {
         System.out
             .println(String.format("Timeout waiting for %s to shutdown, status is: %s",
@@ -523,7 +521,7 @@ public class AgentLauncher {
               workingDirectory));
     }
 
-    exitCode.doSystemExit();
+    System.exit(exitCode);
   }
 
   private void pollAgentForShutdown() throws InterruptedException {
@@ -544,7 +542,7 @@ public class AgentLauncher {
     this.workingDirectory =
         IOUtils.tryGetCanonicalFileElseGetAbsoluteFile((File) getStopOptions(args).get(DIR));
     System.out.println(getStatus());
-    ExitCode.NORMAL.doSystemExit();
+    System.exit(0);
   }
 
   /**
@@ -769,7 +767,7 @@ public class AgentLauncher {
     out.println("\t<dir> Directory in which agent runs, default is the current directory");
     out.println();
 
-    ExitCode.FATAL.doSystemExit();
+    System.exit(1);
   }
 
   /**
@@ -823,7 +821,7 @@ public class AgentLauncher {
       t.printStackTrace();
       System.err.println(
           String.format("Error : %s", t.getLocalizedMessage()));
-      ExitCode.FATAL.doSystemExit();
+      System.exit(1);
     }
   }
 
