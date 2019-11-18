@@ -937,20 +937,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     boolean freeClonedEvent = true;
     try {
 
-      // If this gateway is not running, return
-      if (!isRunning()) {
-        if (this.isPrimary()) {
-          tmpDroppedEvents.add(clonedEvent);
-          if (isDebugEnabled) {
-            logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
-          }
-        }
-        if (isDebugEnabled) {
-          logger.debug("Returning back without putting into the gateway sender queue:" + event);
-        }
-        return;
-      }
-
       final GatewaySenderStats stats = getStatistics();
       stats.incEventsReceived();
 
@@ -1027,6 +1013,20 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         GatewaySenderEventCallbackArgument geCallbackArg =
             new GatewaySenderEventCallbackArgument(callbackArg, this.getMyDSId(), allRemoteDSIds);
         clonedEvent.setCallbackArgument(geCallbackArg);
+      }
+
+      // If this gateway is not running, return
+      if (!isRunning()) {
+        if (this.isPrimary()) {
+          tmpDroppedEvents.add(clonedEvent);
+          if (isDebugEnabled) {
+            logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
+          }
+        }
+        if (isDebugEnabled) {
+          logger.debug("Returning back without putting into the gateway sender queue:" + event);
+        }
+        return;
       }
 
       if (!this.getLifeCycleLock().readLock().tryLock()) {
