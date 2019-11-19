@@ -89,8 +89,8 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.GfeConsoleReaderFactory;
-import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
+//import org.apache.geode.internal.GfeConsoleReaderFactory;
+//import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
@@ -424,13 +424,13 @@ public class SocketCreator {
         }
         final String value = (String) ent.getValue();
         if (value == null || value.trim().equals("")) {
-          GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
-          if (!consoleReader.isSupported()) {
-            throw new GemFireConfigException(
-                "SSL properties are empty, but a console is not available");
-          }
-          String val = consoleReader.readLine("Please enter " + key + ": ");
-          env.put(key, val);
+//          GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
+//          if (!consoleReader.isSupported()) {
+//            throw new GemFireConfigException(
+//                "SSL properties are empty, but a console is not available");
+//          }
+//          String val = consoleReader.readLine("Please enter " + key + ": ");
+//          env.put(key, val);
         }
       }
     }

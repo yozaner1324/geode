@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+//import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
@@ -109,14 +109,14 @@ public class ClusterConfigurationStatusRetriever {
           break;
       }
     } catch (Exception e) {
-      // TODO fix this once Trac Bug #50513 gets fixed
-      // NOTE this ClassCastException occurs if the a plain text TCP/IP connection is used to
-      // connect to a Locator
-      // configured with SSL.
-      Gfsh.getCurrentInstance()
-          .logToFile(String.format(
-              "Failed to get the status of the Shared Configuration Service running on Locator (%1$s[%2$d])!",
-              locatorHostName, locatorPort), e);
+//      // TODO fix this once Trac Bug #50513 gets fixed
+//      // NOTE this ClassCastException occurs if the a plain text TCP/IP connection is used to
+//      // connect to a Locator
+//      // configured with SSL.
+//      Gfsh.getCurrentInstance()
+//          .logToFile(String.format(
+//              "Failed to get the status of the Shared Configuration Service running on Locator (%1$s[%2$d])!",
+//              locatorHostName, locatorPort), e);
     }
 
     return buffer.toString();

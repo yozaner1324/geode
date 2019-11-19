@@ -226,6 +226,7 @@ dependencies {
   distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation(project(':geode-serialization'))
   distributedTestCompile(project(':geode-core'))
+  distributedTestCompile(project(':geode-gfsh-cli'))
   distributedTestCompile(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }

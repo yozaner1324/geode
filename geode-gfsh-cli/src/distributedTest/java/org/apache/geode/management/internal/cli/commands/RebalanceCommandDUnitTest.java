@@ -147,7 +147,7 @@ public class RebalanceCommandDUnitTest {
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertRegionBalanced(SHARED_REGION_NAME);
-    Java6Assertions.assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
+    assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
         .isEqualTo(server2Region2InitialSize);
   }
 
@@ -169,7 +169,7 @@ public class RebalanceCommandDUnitTest {
 
     assertRegionBalanced(SHARED_REGION_NAME);
     assertRegionBalanced(REGION2_NAME);
-    Java6Assertions.assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
+    assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);
   }
 
@@ -187,9 +187,9 @@ public class RebalanceCommandDUnitTest {
         "rebalance --include-region=" + "/" + SHARED_REGION_NAME + ",/" + "otherRandomGarbage";
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
-    Java6Assertions.assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
+    assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);
-    Java6Assertions.assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
+    assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
         .isEqualTo(server2Region2InitialSize);
   }
 
@@ -213,9 +213,9 @@ public class RebalanceCommandDUnitTest {
     String command = "rebalance";
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
-    Java6Assertions.assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
+    assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);
-    Java6Assertions.assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
+    assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
         .isEqualTo(server2Region2InitialSize);
   }
 
@@ -224,9 +224,9 @@ public class RebalanceCommandDUnitTest {
     String command = "rebalance --exclude-region=" + "/" + REGION2_NAME;
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
-    Java6Assertions.assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
+    assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);
-    Java6Assertions.assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
+    assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
         .isEqualTo(server2Region2InitialSize);
   }
 
@@ -242,9 +242,9 @@ public class RebalanceCommandDUnitTest {
     String command = "rebalance --exclude-region=/asdf";
     gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
-    Java6Assertions.assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
+    assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);
-    Java6Assertions.assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
+    assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
         .isEqualTo(server2Region2InitialSize);
   }
 
@@ -254,17 +254,17 @@ public class RebalanceCommandDUnitTest {
     Integer region1Server1Size = server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME));
     Integer region2Server2Size = server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME));
 
-    Java6Assertions.assertThat(sharedServer1Size).isEqualTo(server1SharedRegionInitialSize);
-    Java6Assertions.assertThat(sharedServer2Size).isEqualTo(server2SharedRegionInitialSize);
-    Java6Assertions.assertThat(region1Server1Size).isEqualTo(server1Region1InitialSize);
-    Java6Assertions.assertThat(region2Server2Size).isEqualTo(server2Region2InitialSize);
+    assertThat(sharedServer1Size).isEqualTo(server1SharedRegionInitialSize);
+    assertThat(sharedServer2Size).isEqualTo(server2SharedRegionInitialSize);
+    assertThat(region1Server1Size).isEqualTo(server1Region1InitialSize);
+    assertThat(region2Server2Size).isEqualTo(server2Region2InitialSize);
   }
 
   private void assertRegionBalanced(String regionName) {
     Integer size1 = server1.invoke(() -> getLocalDataSizeForRegion(regionName));
     Integer size2 = server2.invoke(() -> getLocalDataSizeForRegion(regionName));
 
-    Java6Assertions.assertThat(abs(size1 - size2)).isLessThanOrEqualTo(1);
+    assertThat(abs(size1 - size2)).isLessThanOrEqualTo(1);
   }
 
   private static Integer getLocalDataSizeForRegion(String regionName) {
@@ -274,7 +274,7 @@ public class RebalanceCommandDUnitTest {
   }
 
   private static void waitForManagerMBean() {
-    GeodeAwaitility.await().until(() -> {
+    await().until(() -> {
       final ManagementService service =
           ManagementService.getManagementService(ClusterStartupRule.getCache());
       final DistributedRegionMXBean bean =

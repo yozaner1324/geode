@@ -25,10 +25,14 @@ import org.springframework.shell.event.ParseResult;
 import org.springframework.util.StringUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.internal.CommandProcessor;
+import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.CommandProcessingException;
+import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -40,7 +44,7 @@ import org.apache.geode.security.ResourcePermission;
 /**
  * @since GemFire 7.0
  */
-public class OnlineCommandProcessor {
+public class OnlineCommandProcessor implements CommandProcessor {
   protected final CommandExecutor executor;
   private final GfshParser gfshParser;
 
@@ -122,5 +126,26 @@ public class OnlineCommandProcessor {
 
     // we can do a direct cast because this only process online commands
     return (ResultModel) commandExecutor.execute((GfshParseResult) parseResult);
+  }
+
+  @Override
+  public String executeCommandReturningJson(String command, Map<String, String> env,
+                                    List<String> stagedFilePaths) {
+    return executeCommand(command, env, stagedFilePaths).toJson();
+  }
+
+  @Override
+  public boolean init(Cache cache) {
+    return true;
+  }
+
+  @Override
+  public Class<? extends CacheService> getInterface() {
+    return null;
+  }
+
+  @Override
+  public CacheServiceMBeanBase getMBean() {
+    return null;
   }
 }
