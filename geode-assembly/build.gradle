@@ -29,6 +29,7 @@ import java.nio.file.Paths
 // This list is used in a loop to defined the /lib copySpec
 def dependentProjectNames = [
   ':geode-common',
+  ':geode-common-services',
   ':geode-connectors',
   ':geode-core',
   ':geode-cq',
@@ -37,6 +38,7 @@ def dependentProjectNames = [
   ':geode-logging',
   ':geode-lucene',
   ':geode-memcached',
+  ':geode-modules',
   ':geode-old-client-support',
   ':geode-protobuf',
   ':geode-protobuf-messages',
@@ -575,6 +577,9 @@ distributions {
         //this CopySpec before it evaluates the geode-core build file.
         from project(':geode-core').tasks.named('raJar')
         from project(':geode-core').tasks.named('jcaJar')
+
+        from project(':geode-modules').tasks.named('module1Jar')
+        from project(':geode-modules').tasks.named('module2Jar')
 
         // dependency jars
         from tasks.named('depsJar')

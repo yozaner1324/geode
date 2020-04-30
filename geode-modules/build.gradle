@@ -20,14 +20,43 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
+sourceSets {
+    module1 {
+        compileClasspath += configurations.compileClasspath
+        runtimeClasspath += configurations.runtimeClasspath
+    }
+    module2 {
+        compileClasspath += configurations.compileClasspath
+        runtimeClasspath += configurations.runtimeClasspath
+    }
+}
+
+task module1Jar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive that contains the module1 classes'
+    from sourceSets.module1.output
+    archiveName 'module1.jar'
+}
+
+task module2Jar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive that contains the module2 classes'
+    from sourceSets.module2.output
+    archiveName 'module2.jar'
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    testCompile(group: 'junit', name: 'junit', version: '4.12')
+    testImplementation('org.assertj:assertj-core')
+
     compile(platform(project(':boms:geode-all-bom')))
 
     compile(project(':geode-common'))
+    implementation(project(':geode-logging'))
+    compile(project(':geode-common-services'))
 
-    compile(project(':geode-core'))
+    implementation('org.apache.logging.log4j:log4j-core')
+    compile('org.jboss.modules:jboss-modules')
 }

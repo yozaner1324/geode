@@ -15,10 +15,17 @@
 
 package org.apache.geode.services.module;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.geode.annotations.Experimental;
 
 /**
  * Holds information to describe a classloader-isolated module including how to create it.
+ *
+ * @see Builder
+ * @see ModuleService
  *
  * @since Geode 1.13.0
  */
@@ -29,12 +36,16 @@ public class ModuleDescriptor {
 
   private String version;
 
-  private String path;
+  private List<String> sources;
 
-  public ModuleDescriptor(String name, String version, String path) {
+  private List<String> dependencies;
+
+  private ModuleDescriptor(String name, String version, List<String> sources,
+      List<String> dependencies) {
     this.name = name;
     this.version = version;
-    this.path = path;
+    this.sources = sources;
+    this.dependencies = dependencies;
   }
 
   public String getName() {
@@ -45,7 +56,45 @@ public class ModuleDescriptor {
     return version;
   }
 
-  public String getResourcePath() {
-    return path;
+  public List<String> getSources() {
+    return sources;
+  }
+
+  public List<String> getDependedOnModules() {
+    return dependencies;
+  }
+
+  public String getVersionedName() {
+    return name + ":" + version;
+  }
+
+  /**
+   * A Builder used to construct a {@link ModuleDescriptor}
+   */
+  public static class Builder {
+
+    private final String name;
+    private final String version;
+    private List<String> dependencies = Collections.emptyList();
+    private List<String> sources = Collections.emptyList();
+
+    public Builder(String name, String version) {
+      this.name = name;
+      this.version = version;
+    }
+
+    public Builder fromSources(String... sources) {
+      this.sources = Arrays.asList(sources);
+      return this;
+    }
+
+    public Builder dependsOnModules(String... dependencies) {
+      this.dependencies = Arrays.asList(dependencies);
+      return this;
+    }
+
+    public ModuleDescriptor build() {
+      return new ModuleDescriptor(name, version, sources, dependencies);
+    }
   }
 }
