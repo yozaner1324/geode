@@ -15,6 +15,8 @@
 
 package org.apache.geode.services.module;
 
+import java.util.List;
+
 import org.apache.geode.annotations.Experimental;
 
 /**
@@ -48,7 +50,7 @@ public interface ModuleService {
    * @param service interface type to load and instantiate an implementation of.
    * @return An instance of an implementation of service
    */
-  <T> T loadService(Class<T> service);
+  <T> List<T> loadService(Class<T> service);
 
   /**
    * Loads a class from a loaded module by name and returns an instance.
@@ -56,7 +58,7 @@ public interface ModuleService {
    * @param serviceName name of the class to be loaded and instantiated.
    * @return An instance of an implementation of serviceName
    */
-  <T> T loadService(String serviceName);
+  <T> List<T> loadService(String serviceName);
 
   /**
    * Unloads and shuts down a previously loaded service.

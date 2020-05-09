@@ -18,9 +18,12 @@ package org.apache.geode.services.module.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.TestService;
 import org.apache.geode.services.module.ModuleDescriptor;
 
 public class JBossModuleServiceTest {
@@ -29,6 +32,9 @@ public class JBossModuleServiceTest {
       System.getProperty("user.dir") + "/../libs/module1.jar";
   private static final String MODULE2_PATH =
       System.getProperty("user.dir") + "/../libs/module2.jar";
+
+  private static final String MODULE1_MESSAGE = "Hello from Module1!";
+  private static final String MODULE2_MESSAGE = "Bonjour, this is Module2!";
 
   private JBossModuleService moduleService;
 
@@ -161,7 +167,49 @@ public class JBossModuleServiceTest {
   }
 
   @Test
-  public void loadModuleWithModuleXML() {
+  public void loadServiceNoModulesLoaded() {
+    assertThat(moduleService.loadService(TestService.class)).isEmpty();
+  }
 
+  @Test
+  public void loadServiceFromSingleModule() {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+
+    List<TestService> serviceList = moduleService.loadService(TestService.class);
+    assertThat(serviceList.size()).isEqualTo(1);
+    assertThat(serviceList.get(0).sayHello()).isEqualTo(MODULE1_MESSAGE);
+  }
+
+  @Test
+  public void loadServicesFromMultipleModules() {
+    ModuleDescriptor module1Descriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH)
+        .build();
+    ModuleDescriptor module2Descriptor = new ModuleDescriptor.Builder("module2", "1.0")
+        .fromSources(MODULE2_PATH)
+        .build();
+    moduleService.loadModule(module1Descriptor);
+    moduleService.loadModule(module2Descriptor);
+
+    List<TestService> serviceList = moduleService.loadService(TestService.class);
+    assertThat(serviceList.size()).isEqualTo(2);
+    assertThat(serviceList.stream().map(TestService::sayHello)).contains(MODULE1_MESSAGE,
+        MODULE2_MESSAGE);
+  }
+
+  @Test
+  public void loadServicesFromCompositeModule() {
+    ModuleDescriptor moduleDescriptor = new ModuleDescriptor.Builder("module1", "1.0")
+        .fromSources(MODULE1_PATH, MODULE2_PATH)
+        .build();
+    moduleService.loadModule(moduleDescriptor);
+
+    List<TestService> serviceList = moduleService.loadService(TestService.class);
+    assertThat(serviceList.size()).isEqualTo(2);
+    assertThat(serviceList.stream().map(TestService::sayHello)).contains(MODULE1_MESSAGE,
+        MODULE2_MESSAGE);
   }
 }

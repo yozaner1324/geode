@@ -17,6 +17,8 @@ package org.apache.geode.services.module.impl;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
 
@@ -104,12 +106,17 @@ public class JBossModuleService implements ModuleService {
   }
 
   @Override
-  public <T> T loadService(Class<T> service) {
-    return null;
+  public <T> List<T> loadService(Class<T> service) {
+    List<T> serviceImpls = new LinkedList<>();
+    modules.values().forEach((module) -> {
+      module.loadService(service).forEach(serviceImpls::add);
+    });
+
+    return serviceImpls;
   }
 
   @Override
-  public <T> T loadService(String serviceName) {
+  public <T> List<T> loadService(String serviceName) {
     return null;
   }
 
