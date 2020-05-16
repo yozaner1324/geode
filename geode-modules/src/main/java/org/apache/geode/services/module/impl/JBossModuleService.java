@@ -23,11 +23,13 @@ import java.util.Map;
 import java.util.jar.JarFile;
 
 import org.apache.logging.log4j.Logger;
+import org.jboss.modules.DependencySpec;
 import org.jboss.modules.LocalDependencySpecBuilder;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleDependencySpecBuilder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleSpec;
+import org.jboss.modules.PathUtils;
 import org.jboss.modules.ResourceLoader;
 import org.jboss.modules.ResourceLoaderSpec;
 import org.jboss.modules.ResourceLoaders;
@@ -71,6 +73,8 @@ public class JBossModuleService implements ModuleService {
 
     moduleDescriptor.getDependedOnModules().forEach(dependency -> {
       builder.addDependency(new ModuleDependencySpecBuilder()
+          .setExport(true)
+          .setImportServices(true)
           .setName(dependency)
           .build());
     });
@@ -85,6 +89,8 @@ public class JBossModuleService implements ModuleService {
       logger.warn(e.getMessage());
       return false;
     }
+
+    builder.addDependency(DependencySpec.createSystemDependencySpec(PathUtils.getPathSet(null)));
 
     ModuleSpec moduleSpec = builder.create();
     moduleLoader.addModuleSpec(moduleSpec);

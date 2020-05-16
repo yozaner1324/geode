@@ -43,6 +43,9 @@ task module2Jar(type: Jar, dependsOn: classes) {
     archiveName 'module2.jar'
 }
 
+tasks.test.dependsOn(module1Jar)
+tasks.test.dependsOn(module2Jar)
+
 repositories {
     mavenCentral()
 }

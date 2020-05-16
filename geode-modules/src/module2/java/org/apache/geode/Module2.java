@@ -18,6 +18,6 @@ package org.apache.geode;
 public class Module2 implements TestService {
   @Override
   public String sayHello() {
-    return "Hello from Module1!";
+    return "Hello from Module2!";
   }
 }
