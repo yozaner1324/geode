@@ -27,6 +27,7 @@ import java.nio.file.Paths
 
 // This list is used in a loop to defined the /lib copySpec
 def dependentProjectNames = [
+  ':geode-bootstrapping',
   ':geode-common',
   ':geode-common-services',
   ':geode-connectors',
