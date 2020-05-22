@@ -18,6 +18,11 @@ package org.apache.geode.services.bootstrapping.impl;
 import org.junit.Before;
 
 import org.apache.geode.services.bootstrapping.BootstrappingService;
+import org.junit.Test;
+
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class BootstrappingServiceImplTest {
   private BootstrappingService bootstrappingService;
@@ -25,5 +30,20 @@ public class BootstrappingServiceImplTest {
   @Before
   public void setup() {
     bootstrappingService = new BootstrappingServiceImpl();
+  }
+
+  @Test
+  public void noPropertiesSet() throws Exception {
+    bootstrappingService.init(new Properties());
+    bootstrappingService.shutdown();
+  }
+
+  @Test
+  public void initWithInvalidProperties() {
+    Properties properties = new Properties();
+    properties.setProperty("inValiDD_prOpeRTy", "value");
+    assertThatThrownBy(() -> {
+      bootstrappingService.init(properties);
+    });
   }
 }
