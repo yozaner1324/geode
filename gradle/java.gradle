@@ -17,10 +17,10 @@
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
 if (project.name.endsWith("geode-all-bom")) {
-  // This anti-pattern is a workaround -- java-platform must be applied before java or java-library
-  // to avoid conflicts over redefining certain configurations.
-  // Evaluation as to whether java-platform should be applied at all is left to GEODE-6611.
-  apply plugin: 'java-platform'
+    // This anti-pattern is a workaround -- java-platform must be applied before java or java-library
+    // to avoid conflicts over redefining certain configurations.
+    // Evaluation as to whether java-platform should be applied at all is left to GEODE-6611.
+    apply plugin: 'java-platform'
 }
 apply plugin: 'java-library'
 
@@ -29,88 +29,127 @@ targetCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
 
 dependencies {
-  // log4j-core has an annotation processor that is passed on the compile-classpath via geode-core and others.
-  // Fix Gradle warning here until we clean up our own classpath
-  annotationProcessor 'org.apache.logging.log4j:log4j-core:' + DependencyConstraints.get('log4j.version')
+    // log4j-core has an annotation processor that is passed on the compile-classpath via geode-core and others.
+    // Fix Gradle warning here until we clean up our own classpath
+    annotationProcessor 'org.apache.logging.log4j:log4j-core:' + DependencyConstraints.get('log4j.version')
 }
 
 String javaVersion = System.properties['java.version']
 if (javaVersion.startsWith("1.8.0") && javaVersion.split("-")[0].split("_")[1].toInteger() < 121) {
-  throw new GradleException("Java version 1.8.0_121 or later required, but was " + javaVersion)
+    throw new GradleException("Java version 1.8.0_121 or later required, but was " + javaVersion)
 }
 
 // apply compiler options
 gradle.taskGraph.whenReady({ graph ->
-  tasks.withType(JavaCompile).each { javac ->
-    javac.configure {
-      sourceCompatibility '1.8'
-      targetCompatibility '1.8'
-      options.encoding = 'UTF-8'
+    tasks.withType(JavaCompile).each { javac ->
+        javac.configure {
+            sourceCompatibility '1.8'
+            targetCompatibility '1.8'
+            options.encoding = 'UTF-8'
+        }
+        javac.options.incremental = true
+        javac.options.fork = true
+        javac.options.forkOptions.with({
+            memoryMaximumSize = "768m"
+        })
+        if (project.hasProperty('compileJVM') && !compileJVM.trim().isEmpty()) {
+            javac.options.forkOptions.executable = compileJVM + "/bin/javac"
+        }
     }
-    javac.options.incremental = true
-    javac.options.fork = true
-    javac.options.forkOptions.with({
-      memoryMaximumSize = "768m"
-    })
-    if (project.hasProperty('compileJVM') && !compileJVM.trim().isEmpty()) {
-      javac.options.forkOptions.executable = compileJVM + "/bin/javac"
-    }
-  }
 })
+
+def geodeProjects = rootProject.getAllprojects().collect {it.name}
+def projectsToRemove = ["geode","boms","extensions","geode-assembly","geode-concurrency-test",
+                       "1.0.0-incubating","1.1.0","1.1.1","1.10.0","1.11.0","1.12.0","1.2.0",
+                       "1.3.0","1.4.0","1.5.0","1.6.0","1.7.0","1.8.0","1.9.0","1.9.1","1.9.2",
+                       "geode-all-bom","geode-client-bom", "geode-modules-assembly","geode-modules-session",
+                       "geode-modules-session-internal","geode-modules-test","geode-modules-tomcat7",
+                       "geode-modules-tomcat8","geode-modules-tomcat9","session-testing-war",
+                       "geode-assembly-test","geode-lucene-test","geode-protobuf-test","geode-pulse-test","pmd-rules"]
+geodeProjects.removeAll(projectsToRemove)
 
 // apply default manifest
 gradle.taskGraph.whenReady({ graph ->
-  tasks.withType(Jar).each { jar ->
-    jar.doFirst {
-      manifest {
-        attributes(
-            "Manifest-Version": "1.0",
-            "Created-By": System.getProperty("user.name"),
-            "Title": rootProject.name,
-            "Version": version,
-            "Organization": productOrg
-        )
-      }
+    tasks.withType(Jar).each { jar ->
+
+        jar.doFirst {
+            def projectDependencies = []
+            def runtimeList = []
+
+            configurations.runtimeClasspath
+                    .collect { it.name - ".jar" }
+                    .each { dependency ->
+                        if (dependency.startsWith("geode-")) {
+                            projectDependencies.add(dependency)
+                        } else {
+                            runtimeList.add(dependency)
+                        }
+                    }
+
+            projectDependencies.clone().each { projectDependency ->
+                geodeProjects.each { geodeProject ->
+                    if (projectDependencies.contains(geodeProject+ "-" + version)) {
+                        def parentProject = project(":$geodeProject")
+                        if (parentProject != null) {
+                            def collect = parentProject.configurations.runtimeClasspath.collect { it.name - ".jar" }
+                            runtimeList.removeAll(collect)
+                            projectDependencies.removeAll(collect)
+                        }
+                    }
+                }
+            }
+
+            manifest {
+                attributes(
+                        "Manifest-Version": "1.0",
+                        "Created-By": System.getProperty("user.name"),
+                        "Title": rootProject.name,
+                        "Version": version,
+                        "Organization": productOrg,
+                        "Class-Path": runtimeList.join(' '),
+                        "Dependent-Modules": projectDependencies.join(' '),
+                )
+            }
+        }
+        jar.metaInf {
+            from("$rootDir/geode-assembly/src/main/dist/LICENSE")
+            if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
+                from("$rootDir/NOTICE")
+            }
+        }
     }
-    jar.metaInf {
-      from("$rootDir/geode-assembly/src/main/dist/LICENSE")
-      if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
-        from("$rootDir/NOTICE")
-      }
-    }
-  }
 })
 
 configurations {
-  testOutput {
-    extendsFrom testCompile
-    description 'a dependency that exposes test artifacts'
-  }
+    testOutput {
+        extendsFrom testCompile
+        description 'a dependency that exposes test artifacts'
+    }
 }
 
 // This ensures that javadoc and source jars also have any prefix paths stripped and will
 // be created as libs/foo-sources.jar instead of libs/extensions/foo-sources.jar for example.
 tasks.all { task ->
-  if (task instanceof Jar) {
-    baseName = project.name
-  }
+    if (task instanceof Jar) {
+        baseName = project.name
+    }
 }
 
 task jarTest(type: Jar, dependsOn: testClasses) {
-  description 'Assembles a jar archive of test classes.'
-  from sourceSets.test.output
-  classifier 'test'
+    description 'Assembles a jar archive of test classes.'
+    from sourceSets.test.output
+    classifier 'test'
 }
 
 artifacts {
-  testOutput jarTest
+    testOutput jarTest
 }
 
 javadoc {
-  destinationDir = file("$buildDir/javadoc")
-  options.addStringOption('Xdoclint:none', '-quiet')
-  options.encoding = 'UTF-8'
-  exclude "**/internal/**"
+    destinationDir = file("$buildDir/javadoc")
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.encoding = 'UTF-8'
+    exclude "**/internal/**"
 
-  classpath += configurations.compileOnly
+    classpath += configurations.compileOnly
 }
