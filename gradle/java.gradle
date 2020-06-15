@@ -108,6 +108,7 @@ gradle.taskGraph.whenReady({ graph ->
                         "Organization": productOrg,
                         "Class-Path": runtimeList.join(' '),
                         "Dependent-Modules": projectDependencies.join(' '),
+                        "Module-Name": project.name
                 )
             }
         }
