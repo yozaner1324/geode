@@ -33,11 +33,14 @@ import org.junit.Test;
 
 import org.apache.geode.InvalidService;
 import org.apache.geode.TestService;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.services.module.ModuleDescriptor;
 import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.services.result.ModuleServiceResult;
 
 public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
+
+  private static String gemFireVersion = GemFireVersion.getGemFireVersion();
 
   private static final String MODULE1_PATH =
       System.getProperty("user.dir") + "/../libs/module1WithoutManifest-1.0.jar";
@@ -47,15 +50,32 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
       System.getProperty("user.dir") + "/../libs/module3WithoutManifest-1.0.jar";
   private static final String MODULE4_PATH =
       System.getProperty("user.dir") + "/../libs/module4WithoutManifest-1.0.jar";
+  private static final String GEODE_COMMONS_SERVICES_PATH =
+      System.getProperty("user.dir") + "/../libs/geode-common-services-" + gemFireVersion + ".jar";
+  private static final String GEODE_COMMONS_PATH =
+      System.getProperty("user.dir") + "/../libs/geode-common-" + gemFireVersion + ".jar";
 
   private static final String MODULE1_MESSAGE = "Hello from Module1!";
   private static final String MODULE2_MESSAGE = "Hello from Module2!";
 
   private ModuleService moduleService;
+  private ModuleDescriptor geodeCommonsServiceDescriptor;
+  private ModuleDescriptor geodeCommonDescriptor;
 
   @Before
   public void setup() {
     moduleService = new JBossModuleServiceImpl(LogManager.getLogger());
+    geodeCommonsServiceDescriptor =
+        new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
+            .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)
+            .build();
+
+    geodeCommonDescriptor = new ModuleDescriptor.Builder("geode-common", gemFireVersion)
+        .fromResourcePaths(GEODE_COMMONS_PATH)
+        .build();
+
+    moduleService.registerModule(geodeCommonDescriptor);
+    moduleService.registerModule(geodeCommonsServiceDescriptor);
   }
 
   @After

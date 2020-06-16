@@ -29,6 +29,9 @@ import java.util.jar.Manifest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jboss.modules.filter.MultiplePathFilterBuilder;
+import org.jboss.modules.filter.PathFilter;
+import org.jboss.modules.filter.PathFilters;
 
 import org.apache.geode.services.module.ModuleDescriptor;
 
@@ -264,9 +267,24 @@ public class GeodeJarModuleFinder implements ModuleFinder {
    * @return a {@link ModuleSpec.Builder}
    */
   private ModuleSpec.Builder getModuleSpec(String name) {
+
+    PathFilter metainfChild = PathFilters.isChildOf("META-INF");
+    PathFilter metainf = PathFilters.is("META-INF");
+    PathFilter metainfServices = PathFilters.is("META-INF/services");
+    PathFilter metainfServicesChild = PathFilters.isChildOf("META-INF/services");
+    PathFilter childOfSlash = PathFilters.isChildOf("/");
+    MultiplePathFilterBuilder multiplePathFilterBuilder =
+        PathFilters.multiplePathFilterBuilder(true);
+    multiplePathFilterBuilder.addFilter(metainfChild, true);
+    multiplePathFilterBuilder.addFilter(metainf, true);
+    multiplePathFilterBuilder.addFilter(metainfServicesChild, true);
+    multiplePathFilterBuilder.addFilter(metainfServices, true);
+    multiplePathFilterBuilder.addFilter(childOfSlash, true);
+
     ModuleSpec.Builder builder = ModuleSpec.build(name);
     builder.addDependency(new LocalDependencySpecBuilder()
         .setImportServices(true)
+        .setImportFilter(multiplePathFilterBuilder.create())
         .setExport(true)
         .build());
 

@@ -957,6 +957,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-launcher</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-log4j</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -988,6 +994,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-memcached</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-module-management</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

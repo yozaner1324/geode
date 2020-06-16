@@ -13,27 +13,34 @@
  * the License.
  */
 
-package org.apache.geode.services.management;
+package org.apache.geode.services.bootstrapping;
 
 import java.util.Properties;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.services.result.ModuleServiceResult;
+import org.apache.geode.services.module.ModuleService;
 
 /**
- * Entry point for creating a cache and bootstrapping Geode using the BootstrappingService
+ * Service responsible for bootstrapping the environment and Geode components.
  *
  * @since Geode 1.13.0
  */
 @Experimental
-public interface ManagementService {
+public interface BootstrappingService {
 
   /**
-   * Creates a Geode Cache given some configuration.
+   * Start and initialize Geode.
    *
-   * @param properties system properties to use when creating the Cache.
    *
-   * @throws Exception is Cache cannot be created.
+   * @param properties system properties to use when bootstrapping the environment.
+   * @throws Exception - thrown if unable to bootstrap system.
    */
-  ModuleServiceResult<Boolean> createCache(Properties properties);
+  void init(ModuleService moduleService, Properties properties);
+
+  /**
+   * Shuts down the environment and previously bootstrapped Geode components.
+   *
+   * @throws Exception - thrown if unable to shutdown.
+   */
+  void shutdown();
 }

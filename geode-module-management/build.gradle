@@ -13,27 +13,22 @@
  * the License.
  */
 
-package org.apache.geode.services.management;
+plugins {
+    id 'me.champeau.gradle.jmh' version '0.4.8'
+}
 
-import java.util.Properties;
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.services.result.ModuleServiceResult;
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
-/**
- * Entry point for creating a cache and bootstrapping Geode using the BootstrappingService
- *
- * @since Geode 1.13.0
- */
-@Experimental
-public interface ManagementService {
+dependencies {
+    compile(platform(project(':boms:geode-all-bom')))
 
-  /**
-   * Creates a Geode Cache given some configuration.
-   *
-   * @param properties system properties to use when creating the Cache.
-   *
-   * @throws Exception is Cache cannot be created.
-   */
-  ModuleServiceResult<Boolean> createCache(Properties properties);
+    compile(project(':geode-common'))
+
+    compileOnly(project(':geode-launcher'))
+    compileOnly(project(':geode-common-services'))
+    compileOnly(project(':geode-modules'))
+    compile(project(':geode-core'))
 }
