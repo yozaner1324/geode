@@ -60,16 +60,20 @@ import org.apache.geode.services.result.impl.Success;
 public class GeodeModuleLoader extends DelegatingModuleLoader {
   private final DelegatingModuleFinder moduleFinder;
   private final Map<String, ModuleSpec> moduleSpecs = new ConcurrentHashMap<>();
-  private final Logger logger;
+//  private final Logger logger;
 
-  public GeodeModuleLoader(Logger logger) {
-    this(new DelegatingModuleFinder(logger), logger);
+//  public GeodeModuleLoader(Logger logger) {
+//    this(new DelegatingModuleFinder(logger), logger);
+//  }
+  public GeodeModuleLoader() {
+    this(new DelegatingModuleFinder());
   }
 
-  private GeodeModuleLoader(DelegatingModuleFinder moduleFinder, Logger logger) {
+//  private GeodeModuleLoader(DelegatingModuleFinder moduleFinder, Logger logger) {
+  private GeodeModuleLoader(DelegatingModuleFinder moduleFinder) {
     super(Module.getSystemModuleLoader(), moduleFinder);
     this.moduleFinder = moduleFinder;
-    this.logger = logger;
+//    this.logger = logger;
   }
 
   public ModuleServiceResult<Boolean> unloadModule(Module module) {
@@ -78,7 +82,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
     } else {
       String errorMessage =
           "Module could not be unloaded because either the module or module name is null";
-      logger.debug(errorMessage);
+//      logger.debug(errorMessage);
       return Failure.of(errorMessage);
     }
   }
@@ -90,11 +94,11 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
         return Success.of(true);
       } else {
         String errorMessage = "Module could not be unloaded because it does not exist";
-        logger.debug(errorMessage);
+//        logger.debug(errorMessage);
         return Failure.of(errorMessage);
       }
     } catch (SecurityException e) {
-      logger.error(e);
+//      logger.error(e);
       return Failure.of(String.format("Unloading of module: %s  failed due to exception: %s",
           module.getName(), e.getMessage()));
     }
@@ -102,9 +106,10 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
 
   public ModuleServiceResult<Boolean> registerModuleDescriptor(ModuleDescriptor descriptor) {
     try {
-      moduleFinder.addModuleFinder(new GeodeJarModuleFinder(logger, descriptor));
+      moduleFinder.addModuleFinder(new GeodeJarModuleFinder(descriptor));
+//      moduleFinder.addModuleFinder(new GeodeJarModuleFinder(logger, descriptor));
     } catch (IOException e) {
-      logger.error(e);
+//      logger.error(e);
       return Failure.of(String.format("Registering module: %s failed with error: %s",
           descriptor.getName(), e.getMessage()));
     }

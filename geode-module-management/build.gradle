@@ -25,10 +25,7 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
     compile(platform(project(':boms:geode-all-bom')))
 
-    compile(project(':geode-common'))
-
     compileOnly(project(':geode-launcher'))
-    compileOnly(project(':geode-common-services'))
     compileOnly(project(':geode-modules'))
     compile(project(':geode-core'))
 }

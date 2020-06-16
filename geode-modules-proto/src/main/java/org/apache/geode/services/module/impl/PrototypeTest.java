@@ -19,11 +19,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.apache.geode.services.bootstrapping.BootstrappingService;
 import org.apache.geode.services.module.ModuleDescriptor;
 import org.apache.geode.services.module.ModuleService;
@@ -37,9 +32,8 @@ public class PrototypeTest {
   private ModuleService moduleService;
   private BootstrappingService bootstrappingService;
 
-  @Before
-  public void setup() {
-    moduleService = new JBossModuleServiceImpl(LogManager.getLogger());
+  private void setup() {
+    moduleService = new JBossModuleServiceImpl();
     ModuleDescriptor moduleManagementDescriptor =
         new ModuleDescriptor.Builder("bootStrapping", gemFireVersion)
             .fromResourcePaths(rootPath + "geode-module-bootstrapping-" + gemFireVersion + ".jar")
@@ -73,15 +67,11 @@ public class PrototypeTest {
     }
   }
 
-  @After
-  public void teardown() {
-    moduleService = null;
-  }
-
-  @Test
-  public void bootstrapGeode() {
-    if (bootstrappingService != null) {
-      bootstrappingService.init(moduleService, new Properties());
+  public static void main(String[] args) {
+    PrototypeTest prototypeTest = new PrototypeTest();
+    prototypeTest.setup();
+    if (prototypeTest.bootstrappingService != null) {
+      prototypeTest.bootstrappingService.init(prototypeTest.moduleService, new Properties());
     }
 
     System.out.println("rootPath = " + rootPath);

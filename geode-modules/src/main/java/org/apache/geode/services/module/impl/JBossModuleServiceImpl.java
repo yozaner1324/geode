@@ -15,6 +15,8 @@
 
 package org.apache.geode.services.module.impl;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -51,11 +53,12 @@ public class JBossModuleServiceImpl implements ModuleService {
 
   private final GeodeModuleLoader moduleLoader;
 
-  private final Logger logger;
+//  private final Logger logger;
 
-  public JBossModuleServiceImpl(Logger logger) {
-    this.logger = logger;
-    this.moduleLoader = new GeodeModuleLoader(logger);
+//  public JBossModuleServiceImpl(Logger logger) {
+  public JBossModuleServiceImpl() {
+//    this.logger = logger;
+    this.moduleLoader = new GeodeModuleLoader();
   }
 
   /**
@@ -76,11 +79,11 @@ public class JBossModuleServiceImpl implements ModuleService {
     }
 
     String versionedName = moduleDescriptor.getName();
-    logger.debug(String.format("Beginning to load module %s", versionedName));
+//    logger.debug(String.format("Beginning to load module %s", versionedName));
 
     if (modules.containsKey(versionedName)) {
       String errorMessage = String.format("Module %s is already loaded.", versionedName);
-      logger.warn(errorMessage);
+//      logger.warn(errorMessage);
       return Failure.of(errorMessage);
     }
 
@@ -103,7 +106,7 @@ public class JBossModuleServiceImpl implements ModuleService {
       modules.put(versionedName, moduleLoader.loadModule(versionedName));
       return Success.of(true);
     } catch (ModuleLoadException e) {
-      logger.error(e.getMessage(), e);
+//      logger.error(e.getMessage(), e);
       return Failure.of(e.getMessage());
     }
   }
@@ -113,11 +116,11 @@ public class JBossModuleServiceImpl implements ModuleService {
    */
   @Override
   public ModuleServiceResult<Boolean> unloadModule(String moduleName) {
-    logger.debug(String.format("Unloading module %s", moduleName));
+//    logger.debug(String.format("Unloading module %s", moduleName));
     if (!modules.containsKey(moduleName)) {
       String errorMessage =
           String.format("Module %s could not be unloaded because it is not loaded", moduleName);
-      logger.warn(errorMessage);
+//      logger.warn(errorMessage);
       return Failure.of(errorMessage);
     }
 
@@ -125,7 +128,7 @@ public class JBossModuleServiceImpl implements ModuleService {
         moduleLoader.unloadModule(modules.get(moduleName));
     if (unloadModuleResult.isSuccessful()) {
       modules.remove(moduleName);
-      logger.debug(String.format("Module %s was successfully unloaded", moduleName));
+//      logger.debug(String.format("Module %s was successfully unloaded", moduleName));
     }
 
     return unloadModuleResult;
@@ -194,7 +197,7 @@ public class JBossModuleServiceImpl implements ModuleService {
         module = moduleLoader.loadModule(moduleDescriptor.getName());
         return loadClassFromModule(className, module);
       } catch (ModuleLoadException e) {
-        logger.error(e);
+//        logger.error(e);
         return Failure.of(e.getMessage());
       }
     }
@@ -220,7 +223,7 @@ public class JBossModuleServiceImpl implements ModuleService {
       String errorMessage =
           String.format("Could not find class for name: %s in module: %s", className,
               module.getName());
-      logger.debug(errorMessage);
+//      logger.debug(errorMessage);
       return Failure.of(errorMessage);
     }
   }
@@ -236,8 +239,8 @@ public class JBossModuleServiceImpl implements ModuleService {
         Class<?> loadedClass = module.getClassLoader().loadClass(className);
         classes.put(module.getName(), loadedClass);
       } catch (ClassNotFoundException e) {
-        logger.debug(String.format("Could not find class for name: %s in module: %s", className,
-            module.getName()));
+//        logger.debug(String.format("Could not find class for name: %s in module: %s", className,
+//            module.getName()));
       }
     });
 

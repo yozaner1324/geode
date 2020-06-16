@@ -69,7 +69,7 @@ public class GeodeJarModuleFinder implements ModuleFinder {
   private final ModuleDescriptor moduleDescriptor;
   private final String moduleName;
   private final List<JarFile> sourceJarFiles;
-  private final Logger logger;
+//  private final Logger logger;
 
   private static final String[] EMPTY_STRING_ARRAY = new String[0];
   private static final String DEPENDENT_MODULES = "Dependent-Modules";
@@ -83,11 +83,12 @@ public class GeodeJarModuleFinder implements ModuleFinder {
    * @param moduleDescriptor the {@link ModuleDescriptor} describing the module
    * @throws IOException is thrown in the case of incorrect/missing resource paths.
    */
-  public GeodeJarModuleFinder(final Logger logger, final ModuleDescriptor moduleDescriptor)
+//  public GeodeJarModuleFinder(final Logger logger, final ModuleDescriptor moduleDescriptor)
+  public GeodeJarModuleFinder(final ModuleDescriptor moduleDescriptor)
       throws IOException {
     this.moduleName = moduleDescriptor.getName();
     this.sourceJarFiles = parseSourcesIntoJarFiles(moduleDescriptor);
-    this.logger = logger;
+//    this.logger = logger;
     this.moduleDescriptor = moduleDescriptor;
   }
 
@@ -235,9 +236,9 @@ public class GeodeJarModuleFinder implements ModuleFinder {
               .createResourceLoaderSpec(
                   ResourceLoaders.createJarResourceLoader(new JarFile(file, true))));
         } catch (IOException e) {
-          logger.error(String.format(
-              "File for name: %s could not be loaded as a dependent jar file at location: %s",
-              classpathEntry, file.getName()));
+//          logger.error(String.format(
+//              "File for name: %s could not be loaded as a dependent jar file at location: %s",
+//              classpathEntry, file.getName()));
           throw new ModuleLoadException(e);
         }
       }
@@ -303,8 +304,8 @@ public class GeodeJarModuleFinder implements ModuleFinder {
     try {
       return Optional.ofNullable(jarFile.getManifest());
     } catch (IOException e) {
-      logger.info(
-          String.format("Unable to find manifest file for jar ile name: %s", jarFile.getName()));
+//      logger.info(
+//          String.format("Unable to find manifest file for jar ile name: %s", jarFile.getName()));
     }
     return Optional.empty();
   }
