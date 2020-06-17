@@ -27,7 +27,7 @@ import org.apache.geode.services.result.ModuleServiceResult;
 public class PrototypeTest {
 
   private static String rootPath =
-      "/Users/patrickjohnson/Documents/GitHub/geode/geode-assembly/build/install/apache-geode/lib/";
+      System.getProperty("user.dir") + "/geode-assembly/build/install/apache-geode/lib/";
   private final String gemFireVersion = "1.14.0-build.0";
   private ModuleService moduleService;
   private BootstrappingService bootstrappingService;

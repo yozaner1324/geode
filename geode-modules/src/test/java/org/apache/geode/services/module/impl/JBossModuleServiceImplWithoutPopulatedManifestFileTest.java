@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
 import org.jboss.modules.ModuleClassLoader;
 import org.junit.After;
 import org.junit.Before;
@@ -64,7 +63,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
 
   @Before
   public void setup() {
-    moduleService = new JBossModuleServiceImpl(LogManager.getLogger());
+    moduleService = new JBossModuleServiceImpl();
     geodeCommonsServiceDescriptor =
         new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)
@@ -234,6 +233,7 @@ public class JBossModuleServiceImplWithoutPopulatedManifestFileTest {
             .fromResourcePaths(MODULE3_PATH, MODULE4_PATH)
             .dependsOnModules(module1Descriptor.getName())
             .build();
+
 
     assertThat(moduleService.registerModule(module2Descriptor).isSuccessful()).isTrue();
     assertThat(moduleService.registerModule(module1Descriptor).isSuccessful()).isTrue();

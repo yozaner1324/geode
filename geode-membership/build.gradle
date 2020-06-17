@@ -61,7 +61,8 @@ dependencies {
     testImplementation('com.tngtech.archunit:archunit-junit4')
 
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
-  
+
+    compileOnly('org.jboss.modules:jboss-modules')
 }
 
 distributedTest {

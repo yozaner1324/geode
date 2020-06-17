@@ -36,23 +36,20 @@ import org.jboss.modules.filter.PathFilters;
 import org.apache.geode.services.module.ModuleDescriptor;
 
 /**
- * A custom implementation of a {@link ModuleFinder}. This implementation is based on
- * {@link JarModuleFinder}
- * which creates a {@link ModuleSpec} from a {@link ModuleDescriptor}
- * The {@link ModuleDescriptor} defines the module name, a set of {@link JarFile}s and/or dependent
- * module names for Module.
- *
+ * A custom implementation of a {@link ModuleFinder}. This implementation is based on {@link
+ * JarModuleFinder} which creates a {@link ModuleSpec} from a {@link ModuleDescriptor} The {@link
+ * ModuleDescriptor} defines the module name, a set of {@link JarFile}s and/or dependent module
+ * names for Module.
+ * <p>
  * This {@link ModuleFinder} has the ability to set both resource paths and dependent module names
- * from either
- * the {@link ModuleDescriptor} or from a {@link Manifest} file within the {@link JarFile}.
- *
+ * from either the {@link ModuleDescriptor} or from a {@link Manifest} file within the {@link
+ * JarFile}.
+ * <p>
  * {@link Manifest} file must contain the attribute {@link Attributes.Name#CLASS_PATH} for resource
- * paths and "Dependent-Modules"
- * for a list of modules this modules depends on.
- *
- * In the case of both values being set on the {@link ModuleDescriptor} and within the
- * {@link Manifest} file,
- * the rule of addition is followed rather than failure.
+ * paths and "Dependent-Modules" for a list of modules this modules depends on.
+ * <p>
+ * In the case of both values being set on the {@link ModuleDescriptor} and within the {@link
+ * Manifest} file, the rule of addition is followed rather than failure.
  *
  * @see ModuleDescriptor
  * @see ModuleSpec
@@ -60,16 +57,14 @@ import org.apache.geode.services.module.ModuleDescriptor;
  * @see JarModuleFinder
  * @see JarFile
  * @see Manifest
- *
  * @since 1.14.0
- *
  */
 public class GeodeJarModuleFinder implements ModuleFinder {
 
   private final ModuleDescriptor moduleDescriptor;
   private final String moduleName;
   private final List<JarFile> sourceJarFiles;
-//  private final Logger logger;
+  // private final Logger logger;
 
   private static final String[] EMPTY_STRING_ARRAY = new String[0];
   private static final String DEPENDENT_MODULES = "Dependent-Modules";
@@ -79,16 +74,15 @@ public class GeodeJarModuleFinder implements ModuleFinder {
    * Constructs a {@link GeodeJarModuleFinder} using a {@link Logger} and {@link ModuleDescriptor}.
    * In the the case of incorrect/missing resource paths an {@link IOException} will be thrown.
    *
-   * @param logger a Logger to log messages
    * @param moduleDescriptor the {@link ModuleDescriptor} describing the module
    * @throws IOException is thrown in the case of incorrect/missing resource paths.
    */
-//  public GeodeJarModuleFinder(final Logger logger, final ModuleDescriptor moduleDescriptor)
+  // public GeodeJarModuleFinder(final Logger logger, final ModuleDescriptor moduleDescriptor)
   public GeodeJarModuleFinder(final ModuleDescriptor moduleDescriptor)
       throws IOException {
     this.moduleName = moduleDescriptor.getName();
     this.sourceJarFiles = parseSourcesIntoJarFiles(moduleDescriptor);
-//    this.logger = logger;
+    // this.logger = logger;
     this.moduleDescriptor = moduleDescriptor;
   }
 
@@ -121,9 +115,9 @@ public class GeodeJarModuleFinder implements ModuleFinder {
   }
 
   /**
-   * Create a {@link ModuleSpec} for the registered Module.
-   * It creates a {@link ModuleSpec} for the name, processes each of the {@link JarFile} in the
-   * {@link #sourceJarFiles} collection and adds dependencies to other modules.
+   * Create a {@link ModuleSpec} for the registered Module. It creates a {@link ModuleSpec} for the
+   * name, processes each of the {@link JarFile} in the {@link #sourceJarFiles} collection and adds
+   * dependencies to other modules.
    *
    * @param name the module name
    * @return a {@link ModuleSpec} from the corresponding {@link ModuleDescriptor}
@@ -156,8 +150,8 @@ public class GeodeJarModuleFinder implements ModuleFinder {
   }
 
   /**
-   * Processes a collection of modules and adds them to the dependent modules list for the
-   * {@link ModuleSpec}
+   * Processes a collection of modules and adds them to the dependent modules list for the {@link
+   * ModuleSpec}
    *
    * @param moduleSpecBuilder the builder for the {@link ModuleSpec}
    * @param modulesDependencies a list of module names on which this module depends on
@@ -236,9 +230,9 @@ public class GeodeJarModuleFinder implements ModuleFinder {
               .createResourceLoaderSpec(
                   ResourceLoaders.createJarResourceLoader(new JarFile(file, true))));
         } catch (IOException e) {
-//          logger.error(String.format(
-//              "File for name: %s could not be loaded as a dependent jar file at location: %s",
-//              classpathEntry, file.getName()));
+          // logger.error(String.format(
+          // "File for name: %s could not be loaded as a dependent jar file at location: %s",
+          // classpathEntry, file.getName()));
           throw new ModuleLoadException(e);
         }
       }
@@ -246,8 +240,8 @@ public class GeodeJarModuleFinder implements ModuleFinder {
   }
 
   /**
-   * Returns a {@link File} for the path = rootPath + fileName.
-   * Checks if the fileName includes ".jar" and adds it if it is not included.
+   * Returns a {@link File} for the path = rootPath + fileName. Checks if the fileName includes
+   * ".jar" and adds it if it is not included.
    *
    * @param rootPath the root path where the file is to be located
    * @param fileName the filename of the {@link JarFile} within the rootPath
@@ -269,23 +263,23 @@ public class GeodeJarModuleFinder implements ModuleFinder {
    */
   private ModuleSpec.Builder getModuleSpec(String name) {
 
-    PathFilter metainfChild = PathFilters.isChildOf("META-INF");
-    PathFilter metainf = PathFilters.is("META-INF");
-    PathFilter metainfServices = PathFilters.is("META-INF/services");
-    PathFilter metainfServicesChild = PathFilters.isChildOf("META-INF/services");
-    PathFilter childOfSlash = PathFilters.isChildOf("/");
-    MultiplePathFilterBuilder multiplePathFilterBuilder =
-        PathFilters.multiplePathFilterBuilder(true);
-    multiplePathFilterBuilder.addFilter(metainfChild, true);
-    multiplePathFilterBuilder.addFilter(metainf, true);
-    multiplePathFilterBuilder.addFilter(metainfServicesChild, true);
-    multiplePathFilterBuilder.addFilter(metainfServices, true);
-    multiplePathFilterBuilder.addFilter(childOfSlash, true);
+//    PathFilter metainfChild = PathFilters.isChildOf("META-INF");
+//    PathFilter metainf = PathFilters.is("META-INF");
+//    PathFilter metainfServices = PathFilters.is("META-INF/services");
+//    PathFilter metainfServicesChild = PathFilters.isChildOf("META-INF/services");
+//    PathFilter childOfSlash = PathFilters.isChildOf("/");
+//    MultiplePathFilterBuilder multiplePathFilterBuilder =
+//        PathFilters.multiplePathFilterBuilder(true);
+//    multiplePathFilterBuilder.addFilter(metainfChild, true);
+//    multiplePathFilterBuilder.addFilter(metainf, true);
+//    multiplePathFilterBuilder.addFilter(metainfServicesChild, true);
+//    multiplePathFilterBuilder.addFilter(metainfServices, true);
+//    multiplePathFilterBuilder.addFilter(childOfSlash, true);
 
     ModuleSpec.Builder builder = ModuleSpec.build(name);
     builder.addDependency(new LocalDependencySpecBuilder()
         .setImportServices(true)
-        .setImportFilter(multiplePathFilterBuilder.create())
+//        .setImportFilter(multiplePathFilterBuilder.create())
         .setExport(true)
         .build());
 
@@ -297,15 +291,15 @@ public class GeodeJarModuleFinder implements ModuleFinder {
    *
    * @param jarFile the {@link JarFile} from which to retrieve the {@link Manifest} file
    * @return an {@link Optional} containing a {@link Manifest} file from the {@link JarFile}. In the
-   *         case of no {@link Manifest} file
-   *         being present, an {@link Optional#empty()} shall be returned.
+   *         case of no {@link Manifest} file being present, an {@link Optional#empty()} shall be
+   *         returned.
    */
   private Optional<Manifest> getManifestFromJar(JarFile jarFile) {
     try {
       return Optional.ofNullable(jarFile.getManifest());
     } catch (IOException e) {
-//      logger.info(
-//          String.format("Unable to find manifest file for jar ile name: %s", jarFile.getName()));
+      // logger.info(
+      // String.format("Unable to find manifest file for jar ile name: %s", jarFile.getName()));
     }
     return Optional.empty();
   }

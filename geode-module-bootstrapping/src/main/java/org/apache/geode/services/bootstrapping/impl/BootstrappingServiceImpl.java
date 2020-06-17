@@ -32,7 +32,7 @@ import org.apache.geode.services.result.ModuleServiceResult;
 public class BootstrappingServiceImpl implements BootstrappingService {
 
   private static String rootPath =
-      "/Users/patrickjohnson/Documents/GitHub/geode/geode-assembly/build/install/apache-geode/lib/";
+      System.getProperty("user.dir") + "/geode-assembly/build/install/apache-geode/lib/";
   private final String gemFireVersion = "1.14.0-build.0";
 
   private final String[] projects = new String[] {"geode-common", "geode-connectors", "geode-core",
@@ -73,13 +73,15 @@ public class BootstrappingServiceImpl implements BootstrappingService {
 
   private void registerModules(ModuleService moduleService) {
     List<String> registeredModules = new ArrayList<>();
+
     Arrays.stream(projects).forEach(project -> {
       ModuleDescriptor moduleDescriptor = new ModuleDescriptor.Builder(project, gemFireVersion)
-          .fromResourcePaths(rootPath + project + "-" + gemFireVersion + ".jar").build();
+          .fromResourcePaths(rootPath + project + "-" + gemFireVersion + ".jar")
+          .dependsOnModules("geode").build();
       ModuleServiceResult<Boolean> registerModule =
           moduleService.registerModule(moduleDescriptor);
       if (!registerModule.isSuccessful()) {
-        System.out.println(registerModule.getErrorMessage());
+        System.err.println(registerModule.getErrorMessage());
       } else {
         registeredModules.add(moduleDescriptor.getName());
       }

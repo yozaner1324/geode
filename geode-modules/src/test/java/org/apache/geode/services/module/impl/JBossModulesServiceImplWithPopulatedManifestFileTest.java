@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,7 +55,7 @@ public class JBossModulesServiceImplWithPopulatedManifestFileTest {
 
   @Before
   public void setup() {
-    moduleService = new JBossModuleServiceImpl(LogManager.getLogger());
+    moduleService = new JBossModuleServiceImpl();
     geodeCommonsServiceDescriptor =
         new ModuleDescriptor.Builder("geode-common-services", gemFireVersion)
             .fromResourcePaths(GEODE_COMMONS_SERVICES_PATH)

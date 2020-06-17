@@ -18,7 +18,6 @@ package org.apache.geode.services.module.internal.finder;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.logging.log4j.Logger;
 import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -38,20 +37,20 @@ import org.jboss.modules.ModuleSpec;
  * @see ModuleSpec
  */
 public class DelegatingModuleFinder implements ModuleFinder {
-//  private final Logger logger;
+  // private final Logger logger;
 
   private final List<ModuleFinder> finders = new CopyOnWriteArrayList<>();
 
   public DelegatingModuleFinder() {
 
   }
-//  public DelegatingModuleFinder(Logger logger) {
-//    this.logger = logger;
-//  }
+  // public DelegatingModuleFinder(Logger logger) {
+  // this.logger = logger;
+  // }
 
   public void addModuleFinder(ModuleFinder finder) {
     finders.add(finder);
-//    logger.debug("Added finder " + finder);
+    // logger.debug("Added finder " + finder);
   }
 
   @Override
@@ -60,11 +59,11 @@ public class DelegatingModuleFinder implements ModuleFinder {
     for (ModuleFinder finder : finders) {
       ModuleSpec moduleSpec = finder.findModule(name, delegateLoader);
       if (moduleSpec != null) {
-//        logger.debug(String.format("Found module specification for module named: %s ", name));
+        // logger.debug(String.format("Found module specification for module named: %s ", name));
         return moduleSpec;
       }
     }
-//    logger.debug(String.format("No module specification for module named: %s found", name));
+    // logger.debug(String.format("No module specification for module named: %s found", name));
     return null;
   }
 }

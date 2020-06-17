@@ -218,6 +218,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     if (contextClassLoader != null) {
       is = contextClassLoader.getResourceAsStream(r);
     }
+
     if (is == null) {
       is = getClass().getResourceAsStream(r);
     }
@@ -225,16 +226,21 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       is = ClassLoader.getSystemResourceAsStream(r);
     }
 
-    if(is == null) {
+    if (is == null) {
       if (this.getClass().getClassLoader() instanceof ModuleClassLoader) {
         ModuleClassLoader classLoader = (ModuleClassLoader) this.getClass().getClassLoader();
-        is = classLoader.findResourceAsStream(r,false);
+        is = classLoader.findResourceAsStream(r, false);
       }
     }
 
     if (is == null) {
       throw new MembershipConfigurationException(
           String.format("Cannot find %s", r));
+    }
+
+    if (this.getClass().getClassLoader() instanceof ModuleClassLoader) {
+      ModuleClassLoader classLoader = (ModuleClassLoader) this.getClass().getClassLoader();
+
     }
 
     String properties;

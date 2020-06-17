@@ -116,7 +116,7 @@ public class ModuleDescriptor {
     }
 
     public Builder dependsOnModules(String... dependencies) {
-      return this.dependsOnModules(Arrays.asList(dependencies));
+      return dependsOnModules(Arrays.asList(dependencies));
     }
 
     public Builder dependsOnModules(Collection<String> dependencies) {
