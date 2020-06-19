@@ -18,6 +18,7 @@ package org.apache.geode.services.module.impl;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.geode.services.bootstrapping.BootstrappingService;
 import org.apache.geode.services.module.ModuleDescriptor;
@@ -33,23 +34,37 @@ public class PrototypeTest {
   private BootstrappingService bootstrappingService;
 
   private void setup() {
+    String property = System.getProperty("sun.boot.class.path");
+    Set<String> packages =
+        // GeodeJDKPaths.getListPackagesFromJars(property);
+        new TreeSet<>();
+    packages.add("javax.transaction");
+    packages.add("javax.management");
+    packages.add("java.lang.management");
+
+    System.setProperty("jboss.modules.system.pkgs",
+        processPackagesIntoJBossPackagesNames(packages));
     moduleService = new JBossModuleServiceImpl();
-    ModuleDescriptor moduleManagementDescriptor =
+    ModuleDescriptor moduleManagementBootStrappingDescriptor =
         new ModuleDescriptor.Builder("bootStrapping", gemFireVersion)
             .fromResourcePaths(rootPath + "geode-module-bootstrapping-" + gemFireVersion + ".jar")
             .build();
 
     ModuleServiceResult<Boolean> registerModule =
-        moduleService.registerModule(moduleManagementDescriptor);
+        moduleService.registerModule(moduleManagementBootStrappingDescriptor);
     if (registerModule.isSuccessful()) {
       ModuleServiceResult<Boolean> loadModule =
-          moduleService.loadModule(moduleManagementDescriptor);
+          moduleService.loadModule(moduleManagementBootStrappingDescriptor);
+
       if (loadModule.isSuccessful()) {
         ModuleServiceResult<Map<String, Set<BootstrappingService>>> serviceLoadResult =
             moduleService.loadService(BootstrappingService.class);
+
         if (serviceLoadResult.isSuccessful()) {
+
           for (Map.Entry<String, Set<BootstrappingService>> serviceEntrySet : serviceLoadResult
               .getMessage().entrySet()) {
+
             for (BootstrappingService service : serviceEntrySet.getValue()) {
               bootstrappingService = service;
               break;
@@ -65,6 +80,15 @@ public class PrototypeTest {
     } else {
       System.err.println(registerModule.getErrorMessage());
     }
+  }
+
+  private String processPackagesIntoJBossPackagesNames(Set<String> packages) {
+    StringBuilder stringBuilder = new StringBuilder();
+    packages.forEach(packageName -> stringBuilder.append(packageName + ","));
+    if (stringBuilder.length() > 0) {
+      stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+    }
+    return stringBuilder.toString();
   }
 
   public static void main(String[] args) {

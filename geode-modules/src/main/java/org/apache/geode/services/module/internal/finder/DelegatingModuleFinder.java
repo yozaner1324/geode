@@ -18,6 +18,7 @@ package org.apache.geode.services.module.internal.finder;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.jboss.modules.JDKModuleFinder;
 import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -42,8 +43,9 @@ public class DelegatingModuleFinder implements ModuleFinder {
   private final List<ModuleFinder> finders = new CopyOnWriteArrayList<>();
 
   public DelegatingModuleFinder() {
-
+    finders.add(JDKModuleFinder.getInstance());
   }
+
   // public DelegatingModuleFinder(Logger logger) {
   // this.logger = logger;
   // }

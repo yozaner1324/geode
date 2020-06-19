@@ -69,7 +69,7 @@ public class GeodeJarModuleFinderTest {
         new ModuleDescriptor.Builder("module1WithManifest", "1.0").fromResourcePaths(MODULE1_PATH)
             .build();
 
-    ModuleFinder moduleFinder = new GeodeJarModuleFinder(moduleDescriptor);
+    ModuleFinder moduleFinder = new GeodeModuleFinder(moduleDescriptor);
     ConcreteModuleSpec moduleSpec = (ConcreteModuleSpec) moduleFinder
         .findModule(moduleDescriptor.getName(), Module.getSystemModuleLoader());
 
@@ -88,7 +88,7 @@ public class GeodeJarModuleFinderTest {
             .fromResourcePaths(MODULE1_PATH, MODULE2_PATH)
             .build();
 
-    ModuleFinder moduleFinder = new GeodeJarModuleFinder(moduleDescriptor);
+    ModuleFinder moduleFinder = new GeodeModuleFinder(moduleDescriptor);
     ConcreteModuleSpec moduleSpec = (ConcreteModuleSpec) moduleFinder
         .findModule(moduleDescriptor.getName(), Module.getSystemModuleLoader());
 
@@ -128,7 +128,7 @@ public class GeodeJarModuleFinderTest {
             .dependsOnModules("exampleModule")
             .build();
 
-    ModuleFinder moduleFinder = new GeodeJarModuleFinder(moduleDescriptor);
+    ModuleFinder moduleFinder = new GeodeModuleFinder(moduleDescriptor);
     ConcreteModuleSpec moduleSpec = (ConcreteModuleSpec) moduleFinder
         .findModule(moduleDescriptor.getName(), Module.getSystemModuleLoader());
 
@@ -148,9 +148,9 @@ public class GeodeJarModuleFinderTest {
 
     ModuleLoader moduleLoader = new TestModuleLoader(Module.getSystemModuleLoader(),
         new ModuleFinder[] {
-            new GeodeJarModuleFinder(moduleDescriptor),
-            new GeodeJarModuleFinder(geodeCommonsServiceDescriptor),
-            new GeodeJarModuleFinder(geodeCommonDescriptor)
+            new GeodeModuleFinder(moduleDescriptor),
+            new GeodeModuleFinder(geodeCommonsServiceDescriptor),
+            new GeodeModuleFinder(geodeCommonDescriptor)
         });
     Module module = moduleLoader.loadModule(moduleDescriptor.getName());
     assertThat(module).isNotNull();
@@ -165,9 +165,9 @@ public class GeodeJarModuleFinderTest {
 
     ModuleLoader moduleLoader = new TestModuleLoader(Module.getSystemModuleLoader(),
         new ModuleFinder[] {
-            new GeodeJarModuleFinder(moduleDescriptor),
-            new GeodeJarModuleFinder(geodeCommonsServiceDescriptor),
-            new GeodeJarModuleFinder(geodeCommonDescriptor)
+            new GeodeModuleFinder(moduleDescriptor),
+            new GeodeModuleFinder(geodeCommonsServiceDescriptor),
+            new GeodeModuleFinder(geodeCommonDescriptor)
         });
     Module module = moduleLoader.loadModule(moduleDescriptor.getName());
     assertThat(module).isNotNull();
@@ -187,10 +187,10 @@ public class GeodeJarModuleFinderTest {
 
     ModuleLoader moduleLoader = new TestModuleLoader(Module.getSystemModuleLoader(),
         new ModuleFinder[] {
-            new GeodeJarModuleFinder(geodeCommonDescriptor),
-            new GeodeJarModuleFinder(geodeCommonsServiceDescriptor),
-            new GeodeJarModuleFinder(module1Descriptor),
-            new GeodeJarModuleFinder(module2Descriptor)
+            new GeodeModuleFinder(geodeCommonDescriptor),
+            new GeodeModuleFinder(geodeCommonsServiceDescriptor),
+            new GeodeModuleFinder(module1Descriptor),
+            new GeodeModuleFinder(module2Descriptor)
         });
 
     assertThat(moduleLoader.loadModule(geodeCommonDescriptor.getName())).isNotNull();

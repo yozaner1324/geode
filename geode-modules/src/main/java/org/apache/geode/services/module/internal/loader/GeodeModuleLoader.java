@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.modules.DelegatingModuleLoader;
-import org.jboss.modules.GeodeJarModuleFinder;
+import org.jboss.modules.GeodeModuleFinder;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
@@ -75,6 +75,8 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
     // this.logger = logger;
   }
 
+
+
   public ModuleServiceResult<Boolean> unloadModule(Module module) {
     if (module != null && !StringUtils.isEmpty(module.getName())) {
       return unloadModuleAndRemoveSpec(module);
@@ -105,7 +107,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader {
 
   public ModuleServiceResult<Boolean> registerModuleDescriptor(ModuleDescriptor descriptor) {
     try {
-      moduleFinder.addModuleFinder(new GeodeJarModuleFinder(descriptor));
+      moduleFinder.addModuleFinder(new GeodeModuleFinder(descriptor));
       // moduleFinder.addModuleFinder(new GeodeJarModuleFinder(logger, descriptor));
     } catch (IOException e) {
       // logger.error(e);

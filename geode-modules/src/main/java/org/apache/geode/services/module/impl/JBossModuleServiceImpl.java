@@ -150,6 +150,7 @@ public class JBossModuleServiceImpl implements ModuleService {
     });
 
     return Success.of(serviceImpls);
+
   }
 
   /**

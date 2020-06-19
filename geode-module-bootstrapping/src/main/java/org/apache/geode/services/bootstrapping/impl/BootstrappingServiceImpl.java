@@ -59,19 +59,22 @@ public class BootstrappingServiceImpl implements BootstrappingService {
 
     if (mapModuleServiceResult.isSuccessful()) {
       Map<String, Set<ManagementService>> message = mapModuleServiceResult.getMessage();
+
       for (Set<ManagementService> managementServices : message.values()) {
+
         for (ManagementService managementService : managementServices) {
           ModuleServiceResult<Boolean> cacheResult = managementService.createCache(properties);
+
           if (!cacheResult.isSuccessful()) {
             System.err.println(cacheResult.getErrorMessage());
           }
         }
       }
-
     }
   }
 
   private void registerModules(ModuleService moduleService) {
+
     List<String> registeredModules = new ArrayList<>();
 
     Arrays.stream(projects).forEach(project -> {
@@ -88,7 +91,9 @@ public class BootstrappingServiceImpl implements BootstrappingService {
     });
 
     ModuleDescriptor geodeDescriptor =
-        new ModuleDescriptor.Builder("geode").dependsOnModules(registeredModules).build();
+        new ModuleDescriptor.Builder("geode")
+            .dependsOnModules(registeredModules)
+            .build();
 
     ModuleServiceResult<Boolean> registerModule = moduleService.registerModule(geodeDescriptor);
     if (registerModule.isSuccessful()) {

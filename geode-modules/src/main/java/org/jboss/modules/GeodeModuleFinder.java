@@ -29,9 +29,6 @@ import java.util.jar.Manifest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.jboss.modules.filter.MultiplePathFilterBuilder;
-import org.jboss.modules.filter.PathFilter;
-import org.jboss.modules.filter.PathFilters;
 
 import org.apache.geode.services.module.ModuleDescriptor;
 
@@ -59,11 +56,12 @@ import org.apache.geode.services.module.ModuleDescriptor;
  * @see Manifest
  * @since 1.14.0
  */
-public class GeodeJarModuleFinder implements ModuleFinder {
+public class GeodeModuleFinder implements ModuleFinder {
 
   private final ModuleDescriptor moduleDescriptor;
   private final String moduleName;
   private final List<JarFile> sourceJarFiles;
+  private final List<File> sourceFiles;
   // private final Logger logger;
 
   private static final String[] EMPTY_STRING_ARRAY = new String[0];
@@ -71,17 +69,18 @@ public class GeodeJarModuleFinder implements ModuleFinder {
   private static final List<String> EMPTY_LIST = new ArrayList<>();
 
   /**
-   * Constructs a {@link GeodeJarModuleFinder} using a {@link Logger} and {@link ModuleDescriptor}.
+   * Constructs a {@link GeodeModuleFinder} using a {@link Logger} and {@link ModuleDescriptor}.
    * In the the case of incorrect/missing resource paths an {@link IOException} will be thrown.
    *
    * @param moduleDescriptor the {@link ModuleDescriptor} describing the module
    * @throws IOException is thrown in the case of incorrect/missing resource paths.
    */
   // public GeodeJarModuleFinder(final Logger logger, final ModuleDescriptor moduleDescriptor)
-  public GeodeJarModuleFinder(final ModuleDescriptor moduleDescriptor)
+  public GeodeModuleFinder(final ModuleDescriptor moduleDescriptor)
       throws IOException {
     this.moduleName = moduleDescriptor.getName();
     this.sourceJarFiles = parseSourcesIntoJarFiles(moduleDescriptor);
+    this.sourceFiles = parseSourcesIntoPathFiles(moduleDescriptor);
     // this.logger = logger;
     this.moduleDescriptor = moduleDescriptor;
   }
@@ -97,7 +96,26 @@ public class GeodeJarModuleFinder implements ModuleFinder {
       throws IOException {
     List<JarFile> results = new LinkedList<>();
     for (String sourcePath : moduleDescriptor.getResourceJarPaths()) {
-      results.add(new JarFile(sourcePath, true));
+      if (sourcePath.endsWith(".jar")) {
+        results.add(new JarFile(sourcePath, true));
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Processes the {@link ModuleDescriptor} resource paths into a collection of {@link JarFile}
+   *
+   * @param moduleDescriptor the {@link ModuleDescriptor} for the module
+   * @return a collection of {@link JarFile} from the {@link ModuleDescriptor}
+   * @throws IOException is thrown in the case of incorrect/missing resources
+   */
+  private List<File> parseSourcesIntoPathFiles(ModuleDescriptor moduleDescriptor) {
+    List<File> results = new LinkedList<>();
+    for (String sourcePath : moduleDescriptor.getResourceJarPaths()) {
+      if (!sourcePath.endsWith(".jar")) {
+        results.add(new File(sourcePath));
+      }
     }
     return results;
   }
@@ -128,10 +146,27 @@ public class GeodeJarModuleFinder implements ModuleFinder {
     for (JarFile jarFile : sourceJarFiles) {
       registerJarFile(moduleSpecBuilder, jarFile);
     }
+
+    for (File file : sourceFiles) {
+      registerFilePath(moduleSpecBuilder, file);
+    }
     createDependenciesForModules(moduleSpecBuilder, moduleDescriptor.getDependedOnModules());
-    moduleSpecBuilder.addDependency(DependencySpec.createSystemDependencySpec(JDKPaths.JDK));
+    moduleSpecBuilder
+        .addDependency(DependencySpec.createSystemDependencySpec(JDKPaths.JDK));
     return moduleSpecBuilder.create();
   }
+
+  // private Set<String> getClassPathEntries() {
+  // final Set<String> result;
+  // final Path rootPath = Paths.get("").toAbsolutePath();
+  // String classpath = System.getProperty("java.class.path");
+  // String[] items = classpath.split(Pattern.quote(File.pathSeparator));
+  // for (int i = 0; i < items.length; i++) {
+  // items[i] = rootPath.resolve(items[i]).normalize().toString();
+  // }
+  // result = new TreeSet<>(Arrays.asList(items));
+  // return result;
+  // }
 
   /**
    * Processes a single {@link JarFile}. Processes the optionally included {@link Manifest} and adds
@@ -147,6 +182,19 @@ public class GeodeJarModuleFinder implements ModuleFinder {
 
     moduleSpecBuilder.addResourceRoot(ResourceLoaderSpec
         .createResourceLoaderSpec(ResourceLoaders.createJarResourceLoader(jarFile)));
+  }
+
+  /**
+   * Processes a single {@link JarFile}. Processes the optionally included {@link Manifest} and adds
+   * itself to the {@link ModuleSpec} as a source resource.
+   *
+   * @param moduleSpecBuilder the builder for the {@link ModuleSpec}
+   * @param file the {@link File} to be processed
+   * @throws ModuleLoadException in case of failure loading resource paths
+   */
+  private void registerFilePath(ModuleSpec.Builder moduleSpecBuilder, File file) {
+    moduleSpecBuilder.addResourceRoot(ResourceLoaderSpec
+        .createResourceLoaderSpec(ResourceLoaders.createPathResourceLoader(file.toPath())));
   }
 
   /**
@@ -263,23 +311,23 @@ public class GeodeJarModuleFinder implements ModuleFinder {
    */
   private ModuleSpec.Builder getModuleSpec(String name) {
 
-//    PathFilter metainfChild = PathFilters.isChildOf("META-INF");
-//    PathFilter metainf = PathFilters.is("META-INF");
-//    PathFilter metainfServices = PathFilters.is("META-INF/services");
-//    PathFilter metainfServicesChild = PathFilters.isChildOf("META-INF/services");
-//    PathFilter childOfSlash = PathFilters.isChildOf("/");
-//    MultiplePathFilterBuilder multiplePathFilterBuilder =
-//        PathFilters.multiplePathFilterBuilder(true);
-//    multiplePathFilterBuilder.addFilter(metainfChild, true);
-//    multiplePathFilterBuilder.addFilter(metainf, true);
-//    multiplePathFilterBuilder.addFilter(metainfServicesChild, true);
-//    multiplePathFilterBuilder.addFilter(metainfServices, true);
-//    multiplePathFilterBuilder.addFilter(childOfSlash, true);
+    // PathFilter metainfChild = PathFilters.isChildOf("META-INF");
+    // PathFilter metainf = PathFilters.is("META-INF");
+    // PathFilter metainfServices = PathFilters.is("META-INF/services");
+    // PathFilter metainfServicesChild = PathFilters.isChildOf("META-INF/services");
+    // PathFilter childOfSlash = PathFilters.isChildOf("/");
+    // MultiplePathFilterBuilder multiplePathFilterBuilder =
+    // PathFilters.multiplePathFilterBuilder(true);
+    // multiplePathFilterBuilder.addFilter(metainfChild, true);
+    // multiplePathFilterBuilder.addFilter(metainf, true);
+    // multiplePathFilterBuilder.addFilter(metainfServicesChild, true);
+    // multiplePathFilterBuilder.addFilter(metainfServices, true);
+    // multiplePathFilterBuilder.addFilter(childOfSlash, true);
 
     ModuleSpec.Builder builder = ModuleSpec.build(name);
     builder.addDependency(new LocalDependencySpecBuilder()
         .setImportServices(true)
-//        .setImportFilter(multiplePathFilterBuilder.create())
+        // .setImportFilter(multiplePathFilterBuilder.create())
         .setExport(true)
         .build());
 
