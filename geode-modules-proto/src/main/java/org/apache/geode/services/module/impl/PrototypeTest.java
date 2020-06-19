@@ -34,17 +34,18 @@ public class PrototypeTest {
   private BootstrappingService bootstrappingService;
 
   private void setup() {
-    String property = System.getProperty("sun.boot.class.path");
+    // String property = System.getProperty("sun.boot.class.path");
     Set<String> packages =
         // GeodeJDKPaths.getListPackagesFromJars(property);
         new TreeSet<>();
-    packages.add("javax.transaction");
     packages.add("javax.management");
     packages.add("java.lang.management");
 
     System.setProperty("jboss.modules.system.pkgs",
         processPackagesIntoJBossPackagesNames(packages));
+
     moduleService = new JBossModuleServiceImpl();
+
     ModuleDescriptor moduleManagementBootStrappingDescriptor =
         new ModuleDescriptor.Builder("bootStrapping", gemFireVersion)
             .fromResourcePaths(rootPath + "geode-module-bootstrapping-" + gemFireVersion + ".jar")
@@ -52,16 +53,13 @@ public class PrototypeTest {
 
     ModuleServiceResult<Boolean> registerModule =
         moduleService.registerModule(moduleManagementBootStrappingDescriptor);
-    if (registerModule.isSuccessful()) {
+    registerModule.ifSuccessful(result -> {
       ModuleServiceResult<Boolean> loadModule =
           moduleService.loadModule(moduleManagementBootStrappingDescriptor);
-
-      if (loadModule.isSuccessful()) {
+      loadModule.ifSuccessful(loadResult -> {
         ModuleServiceResult<Map<String, Set<BootstrappingService>>> serviceLoadResult =
             moduleService.loadService(BootstrappingService.class);
-
-        if (serviceLoadResult.isSuccessful()) {
-
+        serviceLoadResult.ifSuccessful(serviceLoad -> {
           for (Map.Entry<String, Set<BootstrappingService>> serviceEntrySet : serviceLoadResult
               .getMessage().entrySet()) {
 
@@ -73,14 +71,13 @@ public class PrototypeTest {
               break;
             }
           }
-        }
-      } else {
-        System.err.println(loadModule.getErrorMessage());
-      }
-    } else {
-      System.err.println(registerModule.getErrorMessage());
-    }
+        });
+      });
+      loadModule.ifFailure(failureMessage -> System.err.println(failureMessage));
+    });
+    registerModule.ifFailure(failureMessage -> System.err.println(failureMessage));
   }
+
 
   private String processPackagesIntoJBossPackagesNames(Set<String> packages) {
     StringBuilder stringBuilder = new StringBuilder();
@@ -93,11 +90,11 @@ public class PrototypeTest {
 
   public static void main(String[] args) {
     PrototypeTest prototypeTest = new PrototypeTest();
+
     prototypeTest.setup();
+
     if (prototypeTest.bootstrappingService != null) {
       prototypeTest.bootstrappingService.init(prototypeTest.moduleService, new Properties());
     }
-
-    System.out.println("rootPath = " + rootPath);
   }
 }

@@ -49,6 +49,7 @@ import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalCacheBuilder {
   private static final Logger logger = LogService.getLogger();
@@ -402,6 +403,11 @@ public class InternalCacheBuilder {
 
   private static boolean allowMultipleSystems() {
     return Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY);
+  }
+
+  public InternalCacheBuilder setModuleService(ModuleService moduleService) {
+    cacheConfig.setModuleService(moduleService);
+    return this;
   }
 
 

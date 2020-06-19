@@ -20,26 +20,42 @@ import java.util.Properties;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.services.management.ManagementService;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.services.result.ModuleServiceResult;
 import org.apache.geode.services.result.impl.Failure;
 import org.apache.geode.services.result.impl.Success;
 
 public class ManagementServiceImpl implements ManagementService {
+  private ModuleService moduleService;
+
+  @Override
+  public void init(ModuleService moduleService) {
+    this.moduleService = moduleService;
+  }
+
   @Override
   public ModuleServiceResult<Boolean> createCache(Properties properties) {
     try {
       Cache cache = new CacheFactory(properties).set(ConfigurationProperties.NAME, "whatever")
           .set(ConfigurationProperties.MCAST_PORT, "0")
           .set(ConfigurationProperties.START_LOCATOR, "localhost[10334]")
+          .set(ConfigurationProperties.JMX_MANAGER_START, "true")
+          .set(ConfigurationProperties.JMX_MANAGER, "true")
+          .setModuleService(moduleService)
           .create();
 
       CacheServer cacheServer = cache.addCacheServer();
       cacheServer.setPort(0);
 
       cacheServer.start();
+
+      Region<Object, Object> test =
+          cache.createRegionFactory(RegionShortcut.PARTITION).create("Test");
 
       return Success.of(true);
     } catch (Exception e) {

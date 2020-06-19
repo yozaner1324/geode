@@ -96,9 +96,9 @@ public class Dependencies {
     });
 
     depsMap.forEach((name, deps) -> {
-      // String[] classPathDeps = new String[] {};
-      String[] classPathDeps =
-          !StringUtils.isEmpty(deps.get(0)) ? deps.get(0).split(" ") : new String[] {};
+//      String[] classPathDeps = new String[] {};
+       String[] classPathDeps =
+       !StringUtils.isEmpty(deps.get(0)) ? deps.get(0).split(" ") : new String[] {};
       String[] moduleDeps =
           !StringUtils.isEmpty(deps.get(1)) ? deps.get(1).split(" ") : new String[] {};
 

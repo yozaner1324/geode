@@ -35,13 +35,28 @@ public class BootstrappingServiceImpl implements BootstrappingService {
       System.getProperty("user.dir") + "/geode-assembly/build/install/apache-geode/lib/";
   private final String gemFireVersion = "1.14.0-build.0";
 
-  private final String[] projects = new String[] {"geode-common", "geode-connectors", "geode-core",
-      "geode-cq", "geode-gfsh",
-      "geode-http-service", "geode-log4j", "geode-logging", "geode-lucene",
-      "geode-management", "geode-membership", "geode-memcached",
-      "geode-old-client-support", "geode-protobuf",
-      "geode-protobuf-messages", "geode-rebalancer", "geode-redis",
-      "geode-serialization", "geode-tcp-server", "geode-unsafe", "geode-wan",
+  private final String[] projects = new String[] {
+      "geode-common",
+//       "geode-connectors",
+      "geode-core",
+      // "geode-cq",
+      "geode-gfsh",
+      "geode-http-service",
+      "geode-log4j",
+      "geode-logging",
+//       "geode-lucene",
+      "geode-management",
+      "geode-membership",
+//       "geode-memcached",
+      // "geode-old-client-support",
+      // "geode-protobuf",
+      // "geode-protobuf-messages",
+      "geode-rebalancer",
+//       "geode-redis",
+      "geode-serialization",
+      "geode-tcp-server",
+      "geode-unsafe",
+      // "geode-wan",
       "geode-module-management"};
 
   private ManagementService managementService;
@@ -63,6 +78,8 @@ public class BootstrappingServiceImpl implements BootstrappingService {
       for (Set<ManagementService> managementServices : message.values()) {
 
         for (ManagementService managementService : managementServices) {
+          managementService.init(moduleService);
+
           ModuleServiceResult<Boolean> cacheResult = managementService.createCache(properties);
 
           if (!cacheResult.isSuccessful()) {
@@ -75,12 +92,17 @@ public class BootstrappingServiceImpl implements BootstrappingService {
 
   private void registerModules(ModuleService moduleService) {
 
+    /**
+     * ------------------- Register Modules
+     */
     List<String> registeredModules = new ArrayList<>();
 
     Arrays.stream(projects).forEach(project -> {
       ModuleDescriptor moduleDescriptor = new ModuleDescriptor.Builder(project, gemFireVersion)
           .fromResourcePaths(rootPath + project + "-" + gemFireVersion + ".jar")
-          .dependsOnModules("geode").build();
+          .dependsOnModules("geode")
+          .build();
+
       ModuleServiceResult<Boolean> registerModule =
           moduleService.registerModule(moduleDescriptor);
       if (!registerModule.isSuccessful()) {
@@ -93,9 +115,14 @@ public class BootstrappingServiceImpl implements BootstrappingService {
     ModuleDescriptor geodeDescriptor =
         new ModuleDescriptor.Builder("geode")
             .dependsOnModules(registeredModules)
+            .requiresJDKPaths(true)
             .build();
 
     ModuleServiceResult<Boolean> registerModule = moduleService.registerModule(geodeDescriptor);
+    /**
+     * ------------------- Load Modules
+     */
+
     if (registerModule.isSuccessful()) {
       ModuleServiceResult<Boolean> loadModuleResult =
           moduleService.loadModule(geodeDescriptor);

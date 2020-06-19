@@ -18,6 +18,7 @@ package org.apache.geode.services.management;
 import java.util.Properties;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.services.result.ModuleServiceResult;
 
 /**
@@ -27,6 +28,8 @@ import org.apache.geode.services.result.ModuleServiceResult;
  */
 @Experimental
 public interface ManagementService {
+
+  void init(ModuleService moduleService);
 
   /**
    * Creates a Geode Cache given some configuration.

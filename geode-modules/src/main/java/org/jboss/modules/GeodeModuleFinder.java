@@ -29,6 +29,7 @@ import java.util.jar.Manifest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jboss.modules.filter.PathFilters;
 
 import org.apache.geode.services.module.ModuleDescriptor;
 
@@ -151,22 +152,18 @@ public class GeodeModuleFinder implements ModuleFinder {
       registerFilePath(moduleSpecBuilder, file);
     }
     createDependenciesForModules(moduleSpecBuilder, moduleDescriptor.getDependedOnModules());
+    if (moduleDescriptor.requiresJDKPaths()) {
+      moduleSpecBuilder.addDependency(new LocalDependencySpecBuilder()
+          .setImportFilter(PathFilters.acceptAll())
+          .setExport(true)
+          .setLocalLoader(ClassLoaderLocalLoader.SYSTEM)
+          .setLoaderPaths(JDKPaths.JDK)
+          .build());
+    }
     moduleSpecBuilder
-        .addDependency(DependencySpec.createSystemDependencySpec(JDKPaths.JDK));
+        .addDependency(DependencySpec.createSystemDependencySpec(GeodeJDKPaths.JDK));
     return moduleSpecBuilder.create();
   }
-
-  // private Set<String> getClassPathEntries() {
-  // final Set<String> result;
-  // final Path rootPath = Paths.get("").toAbsolutePath();
-  // String classpath = System.getProperty("java.class.path");
-  // String[] items = classpath.split(Pattern.quote(File.pathSeparator));
-  // for (int i = 0; i < items.length; i++) {
-  // items[i] = rootPath.resolve(items[i]).normalize().toString();
-  // }
-  // result = new TreeSet<>(Arrays.asList(items));
-  // return result;
-  // }
 
   /**
    * Processes a single {@link JarFile}. Processes the optionally included {@link Manifest} and adds
