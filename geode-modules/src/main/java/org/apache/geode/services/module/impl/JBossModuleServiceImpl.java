@@ -15,9 +15,9 @@
 
 package org.apache.geode.services.module.impl;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -133,23 +133,16 @@ public class JBossModuleServiceImpl implements ModuleService {
 
   /**
    * {@inheritDoc}
+   *
    */
   @Override
-  public <T> ModuleServiceResult<Map<String, Set<T>>> loadService(Class<T> service) {
-    Map<String, Set<T>> serviceImpls = new HashMap<>();
+  public <T> ModuleServiceResult<Set<T>> loadService(Class<T> service) {
+    Set<T> result = createTreeSetWithClassLoaderComparator();
 
     // Iterate over all the modules looking for implementations of service.
-    modules.values().forEach((module) -> {
-      module.loadService(service).forEach((serviceImpl) -> {
-        String moduleName = ((ModuleClassLoader) serviceImpl.getClass().getClassLoader()).getName();
-        Set<T> listOfServices = Optional.ofNullable(serviceImpls.get(moduleName))
-            .orElseGet(() -> createTreeSetWithClassLoaderComparator());
-        listOfServices.add(serviceImpl);
-        serviceImpls.put(moduleName, listOfServices);
-      });
-    });
+    modules.values().forEach((module) -> module.loadService(service).forEach(result::add));
 
-    return Success.of(serviceImpls);
+    return Success.of(result);
 
   }
 
@@ -230,18 +223,17 @@ public class JBossModuleServiceImpl implements ModuleService {
    * {@inheritDoc}
    */
   @Override
-  public ModuleServiceResult<Map<String, Class<?>>> loadClass(String className) {
-    Map<String, Class<?>> classes = new HashMap<>();
+  public ModuleServiceResult<List<Class<?>>> loadClass(String className) {
+    List<Class<?>> result = new ArrayList<>();
     modules.values().forEach((module) -> {
       try {
-        Class<?> loadedClass = module.getClassLoader().loadClass(className);
-        classes.put(module.getName(), loadedClass);
+        result.add(module.getClassLoader().loadClass(className));
       } catch (ClassNotFoundException e) {
         // logger.debug(String.format("Could not find class for name: %s in module: %s", className,
         // module.getName()));
       }
     });
 
-    return Success.of(classes);
+    return Success.of(result);
   }
 }

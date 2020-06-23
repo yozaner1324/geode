@@ -344,7 +344,8 @@ public class InternalCacheBuilder {
         cacheConfig.getPostProcessor());
 
     return internalDistributedSystemConstructor
-        .construct(configProperties, securityConfig, metricsSessionBuilder);
+        .construct(configProperties, securityConfig, metricsSessionBuilder,
+            cacheConfig.getModuleService());
   }
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,
@@ -421,6 +422,6 @@ public class InternalCacheBuilder {
   @VisibleForTesting
   public interface InternalDistributedSystemConstructor {
     InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig,
-        MetricsService.Builder metricsSessionBuilder);
+        MetricsService.Builder metricsSessionBuilder, ModuleService moduleService);
   }
 }

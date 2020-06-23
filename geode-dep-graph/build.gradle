@@ -25,9 +25,9 @@ repositories {
 }
 
 dependencies {
-    compile(platform(project(':boms:geode-all-bom')))
+    implementation(platform(project(':boms:geode-all-bom')))
 
-    compile('org.apache.commons:commons-lang3')
-    compile(group: 'org.graphstream', name: 'gs-core', version: '1.3')
+    implementation('org.apache.commons:commons-lang3')
+    implementation('org.graphstream:gs-core')
 
 }

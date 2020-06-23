@@ -15,7 +15,6 @@
 
 package org.apache.geode.services.module.impl;
 
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -27,7 +26,7 @@ import org.apache.geode.services.result.ModuleServiceResult;
 
 public class PrototypeTest {
 
-  private static String rootPath =
+  private static final String rootPath =
       System.getProperty("user.dir") + "/geode-assembly/build/install/apache-geode/lib/";
   private final String gemFireVersion = "1.14.0-build.0";
   private ModuleService moduleService;
@@ -57,27 +56,19 @@ public class PrototypeTest {
       ModuleServiceResult<Boolean> loadModule =
           moduleService.loadModule(moduleManagementBootStrappingDescriptor);
       loadModule.ifSuccessful(loadResult -> {
-        ModuleServiceResult<Map<String, Set<BootstrappingService>>> serviceLoadResult =
+        ModuleServiceResult<Set<BootstrappingService>> serviceLoadResult =
             moduleService.loadService(BootstrappingService.class);
         serviceLoadResult.ifSuccessful(serviceLoad -> {
-          for (Map.Entry<String, Set<BootstrappingService>> serviceEntrySet : serviceLoadResult
-              .getMessage().entrySet()) {
-
-            for (BootstrappingService service : serviceEntrySet.getValue()) {
-              bootstrappingService = service;
-              break;
-            }
-            if (bootstrappingService != null) {
-              break;
-            }
+          for (BootstrappingService service : serviceLoadResult.getMessage()) {
+            bootstrappingService = service;
+            break;
           }
         });
       });
-      loadModule.ifFailure(failureMessage -> System.err.println(failureMessage));
+      loadModule.ifFailure(System.err::println);
     });
-    registerModule.ifFailure(failureMessage -> System.err.println(failureMessage));
+    registerModule.ifFailure(System.err::println);
   }
-
 
   private String processPackagesIntoJBossPackagesNames(Set<String> packages) {
     StringBuilder stringBuilder = new StringBuilder();
@@ -92,9 +83,15 @@ public class PrototypeTest {
     PrototypeTest prototypeTest = new PrototypeTest();
 
     prototypeTest.setup();
+    Properties properties = new Properties();
+    properties.setProperty("name", "whatever");
+    properties.setProperty("mcast-port", "0");
+    properties.setProperty("start-locator", "localhost[10334]");
+    properties.setProperty("jmx-manager-start", "true");
+    properties.setProperty("jmx-manager", "true");
 
     if (prototypeTest.bootstrappingService != null) {
-      prototypeTest.bootstrappingService.init(prototypeTest.moduleService, new Properties());
+      prototypeTest.bootstrappingService.init(prototypeTest.moduleService, properties);
     }
   }
 }

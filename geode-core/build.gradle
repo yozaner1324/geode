@@ -178,6 +178,10 @@ dependencies {
   api('commons-io:commons-io')
 
   compileOnly(project(":geode-modules"))
+  testImplementation(project(":geode-modules"))
+  integrationTestImplementation(project(":geode-modules"))
+  acceptanceTestImplementation(project(":geode-modules"))
+  distributedTestImplementation(project(":geode-modules"))
 
   //tools.jar seems to be used by gfsh is some cases to control processes using
   //the sun attach API? But this code path may not even be used?

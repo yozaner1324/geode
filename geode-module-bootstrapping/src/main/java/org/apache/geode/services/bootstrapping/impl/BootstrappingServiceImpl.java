@@ -19,9 +19,7 @@ package org.apache.geode.services.bootstrapping.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.geode.services.bootstrapping.BootstrappingService;
 import org.apache.geode.services.management.ManagementService;
@@ -31,35 +29,34 @@ import org.apache.geode.services.result.ModuleServiceResult;
 
 public class BootstrappingServiceImpl implements BootstrappingService {
 
-  private static String rootPath =
+  private static final String rootPath =
       System.getProperty("user.dir") + "/geode-assembly/build/install/apache-geode/lib/";
   private final String gemFireVersion = "1.14.0-build.0";
 
   private final String[] projects = new String[] {
       "geode-common",
-//       "geode-connectors",
+      // "geode-connectors",
       "geode-core",
       // "geode-cq",
       "geode-gfsh",
       "geode-http-service",
       "geode-log4j",
       "geode-logging",
-//       "geode-lucene",
+      // "geode-lucene",
       "geode-management",
       "geode-membership",
-//       "geode-memcached",
+      // "geode-memcached",
       // "geode-old-client-support",
       // "geode-protobuf",
       // "geode-protobuf-messages",
       "geode-rebalancer",
-//       "geode-redis",
+      // "geode-redis",
       "geode-serialization",
       "geode-tcp-server",
       "geode-unsafe",
       // "geode-wan",
       "geode-module-management"};
 
-  private ManagementService managementService;
 
   private ModuleService moduleService;
 
@@ -69,32 +66,22 @@ public class BootstrappingServiceImpl implements BootstrappingService {
 
     registerModules(moduleService);
 
-    ModuleServiceResult<Map<String, Set<ManagementService>>> mapModuleServiceResult =
-        moduleService.loadService(ManagementService.class);
+    moduleService.loadService(ManagementService.class).ifSuccessful(managementServices -> {
+      for (ManagementService managementService : managementServices) {
+        managementService.init(moduleService);
 
-    if (mapModuleServiceResult.isSuccessful()) {
-      Map<String, Set<ManagementService>> message = mapModuleServiceResult.getMessage();
+        ModuleServiceResult<Boolean> cacheResult = managementService.createCache(properties);
 
-      for (Set<ManagementService> managementServices : message.values()) {
-
-        for (ManagementService managementService : managementServices) {
-          managementService.init(moduleService);
-
-          ModuleServiceResult<Boolean> cacheResult = managementService.createCache(properties);
-
-          if (!cacheResult.isSuccessful()) {
-            System.err.println(cacheResult.getErrorMessage());
-          }
+        if (!cacheResult.isSuccessful()) {
+          System.err.println(cacheResult.getErrorMessage());
         }
       }
-    }
+    });
+
   }
 
   private void registerModules(ModuleService moduleService) {
-
-    /**
-     * ------------------- Register Modules
-     */
+    // ------------------- Register Modules
     List<String> registeredModules = new ArrayList<>();
 
     Arrays.stream(projects).forEach(project -> {
@@ -105,11 +92,8 @@ public class BootstrappingServiceImpl implements BootstrappingService {
 
       ModuleServiceResult<Boolean> registerModule =
           moduleService.registerModule(moduleDescriptor);
-      if (!registerModule.isSuccessful()) {
-        System.err.println(registerModule.getErrorMessage());
-      } else {
-        registeredModules.add(moduleDescriptor.getName());
-      }
+      registerModule.ifFailure(System.err::println);
+      registerModule.ifSuccessful(aBoolean -> registeredModules.add(moduleDescriptor.getName()));
     });
 
     ModuleDescriptor geodeDescriptor =
@@ -119,26 +103,19 @@ public class BootstrappingServiceImpl implements BootstrappingService {
             .build();
 
     ModuleServiceResult<Boolean> registerModule = moduleService.registerModule(geodeDescriptor);
-    /**
-     * ------------------- Load Modules
-     */
 
-    if (registerModule.isSuccessful()) {
+    // ------------------- Load Modules
+    registerModule.ifSuccessful(aBoolean -> {
       ModuleServiceResult<Boolean> loadModuleResult =
           moduleService.loadModule(geodeDescriptor);
-      if (!loadModuleResult.isSuccessful()) {
-        System.err.println(loadModuleResult.getErrorMessage());
-      }
-    } else {
-      System.err.println(registerModule.getErrorMessage());
-    }
+      loadModuleResult.ifFailure(System.err::println);
+    });
+    registerModule.ifFailure(System.err::println);
 
     Arrays.stream(projects).forEach(project -> {
       ModuleServiceResult<Boolean> loadModuleResult =
           moduleService.loadModule(new ModuleDescriptor.Builder(project, gemFireVersion).build());
-      if (!loadModuleResult.isSuccessful()) {
-        System.out.println(loadModuleResult.getErrorMessage());
-      }
+      loadModuleResult.ifFailure(System.err::println);
     });
   }
 

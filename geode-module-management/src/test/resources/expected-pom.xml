@@ -48,7 +48,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-common</artifactId>
+      <artifactId>geode-core</artifactId>
       <scope>compile</scope>
     </dependency>
   </dependencies>
