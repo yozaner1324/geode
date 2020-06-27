@@ -260,8 +260,4 @@ public class CacheConfig {
   public void setModuleService(ModuleService moduleService) {
     this.moduleService = moduleService;
   }
-
-  public ModuleService getModuleService() {
-    return this.moduleService;
-  }
 }

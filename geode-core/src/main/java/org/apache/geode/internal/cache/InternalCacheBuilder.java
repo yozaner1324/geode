@@ -71,6 +71,8 @@ public class InternalCacheBuilder {
   private boolean isExistingOk = IS_EXISTING_OK_DEFAULT;
   private boolean isClient = IS_CLIENT_DEFAULT;
 
+  private ModuleService moduleService;
+
   /**
    * Setting useAsyncEventListeners to true will invoke event listeners in asynchronously.
    *
@@ -85,8 +87,8 @@ public class InternalCacheBuilder {
   /**
    * Creates a cache factory with default configuration properties.
    */
-  public InternalCacheBuilder() {
-    this(new Properties(), new CacheConfig());
+  public InternalCacheBuilder(ModuleService moduleServiced) {
+    this(new Properties(), new CacheConfig(), moduleServiced);
   }
 
   /**
@@ -95,25 +97,31 @@ public class InternalCacheBuilder {
    *
    * @param configProperties the configuration properties to initialize the factory with.
    */
-  public InternalCacheBuilder(Properties configProperties) {
-    this(configProperties == null ? new Properties() : configProperties, new CacheConfig());
+  public InternalCacheBuilder(Properties configProperties, ModuleService moduleService) {
+    this(configProperties == null ? new Properties() : configProperties, new CacheConfig(),
+        moduleService);
   }
 
   /**
    * Creates a cache factory with default configuration properties.
    */
-  public InternalCacheBuilder(CacheConfig cacheConfig) {
-    this(new Properties(), cacheConfig);
+  public InternalCacheBuilder(CacheConfig cacheConfig, ModuleService moduleService) {
+    this(new Properties(), cacheConfig, moduleService);
   }
 
-  private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig) {
+  private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig,
+      ModuleService moduleService) {
     this(configProperties,
         cacheConfig,
         new InternalDistributedSystemMetricsService.Builder(),
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
-        GemFireCacheImpl::new);
+        (isClient1, poolFactory1, internalDistributedSystem, cacheConfig1, useAsyncEventListeners1,
+            typeRegistry1) -> new GemFireCacheImpl(
+                isClient1, poolFactory1, internalDistributedSystem, cacheConfig1,
+                useAsyncEventListeners1, typeRegistry1, moduleService),
+        moduleService);
   }
 
   @VisibleForTesting
@@ -123,7 +131,8 @@ public class InternalCacheBuilder {
       Supplier<InternalDistributedSystem> singletonSystemSupplier,
       InternalDistributedSystemConstructor internalDistributedSystemConstructor,
       Supplier<InternalCache> singletonCacheSupplier,
-      InternalCacheConstructor internalCacheConstructor) {
+      InternalCacheConstructor internalCacheConstructor,
+      ModuleService moduleService) {
     this.configProperties = configProperties;
     this.cacheConfig = cacheConfig;
     this.singletonSystemSupplier = singletonSystemSupplier;
@@ -132,6 +141,7 @@ public class InternalCacheBuilder {
     this.singletonCacheSupplier = singletonCacheSupplier;
     this.metricsSessionBuilder = metricsSessionBuilder;
     this.metricsSessionBuilder.setIsClient(isClient);
+    this.moduleService = moduleService;
   }
 
   /**
@@ -345,7 +355,7 @@ public class InternalCacheBuilder {
 
     return internalDistributedSystemConstructor
         .construct(configProperties, securityConfig, metricsSessionBuilder,
-            cacheConfig.getModuleService());
+            moduleService);
   }
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,

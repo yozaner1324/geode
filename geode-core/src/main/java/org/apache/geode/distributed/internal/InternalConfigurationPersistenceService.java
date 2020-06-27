@@ -86,33 +86,28 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.services.module.ModuleService;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
-  private static final Logger logger = LogService.getLogger();
-
   /**
    * Name of the directory where the shared configuration artifacts are stored
    */
   public static final String CLUSTER_CONFIG_ARTIFACTS_DIR_NAME = "cluster_config";
-
-  private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
-
   public static final String CLUSTER_CONFIG_DISK_DIR_PREFIX = "ConfigDiskDir_";
-
-  /**
-   * Name of the lock service used for shared configuration
-   */
-  private static final String SHARED_CONFIG_LOCK_SERVICE_NAME = "__CLUSTER_CONFIG_LS";
-
-  /**
-   * Name of the lock for locking the shared configuration
-   */
-  private static final String SHARED_CONFIG_LOCK_NAME = "__CLUSTER_CONFIG_LOCK";
-
   /**
    * Name of the region which is used to store the configuration information
    */
   public static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
+  private static final Logger logger = LogService.getLogger();
+  private static final String CLUSTER_CONFIG_DISK_STORE_NAME = "cluster_config";
+  /**
+   * Name of the lock service used for shared configuration
+   */
+  private static final String SHARED_CONFIG_LOCK_SERVICE_NAME = "__CLUSTER_CONFIG_LS";
+  /**
+   * Name of the lock for locking the shared configuration
+   */
+  private static final String SHARED_CONFIG_LOCK_NAME = "__CLUSTER_CONFIG_LOCK";
   private static final String CACHE_CONFIG_VERSION = "1.0";
 
   private final Path configDirPath;
@@ -124,33 +119,72 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   private final InternalCache cache;
   private final DistributedLockService sharedConfigLockingService;
   private final JAXBService jaxbService;
+  private final ModuleService moduleService;
 
   public InternalConfigurationPersistenceService(InternalCache cache, Path workingDirectory,
-      JAXBService jaxbService) {
+      JAXBService jaxbService,
+      ModuleService moduleService) {
     this(cache,
         DLockService.getOrCreateService(SHARED_CONFIG_LOCK_SERVICE_NAME,
             cache.getInternalDistributedSystem()),
         jaxbService,
         workingDirectory.resolve(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME),
         workingDirectory
-            .resolve(CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName()));
+            .resolve(CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName()),
+        moduleService);
   }
 
   @VisibleForTesting
   public InternalConfigurationPersistenceService(JAXBService jaxbService) {
-    this(null, null, jaxbService, null, null);
+    this(null, null, jaxbService, null, null, ModuleService.DEFAULT);
   }
 
   @VisibleForTesting
   InternalConfigurationPersistenceService(InternalCache cache,
-      DistributedLockService sharedConfigLockingService, JAXBService jaxbService,
-      Path configDirPath, Path configDiskDirPath) {
+      DistributedLockService sharedConfigLockingService,
+      JAXBService jaxbService,
+      Path configDirPath, Path configDiskDirPath,
+      ModuleService moduleService) {
     this.cache = cache;
     this.configDirPath = configDirPath;
     this.configDiskDirPath = configDiskDirPath;
     this.sharedConfigLockingService = sharedConfigLockingService;
     status.set(SharedConfigurationStatus.NOT_STARTED);
     this.jaxbService = jaxbService;
+    this.moduleService = moduleService;
+  }
+
+  private static List<String> listOf(String[] groups) {
+    if (groups == null || groups.length == 0) {
+      return Collections.singletonList(ConfigurationPersistenceService.CLUSTER_CONFIG);
+    }
+    return asList(groups);
+  }
+
+  private static Function<String, String> toFileName() {
+    return fullPath -> Paths.get(fullPath).getFileName().toString();
+  }
+
+  private static void removeOtherVersionsOf(Path groupDir, String jarFileName) throws IOException {
+    String artifactId = JarDeployer.getArtifactId(jarFileName);
+    for (File file : groupDir.toFile().listFiles()) {
+      if (file.getName().equals(jarFileName)) {
+        continue;
+      }
+      if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
+        FileUtils.deleteQuietly(file);
+      }
+    }
+  }
+
+  @VisibleForTesting
+  static void loadDeploymentsFromFileNames(Collection<String> fileNames,
+      Configuration configuration, String deployedBy,
+      String deployedTime) {
+    fileNames.stream()
+        .filter(filename -> filename.endsWith(".jar"))
+        .map(jarFileName -> new Deployment(jarFileName, deployedBy, deployedTime))
+        .forEach(configuration::putDeployment);
   }
 
   public JAXBService getJaxbService() {
@@ -176,7 +210,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         }
         try {
           final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
-          XmlUtils.addNewNode(doc, xmlEntity);
+          XmlUtils.addNewNode(doc, xmlEntity, moduleService);
           configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
           configRegion.put(group, configuration);
         } catch (Exception e) {
@@ -305,17 +339,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     configRegion.put(group, configuration, memberId);
   }
 
-  private static List<String> listOf(String[] groups) {
-    if (groups == null || groups.length == 0) {
-      return Collections.singletonList(ConfigurationPersistenceService.CLUSTER_CONFIG);
-    }
-    return asList(groups);
-  }
-
-  private static Function<String, String> toFileName() {
-    return fullPath -> Paths.get(fullPath).getFileName().toString();
-  }
-
   private void copyJarsToGroupDir(String group, List<String> jarFullPaths) throws IOException {
     Path groupDir = configDirPath.resolve(group);
     for (String jarFullPath : jarFullPaths) {
@@ -324,18 +347,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       Path destinationJarPath = groupDir.resolve(jarFileName);
       FileUtils.copyFile(stagedJarFile, destinationJarPath.toFile());
       removeOtherVersionsOf(groupDir, jarFileName);
-    }
-  }
-
-  private static void removeOtherVersionsOf(Path groupDir, String jarFileName) throws IOException {
-    String artifactId = JarDeployer.getArtifactId(jarFileName);
-    for (File file : groupDir.toFile().listFiles()) {
-      if (file.getName().equals(jarFileName)) {
-        continue;
-      }
-      if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
-        FileUtils.deleteQuietly(file);
-      }
     }
   }
 
@@ -421,7 +432,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
 
   // used in the cluster config change listener when jarnames are changed in the internal region
   public void downloadJarFromLocator(String groupName, String jarName,
-      DistributedMember sourceLocator) throws IllegalStateException, IOException {
+      DistributedMember sourceLocator)
+      throws IllegalStateException, IOException {
     logger.info("Downloading jar {} from locator {}", jarName, sourceLocator.getName());
 
     createConfigDirIfNecessary(groupName);
@@ -601,8 +613,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Create a response containing the status of the Shared configuration and information about other
    * locators containing newer shared configuration data (if at all)
    *
-   * @return {@link SharedConfigurationStatusResponse} containing the
-   *         {@link SharedConfigurationStatus}
+   * @return {@link SharedConfigurationStatusResponse} containing the {@link
+   *         SharedConfigurationStatus}
    */
   SharedConfigurationStatusResponse createStatusResponse() {
     SharedConfigurationStatusResponse response = new SharedConfigurationStatusResponse();
@@ -836,15 +848,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       logger.debug("getDeployedBy: no user information is found.", e);
     }
     return subject == null ? null : subject.getPrincipal().toString();
-  }
-
-  @VisibleForTesting
-  static void loadDeploymentsFromFileNames(Collection<String> fileNames,
-      Configuration configuration, String deployedBy, String deployedTime) {
-    fileNames.stream()
-        .filter(filename -> filename.endsWith(".jar"))
-        .map(jarFileName -> new Deployment(jarFileName, deployedBy, deployedTime))
-        .forEach(configuration::putDeployment);
   }
 
   /**

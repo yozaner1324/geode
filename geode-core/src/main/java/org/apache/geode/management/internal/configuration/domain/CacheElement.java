@@ -33,12 +33,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
+import org.apache.geode.internal.cache.xmlcache.GeodeEntityResolver2;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.module.ModuleService;
 
 /**
  * Domain class to determine the order of an element Currently being used to store order information
@@ -49,15 +50,13 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathCo
 // UnitTest CacheElementJUnitTest
 public class CacheElement {
   static final String XSD_PREFIX = "xsd";
+  static final String CACHE_TYPE_EMBEDDED =
+      "/xsd:schema/xsd:element[@name='cache']/xsd:complexType";
   private static final String XSD_ALL_CHILDREN = "xsd:element";
   private static final String XSD_COMPLEX_TYPE_CHILDREN =
       "xsd:group|xsd:all|xsd:choice|xsd:sequence";
   private static final String XSD_CHOICE_OR_SEQUENCE_CHILDREN =
       "xsd:element|xsd:group|xsd:choice|xsd:sequence|xsd:any";
-
-  static final String CACHE_TYPE_EMBEDDED =
-      "/xsd:schema/xsd:element[@name='cache']/xsd:complexType";
-
   private String name;
   private int order;
   private boolean multiple;
@@ -65,30 +64,6 @@ public class CacheElement {
   public CacheElement(String name, int rank, boolean multiple) {
     this.name = name;
     this.order = rank;
-    this.multiple = multiple;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public int getOrder() {
-    return order;
-  }
-
-  public void setOrder(int order) {
-    this.order = order;
-  }
-
-  public boolean isMultiple() {
-    return multiple;
-  }
-
-  public void setMultiple(boolean multiple) {
     this.multiple = multiple;
   }
 
@@ -100,7 +75,8 @@ public class CacheElement {
    * @return Element map
    * @since GemFire 8.1
    */
-  public static LinkedHashMap<String, CacheElement> buildElementMap(final Document doc)
+  public static LinkedHashMap<String, CacheElement> buildElementMap(final Document doc,
+      ModuleService moduleService)
       throws IOException, XPathExpressionException, SAXException, ParserConfigurationException {
     Node cacheNode = doc.getFirstChild();
     if ("#comment".equals(cacheNode.getNodeName())) {
@@ -113,7 +89,7 @@ public class CacheElement {
     final LinkedHashMap<String, CacheElement> elementMap = new LinkedHashMap<>();
 
     buildElementMapCacheType(elementMap,
-        resolveSchema(schemaLocationMap, CacheXml.GEODE_NAMESPACE));
+        resolveSchema(schemaLocationMap, CacheXml.GEODE_NAMESPACE, moduleService));
 
     // if we are ever concerned with the order of extensions or children process them here.
 
@@ -131,8 +107,9 @@ public class CacheElement {
    * @since GemFire 8.1
    */
   private static InputSource resolveSchema(final Map<String, String> schemaLocationMap,
-      String namespaceUri) throws IOException {
-    final EntityResolver2 entityResolver = new CacheXmlParser();
+      String namespaceUri, ModuleService moduleService) throws IOException {
+    final GeodeEntityResolver2 entityResolver = new CacheXmlParser();
+    entityResolver.init(moduleService);
 
     InputSource inputSource = null;
 
@@ -226,6 +203,30 @@ public class CacheElement {
   private static boolean isMultiple(final Element element) {
     String maxOccurs = getAttribute(element, "maxOccurs");
     return null != maxOccurs && !maxOccurs.equals("1");
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public int getOrder() {
+    return order;
+  }
+
+  public void setOrder(int order) {
+    this.order = order;
+  }
+
+  public boolean isMultiple() {
+    return multiple;
+  }
+
+  public void setMultiple(boolean multiple) {
+    this.multiple = multiple;
   }
 
 }
