@@ -16,8 +16,6 @@ package org.apache.geode.services.management;
 
 import java.util.Optional;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.services.management.impl.ComponentIdentifier;
 import org.apache.geode.services.module.ModuleService;
 import org.apache.geode.services.result.ServiceResult;
@@ -49,12 +47,10 @@ public interface ComponentManagementService<T> {
    * Creates a Geode Component using the {@link ModuleService} and arguments provided.
    *
    * @param moduleService the {@link ModuleService} to use to load resources and services.
-   * @param logger the logger to use to log
    * @param args arguments to be passed to the Geode Component being created.
    * @return {@link Success} when the component is created and {@link Failure} on failure.
    */
-  ServiceResult<Boolean> init(ModuleService moduleService, Logger logger,
-      Object[] args);
+  ServiceResult<Boolean> init(ModuleService moduleService, Object[] args);
 
   /**
    * This returns the initialized component of type T.

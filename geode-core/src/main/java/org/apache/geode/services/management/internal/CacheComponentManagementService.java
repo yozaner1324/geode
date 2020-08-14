@@ -55,11 +55,11 @@ public class CacheComponentManagementService implements ComponentManagementServi
    * {@inheritDoc}
    */
   @Override
-  public ServiceResult<Boolean> init(ModuleService moduleService, Logger logger,
+  public ServiceResult<Boolean> init(ModuleService moduleService,
       Object[] args) {
-    ServiceResult<Boolean> validationResult = validateInputParameters(moduleService, logger);
+    ServiceResult<Boolean> validationResult = validateInputParameters(moduleService);
     if (validationResult.isSuccessful()) {
-      this.logger = logger;
+      // this.logger = LogService.getLogger();
       CacheFactory cacheFactory = new CacheFactory((Properties) args[0]);
       cacheFactory.setModuleService(moduleService);
       cache = cacheFactory.create();
@@ -84,14 +84,11 @@ public class CacheComponentManagementService implements ComponentManagementServi
     return SUCCESS_TRUE;
   }
 
-  private ServiceResult<Boolean> validateInputParameters(ModuleService moduleService,
-      Logger logger) {
+  private ServiceResult<Boolean> validateInputParameters(ModuleService moduleService) {
     if (moduleService == null) {
       return Failure.of("The ModuleService on the ComponentManagementService must not be null");
     }
-    if (logger == null) {
-      return Failure.of("The Logger on the ComponentManagementService must not be null");
-    }
+
     return SUCCESS_TRUE;
   }
 
@@ -128,7 +125,7 @@ public class CacheComponentManagementService implements ComponentManagementServi
     try {
       cache.close();
     } catch (Exception e) {
-      logger.warn(e);
+      // logger.warn(e);
       return Failure.of(e);
     }
     if (cache.isClosed()) {

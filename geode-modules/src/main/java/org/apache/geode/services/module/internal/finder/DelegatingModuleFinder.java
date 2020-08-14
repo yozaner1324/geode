@@ -59,10 +59,10 @@ public class DelegatingModuleFinder implements ModuleFinder {
    */
   public void addModuleFinder(String moduleName, ModuleFinder finder) {
     if (moduleFinderAlreadyAdded(moduleName)) {
-      logger.debug("ModuleFinder for module named: " + moduleName + " already added");
+      logDebug("ModuleFinder for module named: " + moduleName + " already added");
     } else {
       finders = finders.add(new Tuple2<>(moduleName, finder));
-      logger.debug("Added finder " + finder);
+      logDebug("Added finder " + finder);
     }
   }
 
@@ -79,11 +79,11 @@ public class DelegatingModuleFinder implements ModuleFinder {
     for (Tuple2<String, ModuleFinder> finder : finders) {
       ModuleSpec moduleSpec = finder._2().findModule(name, delegateLoader);
       if (moduleSpec != null) {
-        logger.debug(String.format("Found module specification for module named: %s ", name));
+        logDebug(String.format("Found module specification for module named: %s ", name));
         return moduleSpec;
       }
     }
-    logger.debug(String.format("No module specification for module named: %s found", name));
+    logDebug(String.format("No module specification for module named: %s found", name));
     return null;
   }
 
@@ -96,5 +96,11 @@ public class DelegatingModuleFinder implements ModuleFinder {
     List<Tuple2<String, ModuleFinder>> findersToRemove =
         finders.toStream().filter(tuple -> tuple._1.equals(moduleName)).toList();
     finders = finders.removeAll(findersToRemove);
+  }
+
+  private void logDebug(String message) {
+    if (logger != null) {
+      logger.debug(message);
+    }
   }
 }
