@@ -16,7 +16,6 @@ package org.apache.geode.logging.internal;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 
-import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -28,6 +27,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Loads a {@link LoggingProvider} using this order of preference:
@@ -41,6 +41,11 @@ import org.apache.geode.logging.internal.spi.LoggingProvider;
 public class LoggingProviderLoader {
 
   private static final Logger logger = LogManager.getLogger();
+  private final ClassLoaderService classLoaderService;
+
+  public LoggingProviderLoader(ClassLoaderService classLoaderService) {
+    this.classLoaderService = classLoaderService;
+  }
 
   /**
    * System property that may be used to override which {@code LoggingProvider} to use.
@@ -61,7 +66,7 @@ public class LoggingProviderLoader {
 
     // 2: use ListCollectingServiceLoader and select highest priority
     SortedMap<Integer, LoggingProvider> loggingProviders = new TreeMap<>();
-    loadServiceProviders()
+    loadServiceProviders(classLoaderService)
         .forEach(provider -> loggingProviders.put(provider.getPriority(), provider));
 
     if (!loggingProviders.isEmpty()) {
@@ -77,11 +82,10 @@ public class LoggingProviderLoader {
     return new SimpleLoggingProvider();
   }
 
-  private Iterable<LoggingProvider> loadServiceProviders() {
-    CollectingServiceLoader<LoggingProvider> serviceLoader = new ListCollectingServiceLoader<>();
-    Collection<LoggingProvider> loggingProviders =
-        serviceLoader.loadServices(LoggingProvider.class);
-    return loggingProviders;
+  private Iterable<LoggingProvider> loadServiceProviders(ClassLoaderService classLoaderService) {
+    CollectingServiceLoader<LoggingProvider> serviceLoader =
+        new ListCollectingServiceLoader<>(classLoaderService);
+    return serviceLoader.loadServices(LoggingProvider.class);
   }
 
   private LoggingProvider checkSystemProperty() {

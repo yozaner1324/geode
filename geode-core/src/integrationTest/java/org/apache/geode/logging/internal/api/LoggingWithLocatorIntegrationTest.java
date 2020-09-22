@@ -44,6 +44,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.logging.internal.log4j.LogWriterLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -92,7 +93,8 @@ public class LoggingWithLocatorIntegrationTest {
     Properties config = new Properties();
 
     locator = InternalLocator.startLocator(port, null, null, null, null, false, config, null,
-        temporaryFolder.getRoot().toPath());
+        temporaryFolder.getRoot().toPath(),
+        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
 
     LogConfig logConfig = locator.getLogConfig();
 
@@ -111,7 +113,8 @@ public class LoggingWithLocatorIntegrationTest {
     Properties config = new Properties();
 
     locator = InternalLocator.startLocator(port, logFile, null, null, null, false, config, null,
-        temporaryFolder.getRoot().toPath());
+        temporaryFolder.getRoot().toPath(),
+        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
 
     LogConfig logConfig = locator.getLogConfig();
 
@@ -169,7 +172,8 @@ public class LoggingWithLocatorIntegrationTest {
     config.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     locator = InternalLocator.startLocator(port, null, null, null, null, false, config, null,
-        temporaryFolder.getRoot().toPath());
+        temporaryFolder.getRoot().toPath(),
+        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
     Logger logger = LogService.getLogger();
 
     // assert that logging goes to logFile

@@ -46,6 +46,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.logging.internal.ConfigurationInfo;
 import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -66,8 +67,8 @@ public class Banner {
    *             Logging package or from Logging tests.
    */
   @Deprecated
-  public Banner() {
-    this(ConfigurationInfo.getConfigurationInfo());
+  public Banner(ClassLoaderService classLoaderService) {
+    this(ConfigurationInfo.getConfigurationInfo(classLoaderService));
   }
 
   public Banner(final String configurationInfo) {
@@ -105,7 +106,7 @@ public class Banner {
    *
    * @param args possibly null list of command line arguments
    */
-  private void print(PrintWriter out, String args[]) {
+  private void print(PrintWriter out, String[] args) {
     // Copy the system properties for printing. Some are given explicit lines, and
     // others are suppressed. Remove these keys, keeping those we want.
     Map sp = new TreeMap((Properties) System.getProperties().clone()); // fix for 46822

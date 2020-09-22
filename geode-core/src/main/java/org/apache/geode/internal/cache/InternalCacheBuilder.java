@@ -49,6 +49,7 @@ import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 public class InternalCacheBuilder {
   private static final Logger logger = LogService.getLogger();
@@ -70,6 +71,8 @@ public class InternalCacheBuilder {
   private boolean isExistingOk = IS_EXISTING_OK_DEFAULT;
   private boolean isClient = IS_CLIENT_DEFAULT;
 
+  private ClassLoaderService classLoaderService;
+
   /**
    * Setting useAsyncEventListeners to true will invoke event listeners in asynchronously.
    *
@@ -84,8 +87,8 @@ public class InternalCacheBuilder {
   /**
    * Creates a cache factory with default configuration properties.
    */
-  public InternalCacheBuilder() {
-    this(new Properties(), new CacheConfig());
+  public InternalCacheBuilder(ClassLoaderService classLoaderService) {
+    this(new Properties(), new CacheConfig(), classLoaderService);
   }
 
   /**
@@ -94,25 +97,31 @@ public class InternalCacheBuilder {
    *
    * @param configProperties the configuration properties to initialize the factory with.
    */
-  public InternalCacheBuilder(Properties configProperties) {
-    this(configProperties == null ? new Properties() : configProperties, new CacheConfig());
+  public InternalCacheBuilder(Properties configProperties, ClassLoaderService classLoaderService) {
+    this(configProperties == null ? new Properties() : configProperties, new CacheConfig(),
+        classLoaderService);
   }
 
   /**
    * Creates a cache factory with default configuration properties.
    */
-  public InternalCacheBuilder(CacheConfig cacheConfig) {
-    this(new Properties(), cacheConfig);
+  public InternalCacheBuilder(CacheConfig cacheConfig, ClassLoaderService classLoaderService) {
+    this(new Properties(), cacheConfig, classLoaderService);
   }
 
-  private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig) {
+  private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig,
+      ClassLoaderService classLoaderService) {
     this(configProperties,
         cacheConfig,
         new InternalDistributedSystemMetricsService.Builder(),
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
-        GemFireCacheImpl::new);
+        (isClient1, poolFactory1, internalDistributedSystem, cacheConfig1, useAsyncEventListeners1,
+            typeRegistry1, classLoaderService1) -> new GemFireCacheImpl(
+                isClient1, poolFactory1, internalDistributedSystem, cacheConfig1,
+                useAsyncEventListeners1, typeRegistry1, classLoaderService1),
+        classLoaderService);
   }
 
   @VisibleForTesting
@@ -122,7 +131,8 @@ public class InternalCacheBuilder {
       Supplier<InternalDistributedSystem> singletonSystemSupplier,
       InternalDistributedSystemConstructor internalDistributedSystemConstructor,
       Supplier<InternalCache> singletonCacheSupplier,
-      InternalCacheConstructor internalCacheConstructor) {
+      InternalCacheConstructor internalCacheConstructor,
+      ClassLoaderService classLoaderService) {
     this.configProperties = configProperties;
     this.cacheConfig = cacheConfig;
     this.singletonSystemSupplier = singletonSystemSupplier;
@@ -131,6 +141,7 @@ public class InternalCacheBuilder {
     this.singletonCacheSupplier = singletonCacheSupplier;
     this.metricsSessionBuilder = metricsSessionBuilder;
     this.metricsSessionBuilder.setIsClient(isClient);
+    this.classLoaderService = classLoaderService;
   }
 
   /**
@@ -185,7 +196,7 @@ public class InternalCacheBuilder {
           if (cache == null) {
             cache =
                 internalCacheConstructor.construct(isClient, poolFactory, internalDistributedSystem,
-                    cacheConfig, useAsyncEventListeners, typeRegistry);
+                    cacheConfig, useAsyncEventListeners, typeRegistry, classLoaderService);
 
             internalDistributedSystem.setCache(cache);
             cache.initialize();
@@ -343,7 +354,8 @@ public class InternalCacheBuilder {
         cacheConfig.getPostProcessor());
 
     return internalDistributedSystemConstructor
-        .construct(configProperties, securityConfig, metricsSessionBuilder);
+        .construct(configProperties, securityConfig, metricsSessionBuilder,
+            classLoaderService);
   }
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,
@@ -404,17 +416,23 @@ public class InternalCacheBuilder {
     return Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY);
   }
 
+  public InternalCacheBuilder setModuleService(ClassLoaderService classLoaderService) {
+    this.classLoaderService = classLoaderService;
+    return this;
+  }
+
 
   @VisibleForTesting
   public interface InternalCacheConstructor {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
         InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-        boolean useAsyncEventListeners, TypeRegistry typeRegistry);
+        boolean useAsyncEventListeners, TypeRegistry typeRegistry,
+        ClassLoaderService classLoaderService);
   }
 
   @VisibleForTesting
   public interface InternalDistributedSystemConstructor {
     InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig,
-        MetricsService.Builder metricsSessionBuilder);
+        MetricsService.Builder metricsSessionBuilder, ClassLoaderService classLoaderService);
   }
 }

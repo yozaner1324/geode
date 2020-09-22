@@ -30,10 +30,12 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Function to alter {@link MockRegionExtension} on a {@link Region}.
@@ -78,7 +80,9 @@ public class AlterMockRegionExtensionFunction implements Function, DataSerializa
       }
     }
 
-    XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", region.getName());
+    XmlEntity xmlEntity =
+        new XmlEntity(CacheXml.REGION, "name", region.getName(), new DefaultClassLoaderServiceImpl(
+            LogService.getLogger()));
 
     final ResultSender<Object> resultSender = context.getResultSender();
     final String memberNameOrId =

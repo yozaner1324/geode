@@ -51,6 +51,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Domain class for defining a GemFire entity in XML.
@@ -63,7 +64,6 @@ public class XmlEntity implements VersionedDataSerializable {
 
   private String type;
 
-  @SuppressWarnings("unused")
   private String parentType;
 
   private Map<String, String> attributes = new HashMap<>();
@@ -114,12 +114,13 @@ public class XmlEntity implements VersionedDataSerializable {
    * @param key Key of the attribute to match, for example, "name" or "id".
    * @param value Value of the attribute to match.
    */
-  public XmlEntity(final String type, final String key, final String value) {
+  public XmlEntity(final String type, final String key, final String value,
+      ClassLoaderService classLoaderService) {
     cacheProvider = createDefaultCacheProvider();
     this.type = type;
     attributes.put(key, value);
 
-    init();
+    init(classLoaderService);
   }
 
   /**
@@ -175,7 +176,7 @@ public class XmlEntity implements VersionedDataSerializable {
 
   public XmlEntity(final CacheProvider cacheProvider, final String parentType,
       final String childPrefix, final String childNamespace, final String childType,
-      final String key, final String value) {
+      final String key, final String value, ClassLoaderService classLoaderService) {
     this.cacheProvider = cacheProvider;
     this.parentType = parentType;
     type = childType;
@@ -186,10 +187,10 @@ public class XmlEntity implements VersionedDataSerializable {
     attributes.put(key, value);
 
     searchString = "//" + this.parentType + '/' + childPrefix + ':' + type;
-    xmlDefinition = parseXmlForDefinition();
+    xmlDefinition = parseXmlForDefinition(classLoaderService);
   }
 
-  private String parseXmlForDefinition() {
+  private String parseXmlForDefinition(ClassLoaderService classLoaderService) {
     final Cache cache = cacheProvider.getCache();
 
     final StringWriter stringWriter = new StringWriter();
@@ -199,7 +200,7 @@ public class XmlEntity implements VersionedDataSerializable {
     InputSource inputSource = new InputSource(new StringReader(stringWriter.toString()));
 
     try {
-      Document document = XmlUtils.getDocumentBuilder().parse(inputSource);
+      Document document = XmlUtils.getDocumentBuilder(classLoaderService).parse(inputSource);
       Node element = document.getElementsByTagNameNS(childNamespace, type).item(0);
       if (null != element) {
         return XmlUtils.elementToString(element);
@@ -232,19 +233,21 @@ public class XmlEntity implements VersionedDataSerializable {
   }
 
   /**
-   * Initialize new instances. Called from {@link #XmlEntity(String, String, String)} and
-   * {@link XmlEntityBuilder#build()}.
+   * Initialize new instances. Called from
+   * {@link #XmlEntity(String, String, String, ClassLoaderService)}
+   * and
+   * {@link XmlEntityBuilder#build(ClassLoaderService)}.
    *
    * @since GemFire 8.1
    */
-  private void init() {
+  private void init(ClassLoaderService classLoaderService) {
     Assert.assertTrue(StringUtils.isNotBlank(type));
     Assert.assertTrue(StringUtils.isNotBlank(prefix));
     Assert.assertTrue(StringUtils.isNotBlank(namespace));
     Assert.assertTrue(attributes != null);
 
     if (null == xmlDefinition) {
-      xmlDefinition = loadXmlDefinition();
+      xmlDefinition = loadXmlDefinition(classLoaderService);
     }
   }
 
@@ -253,7 +256,7 @@ public class XmlEntity implements VersionedDataSerializable {
    *
    * @return XML string representation of the entity.
    */
-  private String loadXmlDefinition() {
+  private String loadXmlDefinition(ClassLoaderService classLoaderService) {
     final Cache cache = cacheProvider.getCache();
 
     final StringWriter stringWriter = new StringWriter();
@@ -261,7 +264,7 @@ public class XmlEntity implements VersionedDataSerializable {
     CacheXmlGenerator.generate(cache, printWriter, false, false);
     printWriter.close();
 
-    return loadXmlDefinition(stringWriter.toString());
+    return loadXmlDefinition(stringWriter.toString(), classLoaderService);
   }
 
   /**
@@ -271,10 +274,12 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return XML for XmlEntity if found, otherwise {@code null}.
    * @since GemFire 8.1
    */
-  private String loadXmlDefinition(final String xmlDocument) {
+  private String loadXmlDefinition(final String xmlDocument,
+      ClassLoaderService classLoaderService) {
     try {
       InputSource inputSource = new InputSource(new StringReader(xmlDocument));
-      return loadXmlDefinition(XmlUtils.getDocumentBuilder().parse(inputSource));
+      return loadXmlDefinition(XmlUtils
+          .getDocumentBuilder(classLoaderService).parse(inputSource));
     } catch (IOException | SAXException | ParserConfigurationException | XPathExpressionException
         | TransformerFactoryConfigurationError | TransformerException e) {
       throw new InternalGemFireError("Could not parse XML when creating XMLEntity", e);
@@ -326,16 +331,16 @@ public class XmlEntity implements VersionedDataSerializable {
   private String createQueryString(final String prefix, final String element,
       final Map<String, String> attributes) {
     StringBuilder queryStringBuilder = new StringBuilder();
-    Iterator<Entry<String, String>> attributeIter = attributes.entrySet().iterator();
+    Iterator<Entry<String, String>> attributeIterator = attributes.entrySet().iterator();
     queryStringBuilder.append("//").append(prefix).append(':').append(element);
 
     if (!attributes.isEmpty()) {
       queryStringBuilder.append('[');
-      Entry<String, String> attrEntry = attributeIter.next();
+      Entry<String, String> attrEntry = attributeIterator.next();
       queryStringBuilder.append('@').append(attrEntry.getKey()).append("='")
           .append(attrEntry.getValue()).append('\'');
-      while (attributeIter.hasNext()) {
-        attrEntry = attributeIter.next();
+      while (attributeIterator.hasNext()) {
+        attrEntry = attributeIterator.next();
         queryStringBuilder.append(" and @").append(attrEntry.getKey()).append("='")
             .append(attrEntry.getValue()).append('\'');
       }
@@ -524,7 +529,6 @@ public class XmlEntity implements VersionedDataSerializable {
      *
      * @since GemFire 8.1
      */
-    @SuppressWarnings("deprecation")
     XmlEntityBuilder() {
       xmlEntity = new XmlEntity();
     }
@@ -537,9 +541,8 @@ public class XmlEntity implements VersionedDataSerializable {
      *
      * @since GemFire 8.1
      */
-    @SuppressWarnings("deprecation")
-    public XmlEntity build() {
-      xmlEntity.init();
+    public XmlEntity build(ClassLoaderService classLoaderService) {
+      xmlEntity.init(classLoaderService);
 
       final XmlEntity built = xmlEntity;
       xmlEntity = new XmlEntity();

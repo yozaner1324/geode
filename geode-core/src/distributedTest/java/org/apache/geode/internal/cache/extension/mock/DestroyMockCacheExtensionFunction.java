@@ -33,10 +33,12 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Function to create {@link MockCacheExtension} on a {@link Region}.
@@ -68,7 +70,9 @@ public class DestroyMockCacheExtensionFunction implements Function, DataSerializ
     }
 
     final XmlEntity xmlEntity =
-        XmlEntity.builder().withType(ELEMENT_CACHE).withNamespace(PREFIX, NAMESPACE).build();
+        XmlEntity.builder().withType(ELEMENT_CACHE).withNamespace(PREFIX, NAMESPACE)
+            .build(new DefaultClassLoaderServiceImpl(
+                LogService.getLogger()));
 
     final ResultSender<Object> resultSender = context.getResultSender();
     final String memberNameOrId =

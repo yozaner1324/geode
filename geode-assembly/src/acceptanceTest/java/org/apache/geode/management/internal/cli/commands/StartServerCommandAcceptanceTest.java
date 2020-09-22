@@ -32,6 +32,8 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -58,7 +60,8 @@ public class StartServerCommandAcceptanceTest {
     File logFile = temporaryFolder.newFile(testName.getMethodName() + ".log");
     File cacheXmlFile = temporaryFolder.newFile(testName.getMethodName() + "Cache.xml");
 
-    CacheCreation creation = new CacheCreation();
+    CacheCreation creation =
+        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
     CacheServer server = creation.addCacheServer();
     server.setPort(40404);
     server.setBindAddress(null);
@@ -72,7 +75,7 @@ public class StartServerCommandAcceptanceTest {
     CacheXmlGenerator.generate(creation, pw);
     pw.close();
 
-    Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     String startServerCommand =
         "start server --max-threads=100 --max-connections=1200 --max-message-count=5000 --message-time-to-live=360 --socket-buffer-size=16384 --server-port="
             + serverPort + " --name=" + testName.getMethodName() + " --cache-xml-file="
@@ -84,12 +87,12 @@ public class StartServerCommandAcceptanceTest {
         .containsPattern("Server .* " + testName.getMethodName() + " is currently online.");
 
     // Assert Server Properties.
-    Boolean configurationLineFound = Boolean.FALSE;
+    boolean configurationLineFound = false;
     LineIterator lineIterator = FileUtils.lineIterator(logFile);
     while (lineIterator.hasNext()) {
       String line = lineIterator.nextLine();
       if (line.contains("CacheServer Configuration:")) {
-        configurationLineFound = Boolean.TRUE;
+        configurationLineFound = true;
         assertThat(line.contains("max-threads=100")).isTrue();
         assertThat(line.contains("port=" + serverPort)).isTrue();
         assertThat(line.contains("max-connections=1200")).isTrue();
@@ -106,7 +109,7 @@ public class StartServerCommandAcceptanceTest {
   @Test
   public void startServerWithParametersWhenClusterConfigurationServiceIsEnabledShouldOverrideDefaults()
       throws IOException {
-    Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     File logFile = temporaryFolder.newFile(testName.getMethodName() + ".log");
 
     String startServerCommand =
@@ -127,12 +130,12 @@ public class StartServerCommandAcceptanceTest {
         .containsPattern("Server .* " + testName.getMethodName() + " is currently online.");
 
     // Assert Server Properties.
-    Boolean configurationLineFound = Boolean.FALSE;
+    boolean configurationLineFound = false;
     LineIterator lineIterator = FileUtils.lineIterator(logFile);
     while (lineIterator.hasNext()) {
       String line = lineIterator.nextLine();
       if (line.contains("CacheServer Configuration:")) {
-        configurationLineFound = Boolean.TRUE;
+        configurationLineFound = true;
         assertThat(line.contains("max-threads=50")).isTrue();
         assertThat(line.contains("port=" + serverPort)).isTrue();
         assertThat(line.contains("max-connections=200")).isTrue();

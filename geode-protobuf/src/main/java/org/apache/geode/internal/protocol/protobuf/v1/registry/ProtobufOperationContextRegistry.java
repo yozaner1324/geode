@@ -40,25 +40,27 @@ import org.apache.geode.internal.protocol.protobuf.v1.operations.PutIfAbsentRequ
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.RemoveRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.HandshakeRequestOperationHandler;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 @Experimental
 public class ProtobufOperationContextRegistry {
   private final Map<MessageTypeCase, ProtobufOperationContext> operationContexts;
 
-  public ProtobufOperationContextRegistry() {
-    operationContexts = Collections.unmodifiableMap(generateContexts());
+  public ProtobufOperationContextRegistry(ClassLoaderService classLoaderService) {
+    operationContexts = Collections.unmodifiableMap(generateContexts(classLoaderService));
   }
 
   public ProtobufOperationContext getOperationContext(MessageTypeCase apiCase) {
     return operationContexts.get(apiCase);
   }
 
-  private Map<MessageTypeCase, ProtobufOperationContext> generateContexts() {
+  private Map<MessageTypeCase, ProtobufOperationContext> generateContexts(
+      ClassLoaderService classLoaderService) {
     final Map<MessageTypeCase, ProtobufOperationContext> operationContexts = new HashMap<>();
 
     operationContexts.put(MessageTypeCase.HANDSHAKEREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getHandshakeRequest,
-            new HandshakeRequestOperationHandler(),
+            new HandshakeRequestOperationHandler(classLoaderService),
             opsResp -> ClientProtocol.Message.newBuilder().setHandshakeResponse(opsResp)));
 
     operationContexts.put(MessageTypeCase.DISCONNECTCLIENTREQUEST,

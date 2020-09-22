@@ -30,10 +30,10 @@ public class DefaultEntityResolver2Test {
     DefaultEntityResolver2 mockDefaultEntityResolver2 = mock(DefaultEntityResolver2.class);
     InputSource inputSource = new InputSource();
 
-    when(mockDefaultEntityResolver2.getClassPathInputSource(eq("publicId"), eq("systemId"),
+    when(mockDefaultEntityResolver2.getInputSourceForPath(eq("publicId"), eq("systemId"),
         eq("path"))).thenReturn(inputSource);
 
-    assertThat(mockDefaultEntityResolver2.getClassPathInputSource("publicId", "systemId", "path"))
+    assertThat(mockDefaultEntityResolver2.getInputSourceForPath("publicId", "systemId", "path"))
         .isSameAs(inputSource);
   }
 }

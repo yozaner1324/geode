@@ -38,6 +38,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 
 /**
@@ -56,16 +57,18 @@ public class HeadlessGfsh implements ResultHandler {
   private long timeout;
   public String outputString = null;
 
-  public HeadlessGfsh(String name, int timeout, String parentDir)
+  public HeadlessGfsh(String name, int timeout, String parentDir,
+      ClassLoaderService classLoaderService)
       throws IOException {
-    this(name, timeout, null, parentDir);
+    this(name, timeout, null, parentDir, classLoaderService);
   }
 
-  public HeadlessGfsh(String name, int timeout, Properties envProps, String parentDir)
+  public HeadlessGfsh(String name, int timeout, Properties envProps, String parentDir,
+      ClassLoaderService classLoaderService)
       throws IOException {
     this.timeout = timeout;
     System.setProperty("jline.terminal", GfshUnsupportedTerminal.class.getName());
-    this.shell = new HeadlessGfshShell(name, this, parentDir);
+    this.shell = new HeadlessGfshShell(name, this, parentDir, classLoaderService);
     this.shell.setEnvProperty(Gfsh.ENV_APP_RESULT_VIEWER, "non-basic");
 
     if (envProps != null) {
@@ -198,9 +201,11 @@ public class HeadlessGfsh implements ResultHandler {
     private boolean hasError = false;
     boolean stopCalledThroughAPI = false;
 
-    protected HeadlessGfshShell(String testName, ResultHandler handler, String parentDir)
+    protected HeadlessGfshShell(String testName, ResultHandler handler, String parentDir,
+        ClassLoaderService classLoaderService)
         throws IOException {
-      super(false, new String[] {}, new HeadlessGfshConfig(testName, parentDir));
+      super(false, new String[] {}, new HeadlessGfshConfig(testName, parentDir),
+          classLoaderService);
       this.handler = handler;
     }
 

@@ -36,6 +36,7 @@ import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.MetricsPublishingService;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Manages metrics on behalf of an {@code InternalDistributedSystem}.
@@ -60,17 +61,6 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
   private final CloseableMeterBinder binder;
   private final Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
   private final MetricsService.Builder builder;
-
-  @FunctionalInterface
-  @VisibleForTesting
-  interface Factory {
-    MetricsService create(MetricsService.Builder builder, Logger logger,
-        CollectingServiceLoader<MetricsPublishingService> publishingServiceLoader,
-        CompositeMeterRegistry metricsServiceMeterRegistry,
-        Collection<MeterRegistry> persistentMeterRegistries, CloseableMeterBinder binder,
-        InternalDistributedSystem system, boolean isClient, boolean hasLocator,
-        boolean hasCacheServer);
-  }
 
   @VisibleForTesting
   InternalDistributedSystemMetricsService(MetricsService.Builder builder, Logger logger,
@@ -231,6 +221,17 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     }
   }
 
+  @FunctionalInterface
+  @VisibleForTesting
+  interface Factory {
+    MetricsService create(MetricsService.Builder builder, Logger logger,
+        CollectingServiceLoader<MetricsPublishingService> publishingServiceLoader,
+        CompositeMeterRegistry metricsServiceMeterRegistry,
+        Collection<MeterRegistry> persistentMeterRegistries, CloseableMeterBinder binder,
+        InternalDistributedSystem system, boolean isClient, boolean hasLocator,
+        boolean hasCacheServer);
+  }
+
   public static class Builder implements MetricsService.Builder {
     private boolean isClient = false;
     private Supplier<Logger> loggerSupplier = LogService::getLogger;
@@ -238,15 +239,19 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     private Factory metricsServiceFactory = InternalDistributedSystemMetricsService::new;
     private Supplier<CompositeMeterRegistry> compositeRegistrySupplier =
         CompositeMeterRegistry::new;
-    private Supplier<CollectingServiceLoader<MetricsPublishingService>> serviceLoaderSupplier =
-        ListCollectingServiceLoader::new;
-    private Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
+    private Supplier<CollectingServiceLoader<MetricsPublishingService>> serviceLoaderSupplier;
+    private final Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
     private BooleanSupplier hasLocator = Locator::hasLocator;
     private BooleanSupplier hasCacheServer = () -> ServerLauncher.getInstance() != null;
 
     @Override
-    public MetricsService build(InternalDistributedSystem system) {
-      return metricsServiceFactory.create(this, loggerSupplier.get(), serviceLoaderSupplier.get(),
+    public MetricsService build(InternalDistributedSystem system,
+        ClassLoaderService classLoaderService) {
+      CollectingServiceLoader<MetricsPublishingService> loaderSupplier =
+          serviceLoaderSupplier != null ? serviceLoaderSupplier.get()
+              : new ListCollectingServiceLoader<>(classLoaderService);
+
+      return metricsServiceFactory.create(this, loggerSupplier.get(), loaderSupplier,
           compositeRegistrySupplier.get(), persistentMeterRegistries, meterBinderSupplier.get(),
           system, isClient, hasLocator.getAsBoolean(), hasCacheServer.getAsBoolean());
     }

@@ -40,6 +40,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -53,7 +55,8 @@ public class AcceptorImplIntegrationTest {
   @Before
   public void setUp() throws Exception {
     cache = (InternalCache) new CacheFactory().create();
-    serverConnectionFactory = new ServerConnectionFactory();
+    serverConnectionFactory = new ServerConnectionFactory(new DefaultClassLoaderServiceImpl(
+        LogService.getLogger()));
   }
 
   @After

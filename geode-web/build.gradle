@@ -35,6 +35,7 @@ dependencies {
   //a container that has geode-core on the classpath, is prevents duplicating jars. geode-core
   //in particular should not be duplicated in the war.
   providedCompile(project(':geode-logging'))
+  compileOnly(project(':geode-core'))
   providedCompile(project(':geode-serialization'))
   providedCompile(project(':geode-gfsh')) {
     exclude module: 'spring-web'
@@ -54,13 +55,16 @@ dependencies {
   runtimeOnly('org.springframework:spring-oxm')
   runtimeOnly('commons-fileupload:commons-fileupload')
 
+  testCompileOnly(project(':geode-core'))
   testImplementation(project(':geode-junit'))
   testImplementation('org.springframework:spring-test')
 
+  integrationTestImplementation(project(':geode-common-services'));
   integrationTestImplementation(project(':geode-dunit'));
 
   integrationTestRuntimeOnly(files(war.destinationDir))
 
+  distributedTestImplementation(project(':geode-common-services'))
   distributedTestImplementation(project(':geode-common'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')

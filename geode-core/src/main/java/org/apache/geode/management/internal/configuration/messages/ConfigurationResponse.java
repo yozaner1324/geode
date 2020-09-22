@@ -40,6 +40,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 public class ConfigurationResponse implements DataSerializableFixedID {
 
@@ -60,7 +61,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
       SerializationContext context) throws IOException {
     DataSerializer.writeHashMap(requestedConfiguration, out);
     DataSerializer.writeHashMap(jarNames, out);
-    DataSerializer.writeBoolean(Boolean.valueOf(failedToGetSharedConfig), out);
+    DataSerializer.writeBoolean(failedToGetSharedConfig, out);
   }
 
   @Override
@@ -82,15 +83,15 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   }
 
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder stringBuilder = new StringBuilder();
     Set<String> configNames = requestedConfiguration.keySet();
     for (String configName : configNames) {
-      sb.append("\n" + requestedConfiguration.get(configName));
+      stringBuilder.append("\n").append(requestedConfiguration.get(configName));
     }
-    return sb.toString();
+    return stringBuilder.toString();
   }
 
-  public String describeConfig() {
+  public String describeConfig(ClassLoaderService classLoaderService) {
     StringBuffer sb = new StringBuffer();
     if (requestedConfiguration.isEmpty()) {
       sb.append("Received an empty shared configuration");
@@ -118,7 +119,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
           try {
             String cacheXmlContent = config.getCacheXmlContent();
             if (StringUtils.isNotBlank(cacheXmlContent)) {
-              sb.append("\n" + XmlUtils.prettyXml(cacheXmlContent));
+              sb.append("\n" + XmlUtils.prettyXml(cacheXmlContent, classLoaderService));
             }
           } catch (IOException | TransformerFactoryConfigurationError | TransformerException
               | SAXException | ParserConfigurationException e) {

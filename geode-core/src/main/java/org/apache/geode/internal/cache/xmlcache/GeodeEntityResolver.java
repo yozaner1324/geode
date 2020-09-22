@@ -50,7 +50,7 @@ public class GeodeEntityResolver extends DefaultEntityResolver2 {
 
     Matcher matcher = SYSTEM_ID_ROOT.matcher(systemId);
     if (matcher.find()) {
-      return getClassPathInputSource(publicId, systemId, matcher.replaceFirst(CLASSPATH_ROOT));
+      return getInputSourceForPath(publicId, systemId, matcher.replaceFirst(CLASSPATH_ROOT));
     }
 
     return null;

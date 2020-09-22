@@ -19,15 +19,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Unit test for {@link PivotalEntityResolver} and {@link DefaultEntityResolver2}.
@@ -57,12 +60,17 @@ public abstract class AbstractEntityResolverTest {
   @Test
   public void testDiscovery() {
     boolean found = false;
-    final ServiceLoader<EntityResolver2> entityResolvers =
-        ServiceLoader.load(EntityResolver2.class, ClassPathLoader.getLatestAsClassLoader());
-    for (final EntityResolver2 entityResolver : entityResolvers) {
-      if (getEntityResolver().getClass().isAssignableFrom(entityResolver.getClass())) {
-        found = true;
-        break;
+    ClassLoaderService classLoaderService =
+        new DefaultClassLoaderServiceImpl(LogService.getLogger());
+    ServiceResult<Set<DefaultEntityResolver2>> serviceLoadResult =
+        classLoaderService.loadService(DefaultEntityResolver2.class);
+    if (serviceLoadResult.isSuccessful()) {
+      for (DefaultEntityResolver2 geodeEntityResolver : serviceLoadResult.getMessage()) {
+        geodeEntityResolver.init(classLoaderService);
+        if (getEntityResolver().getClass().isAssignableFrom(geodeEntityResolver.getClass())) {
+          found = true;
+          break;
+        }
       }
     }
     assertTrue("Resolver not found.", found);

@@ -17,24 +17,25 @@ package org.apache.geode.internal.cache.client.protocol;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 public class ClientProtocolServiceLoader {
   private final List<ClientProtocolService> clientProtocolServices;
 
-  public ClientProtocolServiceLoader() {
-    clientProtocolServices = initializeProtocolServices();
+  public ClientProtocolServiceLoader(ClassLoaderService classLoaderService) {
+    clientProtocolServices = initializeProtocolServices(classLoaderService);
   }
 
-  private static List<ClientProtocolService> initializeProtocolServices() {
+  private List<ClientProtocolService> initializeProtocolServices(
+      ClassLoaderService classLoaderService) {
     List<ClientProtocolService> resultList = new LinkedList<>();
-    for (ClientProtocolService clientProtocolService : ServiceLoader
-        .load(ClientProtocolService.class)) {
-      resultList.add(clientProtocolService);
-    }
-
+    classLoaderService.loadService(ClientProtocolService.class)
+        .ifSuccessful(clientProtocolServices -> clientProtocolServices.forEach((service -> {
+          service.init(classLoaderService);
+          resultList.add(service);
+        })));
     return resultList;
   }
 
@@ -48,7 +49,6 @@ public class ClientProtocolServiceLoader {
       throw new ServiceLoadingFailureException(
           "There is more than one ClientProtocolService implementation found in JVM; aborting");
     }
-    ClientProtocolService clientProtocolService = clientProtocolServices.get(0);
-    return clientProtocolService;
+    return clientProtocolServices.get(0);
   }
 }

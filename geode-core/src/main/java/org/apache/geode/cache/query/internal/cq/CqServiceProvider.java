@@ -18,17 +18,20 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class CqServiceProvider {
 
   @Immutable
-  private static final CqServiceFactory factory;
+  private static CqServiceFactory factory;
 
   /**
    * System property to maintain the CQ event references for optimizing the updates. This will allow
@@ -54,12 +57,30 @@ public class CqServiceProvider {
     }
   }
 
-  public static CqService create(InternalCache cache) {
+  public static synchronized CqService create(InternalCache cache,
+      ClassLoaderService classLoaderService) {
+    setup(classLoaderService);
     if (factory == null) {
       return new MissingCqService();
     }
 
     return factory.create(cache);
+  }
+
+  private static void setup(ClassLoaderService classLoaderService) {
+    if (factory == null) {
+      ServiceResult<Set<CqServiceFactory>> loadServiceResult =
+          classLoaderService.loadService(CqServiceFactory.class);
+      if (loadServiceResult.isSuccessful()) {
+        for (CqServiceFactory cqServiceFactory : loadServiceResult.getMessage()) {
+          factory = cqServiceFactory;
+          factory.initialize();
+          break;
+        }
+      } else {
+        factory = null;
+      }
+    }
   }
 
   public static ServerCQ readCq(DataInput in) throws ClassNotFoundException, IOException {

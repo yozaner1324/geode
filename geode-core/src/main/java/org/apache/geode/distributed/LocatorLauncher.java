@@ -91,6 +91,7 @@ import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.util.HostUtils;
 import org.apache.geode.management.internal.util.JsonUtil;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -715,7 +716,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
               getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients(),
-              Paths.get(workingDirectory));
+              Paths.get(workingDirectory),
+              new DefaultClassLoaderServiceImpl(LogService.getLogger()));
         } finally {
           ProcessLauncherContext.remove();
         }

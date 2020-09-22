@@ -81,7 +81,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CancellationException;
@@ -277,6 +276,8 @@ import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * GemFire's implementation of a distributed {@link Cache}.
@@ -618,6 +619,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final CountDownLatch isClosedLatch = new CountDownLatch(1);
 
+  private final ClassLoaderService classLoaderService;
+
   /**
    * Set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
    * synchronized via {@link #allGatewaySendersLock}
@@ -864,7 +867,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
       InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-      boolean useAsyncEventListeners, TypeRegistry typeRegistry) {
+      boolean useAsyncEventListeners, TypeRegistry typeRegistry,
+      ClassLoaderService classLoaderService) {
     this(isClient,
         poolFactory,
         internalDistributedSystem,
@@ -901,7 +905,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         BackupService::new,
         ClientMetadataService::new,
         TXEntryState.getFactory(),
-        ReplyProcessor21::new);
+        ReplyProcessor21::new, classLoaderService);
   }
 
   @VisibleForTesting
@@ -915,7 +919,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       InternalSecurityServiceFactory securityServiceFactory,
       Supplier<Boolean> isPoolManagerEmpty,
       Function<InternalDistributedSystem, ManagementListener> managementListenerFactory,
-      Function<InternalCache, CqService> cqServiceFactory,
+      InternalCqServiceFactory cqServiceFactory,
       CachePerfStatsFactory cachePerfStatsFactory,
       TXManagerImplFactory txManagerImplFactory,
       Supplier<PersistentMemberManager> persistentMemberManagerFactory,
@@ -941,7 +945,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       Function<InternalCache, BackupService> backupServiceFactory,
       Function<Cache, ClientMetadataService> clientMetadataServiceFactory,
       TXEntryStateFactory txEntryStateFactory,
-      ReplyProcessor21Factory replyProcessor21Factory) {
+      ReplyProcessor21Factory replyProcessor21Factory, ClassLoaderService classLoaderService) {
     this.isClient = isClient;
     this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig;
@@ -955,6 +959,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.functionServiceRegisterFunction = functionServiceRegisterFunction;
     this.systemTimerFactory = systemTimerFactory;
     this.replyProcessor21Factory = replyProcessor21Factory;
+    this.classLoaderService = classLoaderService;
 
     // Synchronized to prevent a new cache from being created before an old one finishes closing
     synchronized (GemFireCacheImpl.class) {
@@ -1004,7 +1009,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       rootRegions = new ConcurrentHashMap<>();
 
-      cqService = cqServiceFactory.apply(this);
+      cqService = cqServiceFactory.create(this, classLoaderService);
 
       // Create the CacheStatistics
       statisticsClock = StatisticsClockFactory.clock(system.getConfig().getEnableTimeStatistics());
@@ -1308,7 +1313,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       // log the configuration received from the locator
       logger.info("Received cluster configuration from the locator");
-      logger.info(response.describeConfig());
+      logger.info(response.describeConfig(classLoaderService));
 
       Configuration clusterConfig = response.getRequestedConfiguration().get(CLUSTER_CONFIG);
       Properties clusterSecProperties =
@@ -1498,16 +1503,22 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Initialize any services provided as extensions to the cache using service loader.
    */
   private void initializeServices() {
-    ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
-    for (CacheService service : loader) {
-      try {
-        if (service.init(this)) {
-          services.put(service.getInterface(), service);
-          logger.info("Initialized cache service {}", service.getClass().getName());
+    ServiceResult<Set<CacheService>> loadedServices =
+        classLoaderService.loadService(CacheService.class);
+    if (loadedServices.isSuccessful()) {
+      for (CacheService service : loadedServices.getMessage()) {
+        try {
+          if (service.init(this, classLoaderService)) {
+            this.services.put(service.getInterface(), service);
+            logger.info("Initialized cache service {}", service.getClass().getName());
+          }
+        } catch (Exception ex) {
+          logger.warn("Cache service " + service.getClass().getName() + " failed to initialize",
+              ex);
         }
-      } catch (Exception ex) {
-        logger.warn("Cache service " + service.getClass().getName() + " failed to initialize", ex);
       }
+    } else {
+      logger.warn(loadedServices.getErrorMessage());
     }
   }
 
@@ -3703,7 +3714,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     stopper.checkCancelInProgress(null);
 
     InternalCacheServer server = new ServerBuilder(this, securityService,
-        StatisticsClockFactory.disabledClock()).createServer();
+        StatisticsClockFactory.disabledClock(), classLoaderService).createServer();
     allCacheServers.add(server);
 
     sendAddCacheServerProfileMessage();
@@ -3797,7 +3808,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         "GatewayReceiver must be added before adding a server endpoint.");
 
     InternalCacheServer receiverServer = new ServerBuilder(this, securityService,
-        StatisticsClockFactory.disabledClock())
+        StatisticsClockFactory.disabledClock(), classLoaderService)
             .forGatewayReceiver(receiver).createServer();
     gatewayReceiverServer.set(receiverServer);
 
@@ -4193,9 +4204,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         writer.write(replacedXmlString);
         writer.flush();
 
-        xml = CacheXmlParser.parse(new ByteArrayInputStream(baos.toByteArray()));
+        xml =
+            CacheXmlParser.parse(new ByteArrayInputStream(baos.toByteArray()), classLoaderService);
       } else {
-        xml = CacheXmlParser.parse(is);
+        xml = CacheXmlParser.parse(is, classLoaderService);
       }
       xml.create(this);
     } catch (IOException e) {
@@ -4884,12 +4896,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory() {
-    return WANServiceProvider.createGatewaySenderFactory(this);
+    return WANServiceProvider.createGatewaySenderFactory(this, classLoaderService);
   }
 
   @Override
   public GatewayReceiverFactory createGatewayReceiverFactory() {
-    return WANServiceProvider.createGatewayReceiverFactory(this);
+    return WANServiceProvider.createGatewayReceiverFactory(this, classLoaderService);
   }
 
   @Override
@@ -5297,5 +5309,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   interface ReplyProcessor21Factory {
     ReplyProcessor21 create(InternalDistributedSystem system,
         Collection<InternalDistributedMember> initMembers);
+  }
+
+  @FunctionalInterface
+  @VisibleForTesting
+  interface InternalCqServiceFactory {
+    CqService create(InternalCache internalCache, ClassLoaderService classLoaderService);
   }
 }

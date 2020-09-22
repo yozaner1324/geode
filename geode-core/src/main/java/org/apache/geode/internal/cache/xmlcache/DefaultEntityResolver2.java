@@ -16,12 +16,14 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Default behavior for EntityResolver2 implementations.
@@ -31,6 +33,8 @@ import org.apache.geode.internal.ClassPathLoader;
  * @since GemFire 8.1
  */
 public abstract class DefaultEntityResolver2 implements EntityResolver2 {
+
+  protected ClassLoaderService classLoaderService;
 
   @Override
   public InputSource resolveEntity(final String publicId, final String systemId)
@@ -44,10 +48,8 @@ public abstract class DefaultEntityResolver2 implements EntityResolver2 {
     return null;
   }
 
-  @Override
-  public InputSource resolveEntity(final String name, final String publicId, final String baseURI,
-      final String systemId) throws SAXException, IOException {
-    return null;
+  public void init(ClassLoaderService classLoaderService) {
+    this.classLoaderService = classLoaderService;
   }
 
   /**
@@ -57,18 +59,19 @@ public abstract class DefaultEntityResolver2 implements EntityResolver2 {
    * @return InputSource if resource found, otherwise null.
    * @since GemFire 8.1
    */
-  protected InputSource getClassPathInputSource(final String publicId, final String systemId,
+  protected InputSource getInputSourceForPath(final String publicId, final String systemId,
       final String path) {
-    final InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), path);
-    if (null == stream) {
-      return null;
+    ServiceResult<List<InputStream>> serviceResult =
+        classLoaderService.getResourceAsStream(path);
+    if (serviceResult.isSuccessful()) {
+      final InputStream stream = serviceResult.getMessage().get(0);
+      final InputSource inputSource = new InputSource(stream);
+      inputSource.setPublicId(publicId);
+      inputSource.setSystemId(systemId);
+
+      return inputSource;
     }
-
-    final InputSource inputSource = new InputSource(stream);
-    inputSource.setPublicId(publicId);
-    inputSource.setSystemId(systemId);
-
-    return inputSource;
+    return null;
   }
 
 }

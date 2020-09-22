@@ -66,6 +66,8 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -74,7 +76,7 @@ public class GMSMembershipJUnitTest {
   private static final Version OLDER_THAN_CURRENT_VERSION =
       Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL - 1));
   private static final Version NEWER_THAN_CURRENT_VERSION =
-      Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL + 1));;
+      Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL + 1));
   private static final int DEFAULT_PORT = 8888;
 
   private Services services;
@@ -161,7 +163,8 @@ public class GMSMembershipJUnitTest {
     messageListener = mock(MessageListener.class);
     directChannelCallback = mock(LifecycleListener.class);
     manager = new GMSMembership(listener, messageListener, directChannelCallback);
-    manager.getGMSManager().init(services);
+    manager.getGMSManager().init(services,
+        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
     when(services.getManager()).thenReturn(manager.getGMSManager());
 
     DSFIDSerializer serializer = new DSFIDSerializerImpl();

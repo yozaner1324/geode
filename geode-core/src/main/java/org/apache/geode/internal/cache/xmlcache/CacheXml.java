@@ -15,8 +15,7 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
@@ -28,7 +27,7 @@ import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link org.apache.geode.cache.Cache}
@@ -36,7 +35,7 @@ import org.apache.geode.internal.ClassPathLoader;
  *
  * @since GemFire 3.0
  */
-public abstract class CacheXml implements EntityResolver2, ErrorHandler {
+public abstract class CacheXml extends DefaultEntityResolver2 implements ErrorHandler {
 
   /**
    * This always refers to the latest GemFire version, in those cases where we default to the
@@ -342,7 +341,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String LOCK_LEASE = "lock-lease";
   /** The name of the <code>search-timeout</code> attribute */
   public static final String SEARCH_TIMEOUT = "search-timeout";
-  /** The name of the <code>message-synch-interval</code> attribute */
+  /** The name of the <code>message-sync-interval</code> attribute */
   public static final String MESSAGE_SYNC_INTERVAL = "message-sync-interval";
   /** The name of the <code>dynamic-region-factory</code> element */
   protected static final String DYNAMIC_REGION_FACTORY = "dynamic-region-factory";
@@ -564,9 +563,9 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /** The name of the <code>index-update-type</code> element */
   protected static final String INDEX_UPDATE_TYPE = "index-update-type";
   /** The name of the <code>update-type</code> value */
-  protected static final String INDEX_UPDATE_TYPE_ASYNCH = "asynchronous";
+  protected static final String INDEX_UPDATE_TYPE_ASYNC = "asynchronous";
   /** The name of the <code>update-type</code> value */
-  protected static final String INDEX_UPDATE_TYPE_SYNCH = "synchronous";
+  protected static final String INDEX_UPDATE_TYPE_SYNC = "synchronous";
   /** The name of the <code>from-clause</code> attribute */
   protected static final String FROM_CLAUSE = "from-clause";
   /** The name of the <code>expression</code> attribute */
@@ -837,11 +836,9 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
                                                                  // assume the latest
       return resolveEntityByEntityResolvers(name, publicId, baseURI, systemId);
     }
-    InputSource result;
-    InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
-    if (stream != null) {
-      result = new InputSource(stream);
-    } else {
+
+    InputSource result = getInputSourceForPath(publicId, systemId, location);
+    if (result == null) {
       throw new SAXNotRecognizedException(
           String.format("DTD not found: %s", location));
     }
@@ -878,13 +875,16 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    */
   private InputSource resolveEntityByEntityResolvers(String name, String publicId, String baseURI,
       String systemId) throws SAXException, IOException {
-    final ServiceLoader<EntityResolver2> entityResolvers =
-        ServiceLoader.load(EntityResolver2.class, ClassPathLoader.getLatest().asClassLoader());
-    for (final EntityResolver2 entityResolver : entityResolvers) {
-      final InputSource inputSource =
-          entityResolver.resolveEntity(name, publicId, baseURI, systemId);
-      if (null != inputSource) {
-        return inputSource;
+    ServiceResult<Set<DefaultEntityResolver2>> serviceResult =
+        classLoaderService.loadService(DefaultEntityResolver2.class);
+    if (serviceResult.isSuccessful()) {
+      for (DefaultEntityResolver2 defaultEntityResolver2 : serviceResult.getMessage()) {
+        defaultEntityResolver2.init(classLoaderService);
+        final InputSource inputSource =
+            defaultEntityResolver2.resolveEntity(name, publicId, baseURI, systemId);
+        if (null != inputSource) {
+          return inputSource;
+        }
       }
     }
     return null;

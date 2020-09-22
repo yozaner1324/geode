@@ -28,6 +28,8 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
@@ -61,6 +63,8 @@ public class MembershipDependenciesJUnitTest {
 
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(type(AvailablePortHelper.class))
+              .or(type(ClassLoaderService.class))
+              .or(type(DefaultClassLoaderServiceImpl.class))
 
               // TODO: we dursn't depend on the test package cause it depends on pkgs in geode-core
               .or(resideInAPackage("org.apache.geode.test..")));

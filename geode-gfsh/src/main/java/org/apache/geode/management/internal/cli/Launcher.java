@@ -28,9 +28,12 @@ import org.springframework.shell.core.ExitShellRequest;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.ArgumentRedactor;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Launcher class for :
@@ -85,7 +88,7 @@ public class Launcher {
 
   private final Set<String> allowedCommandLineCommands;
   private final OptionParser commandLineParser;
-  private StartupTimeLogHelper startupTimeLogHelper;
+  private final StartupTimeLogHelper startupTimeLogHelper;
 
   protected Launcher() {
     this.startupTimeLogHelper = new StartupTimeLogHelper();
@@ -127,14 +130,15 @@ public class Launcher {
     }
 
     Launcher launcher = new Launcher();
-    int exitValue = launcher.parseCommandLine(args);
+    int exitValue =
+        launcher.parseCommandLine(new DefaultClassLoaderServiceImpl(LogService.getLogger()), args);
     ExitCode.fromValue(exitValue).doSystemExit();
   }
 
-  private int parseCommandLineCommand(final String... args) {
+  private int parseCommandLineCommand(ClassLoaderService classLoaderService, final String... args) {
     Gfsh gfsh = null;
     try {
-      gfsh = Gfsh.getInstance(false, args, new GfshConfig());
+      gfsh = Gfsh.getInstance(false, args, new GfshConfig(), classLoaderService);
       this.startupTimeLogHelper.logStartupTime();
     } catch (IllegalStateException isex) {
       System.err.println("ERROR : " + isex.getMessage());
@@ -180,7 +184,7 @@ public class Launcher {
     return exitRequest.getExitCode();
   }
 
-  private int parseOptions(final String... args) {
+  private int parseOptions(ClassLoaderService classLoaderService, final String... args) {
     OptionSet parsedOptions;
     try {
       parsedOptions = this.commandLineParser.parse(args);
@@ -197,7 +201,7 @@ public class Launcher {
 
     Gfsh gfsh = null;
     try {
-      gfsh = Gfsh.getInstance(launchShell, args, new GfshConfig());
+      gfsh = Gfsh.getInstance(launchShell, args, new GfshConfig(), classLoaderService);
       this.startupTimeLogHelper.logStartupTime();
     } catch (IllegalStateException isex) {
       System.err.println("ERROR : " + isex.getMessage());
@@ -237,12 +241,12 @@ public class Launcher {
     return exitRequest.getExitCode();
   }
 
-  private int parseCommandLine(final String... args) {
+  private int parseCommandLine(ClassLoaderService classLoaderService, final String... args) {
     if (args.length > 0 && !args[0].startsWith(GfshParser.SHORT_OPTION_SPECIFIER)) {
-      return parseCommandLineCommand(args);
+      return parseCommandLineCommand(classLoaderService, args);
     }
 
-    return parseOptions(args);
+    return parseOptions(classLoaderService, args);
   }
 
   private void log(Throwable t, Gfsh gfsh) {

@@ -53,6 +53,8 @@ import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -73,7 +75,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   @Test
   public void parseIndex() throws FileNotFoundException {
     RegionCreation region = createRegionCreation("region");
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index1", new String[] {"a", "b", "c", "d"});
     expectedIndexes.put("index2", new String[] {"f", "g"});
     validateExpectedIndexes(region, expectedIndexes);
@@ -108,7 +110,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
 
     // Validate expected indexes
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index", new String[] {"a", "b", "c"});
     validateExpectedIndexes(region, expectedIndexes);
 
@@ -127,7 +129,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
 
     // Validate expected indexes
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index", new String[] {"a"});
     validateExpectedIndexes(region, expectedIndexes);
 
@@ -142,7 +144,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
 
     // Validate expected indexes
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index", new String[] {"a"});
     validateExpectedIndexes(region, expectedIndexes);
 
@@ -159,7 +161,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
 
     // Validate expected indexes
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index", new String[] {"a"});
     validateExpectedIndexes(region, expectedIndexes);
 
@@ -169,7 +171,9 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   }
 
   private RegionCreation createRegionCreation(String regionName) throws FileNotFoundException {
-    CacheXmlParser parser = CacheXmlParser.parse(new FileInputStream(getXmlFileForTest()));
+    CacheXmlParser parser = CacheXmlParser.parse(new FileInputStream(getXmlFileForTest()),
+        new DefaultClassLoaderServiceImpl(
+            LogService.getLogger()));
     CacheCreation cacheCreation = parser.getCacheCreation();
     // Some of the tests in this class needs to have the declarables initialized.
     // cacheCreation.create(InternalCache) would do this but it was too much work

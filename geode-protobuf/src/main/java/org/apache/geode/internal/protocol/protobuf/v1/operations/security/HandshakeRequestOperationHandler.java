@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations.security;
 
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -34,10 +33,17 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 public class HandshakeRequestOperationHandler implements
     ProtobufOperationHandler<ConnectionAPI.HandshakeRequest, ConnectionAPI.HandshakeResponse> {
   private static final Logger logger = LogService.getLogger();
+  private final ClassLoaderService classLoaderService;
+
+  public HandshakeRequestOperationHandler(ClassLoaderService classLoaderService) {
+    this.classLoaderService = classLoaderService;
+  }
 
   @Override
   public Result<ConnectionAPI.HandshakeResponse> process(
@@ -73,11 +79,13 @@ public class HandshakeRequestOperationHandler implements
   }
 
   private ValueSerializer loadSerializer(String valueFormat) throws ConnectionStateException {
-    ServiceLoader<ValueSerializer> serviceLoader = ServiceLoader.load(ValueSerializer.class);
-    for (Iterator<ValueSerializer> iterator = serviceLoader.iterator(); iterator.hasNext();) {
-      ValueSerializer serializer = iterator.next();
-      if (serializer.getID().equals(valueFormat)) {
-        return serializer;
+    ServiceResult<Set<ValueSerializer>> valueSerializerServiceResult =
+        classLoaderService.loadService(ValueSerializer.class);
+    if (valueSerializerServiceResult.isSuccessful()) {
+      for (ValueSerializer serializer : valueSerializerServiceResult.getMessage()) {
+        if (serializer.getID().equals(valueFormat)) {
+          return serializer;
+        }
       }
     }
 

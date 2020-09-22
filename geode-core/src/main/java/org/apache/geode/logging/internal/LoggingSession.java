@@ -29,6 +29,7 @@ import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.LogFile;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Configures the logging {@code Configuration} and provides lifecycle to Geode logging.
@@ -36,7 +37,8 @@ import org.apache.geode.logging.internal.spi.LogFile;
 public class LoggingSession implements InternalSessionContext {
 
   static final boolean STANDARD_OUTPUT_ALWAYS_ON =
-      Boolean.valueOf(System.getProperty(GEMFIRE_PREFIX + "standard-output-always-on", "false"));
+      Boolean.parseBoolean(
+          System.getProperty(GEMFIRE_PREFIX + "standard-output-always-on", "false"));
 
   private static final Logger logger = LogService.getLogger();
 
@@ -49,8 +51,8 @@ public class LoggingSession implements InternalSessionContext {
 
   private State state = STOPPED;
 
-  public static LoggingSession create() {
-    return create(Configuration.create(), LoggingSessionRegistryProvider.get());
+  public static LoggingSession create(ClassLoaderService classLoaderService) {
+    return create(Configuration.create(classLoaderService), LoggingSessionRegistryProvider.get());
   }
 
   @VisibleForTesting

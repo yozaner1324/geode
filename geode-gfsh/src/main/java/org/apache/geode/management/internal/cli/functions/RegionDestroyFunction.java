@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.apache.geode.cache.Region.SEPARATOR;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -60,7 +59,8 @@ public class RegionDestroyFunction implements InternalFunction<String> {
         return;
       }
 
-      Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
+      InternalCache cache =
+          ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
       Region<?, ?> region = cache.getRegion(regionPath);
       // the region is already destroyed by another member
       if (region == null) {
@@ -73,7 +73,10 @@ public class RegionDestroyFunction implements InternalFunction<String> {
 
       String regionName =
           regionPath.startsWith(SEPARATOR) ? regionPath.substring(1) : regionPath;
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
+
+      XmlEntity xmlEntity =
+          new XmlEntity(CacheXml.REGION, "name", regionName,
+              cache.getInternalDistributedSystem().getClassLoaderService());
       context.getResultSender().lastResult(new CliFunctionResult(memberName, xmlEntity,
           String.format("Region '%s' destroyed successfully", regionPath)));
 

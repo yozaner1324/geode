@@ -113,6 +113,7 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 import org.apache.geode.security.AuthTokenEnabledComponents;
+import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
@@ -137,9 +138,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   public static final int MAX_POOL_SIZE =
       Integer.getInteger(GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
   public static final int POOL_IDLE_TIMEOUT = 60 * 1000;
-
-  private static final Logger logger = LogService.getLogger();
-
   /**
    * system property name for forcing an locator distribution manager type
    */
@@ -155,7 +153,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public static final String LOCATORS_PREFERRED_AS_COORDINATORS =
       GEMFIRE_PREFIX + "disable-floating-coordinator";
-
+  private static final Logger logger = LogService.getLogger();
   /**
    * the locator hosted by this JVM. As of 7.0 it is a singleton.
    *
@@ -211,6 +209,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private WanLocatorDiscoverer locatorDiscoverer;
   private InternalConfigurationPersistenceService configurationPersistenceService;
   private ClusterManagementService clusterManagementService;
+
+  private ClassLoaderService classLoaderService;
   // synchronization lock that ensures we only have one thread performing location services
   // restart at a time
   private final Object servicesRestartLock = new Object();
@@ -258,17 +258,17 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    * @param startDistributedSystem if true then this locator will also start its own ds
    *
    * @deprecated Please use
-   *             {@link #createLocator(int, LoggingSession, File, InternalLogWriter, InternalLogWriter, InetAddress, String, Properties, Path)}
+   *             {@link #createLocator(int, LoggingSession, File, InternalLogWriter, InternalLogWriter, InetAddress, String, Properties, Path, ModuleService)}
    *             instead.
    */
   @Deprecated
   public static InternalLocator createLocator(int port, LoggingSession loggingSession, File logFile,
       InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
       String hostnameForClients, Properties distributedSystemProperties,
-      boolean startDistributedSystem) {
+      boolean startDistributedSystem, ClassLoaderService classLoaderService) {
     return createLocator(port, loggingSession, logFile, logWriter, securityLogWriter, bindAddress,
         hostnameForClients, distributedSystemProperties,
-        Paths.get(System.getProperty("user.dir")));
+        Paths.get(System.getProperty("user.dir")), classLoaderService);
   }
 
   /**
@@ -288,7 +288,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public static InternalLocator createLocator(int port, LoggingSession loggingSession, File logFile,
       InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
-      String hostnameForClients, Properties distributedSystemProperties, Path workingDirectory) {
+      String hostnameForClients, Properties distributedSystemProperties, Path workingDirectory,
+      ClassLoaderService classLoaderService) {
     synchronized (locatorLock) {
       if (hasLocator()) {
         throw new IllegalStateException(
@@ -297,7 +298,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       InternalLocator locator =
           new InternalLocator(port, loggingSession, logFile, logWriter, securityLogWriter,
               bindAddress, hostnameForClients, distributedSystemProperties, null,
-              workingDirectory);
+              workingDirectory, classLoaderService);
       InternalLocator.locator = locator;
       return locator;
     }
@@ -333,11 +334,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logWriter,
       InternalLogWriter securityLogWriter, InetAddress bindAddress, boolean startDistributedSystem,
-      Properties distributedSystemProperties, String hostnameForClients)
+      Properties distributedSystemProperties, String hostnameForClients,
+      ClassLoaderService classLoaderService)
       throws IOException {
     return startLocator(port, logFile, logWriter, securityLogWriter, bindAddress,
         startDistributedSystem, distributedSystemProperties, hostnameForClients,
-        Paths.get(System.getProperty("user.dir")));
+        Paths.get(System.getProperty("user.dir")), classLoaderService);
   }
 
   /**
@@ -360,7 +362,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logWriter,
       InternalLogWriter securityLogWriter, InetAddress bindAddress, boolean startDistributedSystem,
-      Properties distributedSystemProperties, String hostnameForClients, Path workingDirectory)
+      Properties distributedSystemProperties, String hostnameForClients, Path workingDirectory,
+      ClassLoaderService classLoaderService)
       throws IOException {
     System.setProperty(FORCE_LOCATOR_DM_TYPE, "true");
     InternalLocator newLocator = null;
@@ -370,11 +373,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
       // if startDistributedSystem is true then Locator uses a NullLoggingSession (does nothing)
       LoggingSession loggingSession =
-          startDistributedSystem ? NullLoggingSession.create() : LoggingSession.create();
+          startDistributedSystem ? NullLoggingSession.create()
+              : LoggingSession.create(classLoaderService);
 
       newLocator = createLocator(port, loggingSession, logFile, logWriter, securityLogWriter,
           bindAddress, hostnameForClients, distributedSystemProperties,
-          workingDirectory);
+          workingDirectory, classLoaderService);
 
       loggingSession.createSession(newLocator);
       loggingSession.startSession();
@@ -467,7 +471,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   InternalLocator(int port, LoggingSession loggingSession, File logFile,
       InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
       String hostnameForClients, Properties distributedSystemProperties,
-      DistributionConfigImpl distributionConfig, Path workingDirectory) {
+      DistributionConfigImpl distributionConfig, Path workingDirectory,
+      ClassLoaderService classLoaderService) {
+    this.classLoaderService = classLoaderService;
     this.logFile = logFile;
     this.bindAddress = bindAddress;
     this.hostnameForClients = hostnameForClients;
@@ -526,7 +532,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     SocketCreatorFactory.setDistributionConfig(this.distributionConfig);
 
-    locatorListener = WANServiceProvider.createLocatorMembershipListener();
+    locatorListener = WANServiceProvider.createLocatorMembershipListener(classLoaderService);
     if (locatorListener != null) {
       // We defer setting the port until the handler is init'd - that way we'll have an actual port
       // in the case where we're starting with port = 0.
@@ -556,7 +562,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               .setConfig(config)
               .setPort(port)
               .setBindAddress(bindAddress)
-              .setProtocolChecker(new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader()))
+              .setProtocolChecker(new ProtocolCheckerImpl(this,
+                  new ClientProtocolServiceLoader(classLoaderService)))
               .setFallbackHandler(handler)
               .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
               .setLocatorStats(locatorStats)
@@ -677,9 +684,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   public static InternalLocator startLocator(int locatorPort, File logFile,
       InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
       Properties distributedSystemProperties, boolean peerLocator, boolean serverLocator,
-      String hostnameForClients, boolean b1) throws IOException {
+      String hostnameForClients, boolean b1, ClassLoaderService classLoaderService)
+      throws IOException {
     return startLocator(locatorPort, logFile, logWriter, securityLogWriter, bindAddress, true,
-        distributedSystemProperties, hostnameForClients);
+        distributedSystemProperties, hostnameForClients, classLoaderService);
   }
 
   /**
@@ -741,7 +749,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       internalDistributedSystem =
           InternalDistributedSystem
               .connectInternal(distributedSystemProperties, null,
-                  new InternalDistributedSystemMetricsService.Builder(),
+                  new InternalDistributedSystemMetricsService.Builder(), classLoaderService,
                   membershipLocator);
 
       if (peerLocator) {
@@ -764,7 +772,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     InternalCache internalCache = GemFireCacheImpl.getInstance();
     if (internalCache == null) {
       logger.info("Creating cache for locator.");
-      this.internalCache = new InternalCacheBuilder(system.getProperties())
+      this.internalCache = new InternalCacheBuilder(system.getProperties(), classLoaderService)
           .create((InternalDistributedSystem) system);
       internalCache = this.internalCache;
     } else {
@@ -858,7 +866,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       InternalDistributedSystem.addConnectListener(this);
     }
 
-    locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
+    locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer(classLoaderService);
     if (locatorDiscoverer != null) {
       locatorDiscoverer.discover(getPort(), distributionConfig, locatorListener,
           hostnameForClients);
@@ -1228,7 +1236,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (isSharedConfigurationEnabled()) {
       configurationPersistenceService =
           new InternalConfigurationPersistenceService(newCache, workingDirectory,
-              JAXBService.create());
+              JAXBService.create(), classLoaderService);
       startClusterManagementService();
     }
 
@@ -1383,7 +1391,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       // configurationPersistenceService will already be created in case of auto-reconnect
       configurationPersistenceService =
           new InternalConfigurationPersistenceService(internalCache, workingDirectory,
-              JAXBService.create());
+              JAXBService.create(), classLoaderService);
     }
     configurationPersistenceService
         .initSharedConfiguration(loadFromSharedConfigDir());
