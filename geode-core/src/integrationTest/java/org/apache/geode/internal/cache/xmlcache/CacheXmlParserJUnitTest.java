@@ -39,8 +39,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Test cases for {@link CacheXmlParser}.
@@ -77,7 +75,6 @@ public class CacheXmlParserJUnitTest {
   @Test
   public void testGetDelegate() {
     final TestCacheXmlParser cacheXmlParser = new TestCacheXmlParser();
-    cacheXmlParser.init(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
     assertThat(cacheXmlParser.getDelegates()).as("delegates should be empty.").isEmpty();
 
     final MockXmlParser delegate = (MockXmlParser) cacheXmlParser.getDelegate(NAMESPACE_URI);
@@ -180,15 +177,13 @@ public class CacheXmlParserJUnitTest {
   @Test
   public void testDTDFallbackWithNonEnglishLocal() {
     CacheXmlParser.parse(this.getClass().getResourceAsStream(
-        "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"));
 
     final Locale previousLocale = Locale.getDefault();
     try {
       Locale.setDefault(Locale.JAPAN);
       CacheXmlParser.parse(this.getClass().getResourceAsStream(
-          "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"),
-          new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+          "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"));
     } finally {
       Locale.setDefault(previousLocale);
     }

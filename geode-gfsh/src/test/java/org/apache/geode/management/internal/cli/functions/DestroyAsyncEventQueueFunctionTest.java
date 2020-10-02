@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -69,7 +68,7 @@ public class DestroyAsyncEventQueueFunctionTest {
   @SuppressWarnings("deprecation")
   public void execute_validAeqId_OK() {
     XmlEntity xmlEntity = mock(XmlEntity.class);
-    doReturn(xmlEntity).when(function).getAEQXmlEntity(anyString(), anyString(), any());
+    doReturn(xmlEntity).when(function).getAEQXmlEntity(anyString(), anyString());
     when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(mockAEQ);
 
     function.execute(mockContext);

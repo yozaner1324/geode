@@ -97,7 +97,6 @@ import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.logging.internal.OSProcess;
-import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 
@@ -200,8 +199,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-  public void init(Services<ID> service,
-      ClassLoaderService classLoaderService) throws MembershipConfigurationException {
+  public void init(Services<ID> service) throws MembershipConfigurationException {
     this.services = service;
 
     MembershipConfig config = services.getConfig();

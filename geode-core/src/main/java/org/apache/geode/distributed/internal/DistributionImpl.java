@@ -78,7 +78,6 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 public class DistributionImpl implements Distribution {
   private static final Logger logger = LogService.getLogger();
@@ -114,8 +113,7 @@ public class DistributionImpl implements Distribution {
       final InternalDistributedSystem system,
       final MembershipListener<InternalDistributedMember> listener,
       final MessageListener<InternalDistributedMember> messageListener,
-      final MembershipLocator<InternalDistributedMember> locator,
-      ClassLoaderService classLoaderService) {
+      final MembershipLocator<InternalDistributedMember> locator) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -139,7 +137,7 @@ public class DistributionImpl implements Distribution {
           .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
       membership = MembershipBuilder.newMembershipBuilder(
           socketCreator, locatorClient, InternalDataSerializer.getDSFIDSerializer(),
-          new ClusterDistributionManager.ClusterDistributionManagerIDFactory(), classLoaderService)
+          new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
           .setMembershipLocator(locator)
           .setAuthenticator(
               new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
@@ -214,12 +212,11 @@ public class DistributionImpl implements Distribution {
       InternalDistributedSystem system,
       MembershipListener<InternalDistributedMember> listener,
       MessageListener<InternalDistributedMember> messageListener,
-      final MembershipLocator<InternalDistributedMember> locator,
-      ClassLoaderService classLoaderService) {
+      final MembershipLocator<InternalDistributedMember> locator) {
 
     DistributionImpl distribution =
         new DistributionImpl(clusterDistributionManager, transport, system, listener,
-            messageListener, locator, classLoaderService);
+            messageListener, locator);
     distribution.start();
     return distribution;
   }

@@ -27,8 +27,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 
 public class GfshHistoryJUnitTest {
@@ -64,8 +62,7 @@ public class GfshHistoryJUnitTest {
 
   @Test
   public void testHistoryFileIsCreated() throws Exception {
-    Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig);
     gfsh.executeScriptLine("connect");
 
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
@@ -75,8 +72,7 @@ public class GfshHistoryJUnitTest {
 
   @Test
   public void testHistoryFileDoesNotContainPasswords() throws Exception {
-    Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig);
     gfsh.executeScriptLine("connect --password=foo");
 
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
@@ -85,8 +81,7 @@ public class GfshHistoryJUnitTest {
 
   @Test
   public void testClearHistory() throws Exception {
-    Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig);
     gfsh.executeScriptLine("connect");
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
     assertEquals(2, lines.size());

@@ -23,12 +23,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.shell.core.CommandMarker;
 
+import org.apache.geode.internal.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.services.result.ServiceResult;
 
 /**
@@ -40,7 +40,7 @@ public class ConnectionsCommandManagerTest {
 
   @Before
   public void before() {
-    commandManager = new CommandManager(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    commandManager = new CommandManager();
   }
 
   /**

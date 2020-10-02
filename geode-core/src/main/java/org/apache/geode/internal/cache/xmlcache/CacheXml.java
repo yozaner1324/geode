@@ -879,7 +879,6 @@ public abstract class CacheXml extends DefaultEntityResolver2 implements ErrorHa
         classLoaderService.loadService(DefaultEntityResolver2.class);
     if (serviceResult.isSuccessful()) {
       for (DefaultEntityResolver2 defaultEntityResolver2 : serviceResult.getMessage()) {
-        defaultEntityResolver2.init(classLoaderService);
         final InputSource inputSource =
             defaultEntityResolver2.resolveEntity(name, publicId, baseURI, systemId);
         if (null != inputSource) {

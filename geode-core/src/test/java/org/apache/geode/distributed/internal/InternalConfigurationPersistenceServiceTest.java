@@ -53,11 +53,9 @@ import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.config.JAXBServiceTest;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementOne;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementTwo;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 @RunWith(JUnitParamsRunner.class)
 public class InternalConfigurationPersistenceServiceTest {
@@ -72,11 +70,9 @@ public class InternalConfigurationPersistenceServiceTest {
   @Before
   public void setUp() {
     service = spy(new InternalConfigurationPersistenceService(
-        JAXBService.createWithValidation(CacheConfig.class, ElementOne.class, ElementTwo.class),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger())));
+        JAXBService.createWithValidation(CacheConfig.class, ElementOne.class, ElementTwo.class)));
     service2 = spy(new InternalConfigurationPersistenceService(
-        JAXBService.createWithValidation(CacheConfig.class), new DefaultClassLoaderServiceImpl(
-            LogService.getLogger())));
+        JAXBService.createWithValidation(CacheConfig.class)));
     configuration = new Configuration("cluster");
 
     doReturn(configuration).when(service).getConfiguration(any());
@@ -217,8 +213,7 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void removeDuplicateGatewayReceiversWithDefaultProperties() throws Exception {
     Document document =
-        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDefaultPropertiesXml(),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDefaultPropertiesXml());
     System.out
         .println("Initial document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
@@ -231,8 +226,7 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void removeInvalidGatewayReceiversWithDifferentHostNameForSenders() throws Exception {
     Document document =
-        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentHostNameForSendersXml(),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentHostNameForSendersXml());
     System.out
         .println("Initial document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
@@ -245,8 +239,7 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void removeInvalidGatewayReceiversWithDifferentBindAddresses() throws Exception {
     Document document =
-        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentBindAddressesXml(),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentBindAddressesXml());
     System.out
         .println("Initial document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
@@ -259,8 +252,7 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void keepValidGatewayReceiversWithDefaultBindAddress() throws Exception {
     Document document =
-        XmlUtils.createDocumentFromXml(getSingleReceiverWithDefaultBindAddressXml(),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        XmlUtils.createDocumentFromXml(getSingleReceiverWithDefaultBindAddressXml());
     System.out
         .println("Initial document:" + System.lineSeparator() + "" + XmlUtils.prettyXml(document));
     assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
@@ -279,8 +271,7 @@ public class InternalConfigurationPersistenceServiceTest {
     System.out.println(
         "Initial xml content:" + System.lineSeparator() + "" + configuration.getCacheXmlContent());
     Document document =
-        XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectedInitialElements);
     Set<Map.Entry<String, Configuration>> configurationEntries = new HashSet<>();
@@ -290,8 +281,7 @@ public class InternalConfigurationPersistenceServiceTest {
     System.out.println("Processed xml content:" + System.lineSeparator() + ""
         + configuration.getCacheXmlContent());
     document =
-        XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectFinalElements);
   }
@@ -300,8 +290,7 @@ public class InternalConfigurationPersistenceServiceTest {
   public void dontUnlockSharedConfigurationIfNoLockedPreviously() {
     JAXBService jaxbService = mock(JAXBService.class);
     InternalConfigurationPersistenceService cps =
-        spy(new InternalConfigurationPersistenceService(jaxbService,
-            new DefaultClassLoaderServiceImpl(LogService.getLogger())));
+        spy(new InternalConfigurationPersistenceService(jaxbService));
     doReturn(false).when(cps).lockSharedConfiguration();
     cps.createConfigurationResponse(null);
     verify(cps, times(0)).unlockSharedConfiguration();

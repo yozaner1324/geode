@@ -23,8 +23,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPointJUnitTest;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Unit test for {@link RegionCreation}.
@@ -41,8 +39,7 @@ public class RegionCreationJUnitTest {
    */
   @Test
   public void testGetExtensionPoint() {
-    final CacheCreation cache = new CacheCreation(new DefaultClassLoaderServiceImpl(
-        LogService.getLogger()));
+    final CacheCreation cache = new CacheCreation();
     final RegionCreation region = new RegionCreation(cache, "test");
     final ExtensionPoint<Region<?, ?>> extensionPoint = region.getExtensionPoint();
     assertNotNull(extensionPoint);

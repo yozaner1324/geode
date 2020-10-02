@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.configuration.domain;
 
 import static java.util.Arrays.asList;
-import static org.apache.geode.internal.JarDeployer.getArtifactId;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -38,13 +37,13 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.deployment.jar.DeployJarFileUtils;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Domain object for all the configuration related data.
@@ -89,13 +88,13 @@ public class Configuration implements DataSerializable {
     this.cacheXmlContent = cacheXmlContent;
   }
 
-  public void setCacheXmlFile(File cacheXmlFile, ClassLoaderService classLoaderService)
+  public void setCacheXmlFile(File cacheXmlFile)
       throws IOException {
     if (cacheXmlFile.length() == 0) {
       cacheXmlContent = "";
     } else {
       try {
-        Document doc = XmlUtils.getDocumentBuilder(classLoaderService).parse(cacheXmlFile);
+        Document doc = XmlUtils.getDocumentBuilder().parse(cacheXmlFile);
         cacheXmlContent = XmlUtils.elementToString(doc);
       } catch (SAXException | TransformerException | ParserConfigurationException e) {
         throw new IOException("Unable to parse existing cluster configuration from file: "
@@ -138,8 +137,9 @@ public class Configuration implements DataSerializable {
   }
 
   public void putDeployment(Deployment deployment) {
-    String artifactId = getArtifactId(deployment.getFileName());
-    deployments.values().removeIf(d -> getArtifactId(d.getFileName()).equals(artifactId));
+    String artifactId = DeployJarFileUtils.getArtifactId(deployment.getFileName());
+    deployments.values().removeIf(
+        d -> DeployJarFileUtils.getArtifactId(d.getFileName()).equals(artifactId));
     deployments.put(deployment.getId(), deployment);
   }
 

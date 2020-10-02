@@ -20,7 +20,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.metrics.MetricsSession;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * A metrics session that can be started and stopped, and that manages a meter registry.
@@ -85,6 +84,6 @@ public interface MetricsService extends MetricsSession {
     /**
      * Builds a metrics service associated with the given system.
      */
-    MetricsService build(InternalDistributedSystem system, ClassLoaderService classLoaderService);
+    MetricsService build(InternalDistributedSystem system);
   }
 }

@@ -48,8 +48,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.DiskStoreAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 
 @SuppressWarnings("serial")
@@ -65,7 +63,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     final String regionName = "testCompressor";
 
     final CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setCompressor(SnappyCompressor.getDefaultInstance());
     /* Region regionBefore = */ cache.createRegion(regionName, attrs);
@@ -90,7 +88,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
   @Test
   public void testIndexXmlCreation() throws Exception {
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setScope(Scope.DISTRIBUTED_ACK);
     attrs.setDataPolicy(DataPolicy.REPLICATE);
@@ -187,7 +185,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
   @Test
   public void testCacheServerDisableTcpNoDelay() throws Exception {
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     CacheServer cs = cache.addCacheServer();
     cs.setPort(0);
@@ -201,7 +199,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
   @Test
   public void testCacheServerEnableTcpNoDelay() throws Exception {
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     CacheServer cs = cache.addCacheServer();
     cs.setPort(0);
@@ -215,7 +213,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
   @Test
   public void testDiskUsage() throws Exception {
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     DiskStoreAttributesCreation disk = new DiskStoreAttributesCreation();
     disk.setDiskUsageWarningPercentage(97);

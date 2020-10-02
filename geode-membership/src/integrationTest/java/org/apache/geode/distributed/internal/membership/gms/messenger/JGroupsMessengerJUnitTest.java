@@ -98,8 +98,6 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -195,7 +193,7 @@ public class JGroupsMessengerJUnitTest {
     when(services.getStatistics()).thenReturn(new DefaultMembershipStatistics());
 
     messenger = new JGroupsMessenger<>();
-    messenger.init(services, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    messenger.init(services);
 
     // if I do this earlier then test this return messenger as null
     when(services.getMessenger()).thenReturn(messenger);
@@ -908,7 +906,7 @@ public class JGroupsMessengerJUnitTest {
         new MembershipInformationImpl(messenger.myChannel,
             new ConcurrentLinkedQueue<>(), null);
     JGroupsMessenger newMessenger = new JGroupsMessenger();
-    newMessenger.init(services, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    newMessenger.init(services);
     newMessenger.start();
     newMessenger.started();
     newMessenger.stop();

@@ -46,8 +46,6 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -99,8 +97,7 @@ public class CacheServerImplTest {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
         true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, a -> advisor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     Acceptor acceptor = server.createAcceptor(overflowAttributes);
 
@@ -112,8 +109,7 @@ public class CacheServerImplTest {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
         true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, a -> advisor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup = "group0";
 
     server.setGroups(new String[] {specifiedGroup});
@@ -127,8 +123,7 @@ public class CacheServerImplTest {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
         true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, a -> advisor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup1 = "group1";
     String specifiedGroup2 = "group2";
     String specifiedGroup3 = "group3";
@@ -146,8 +141,7 @@ public class CacheServerImplTest {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
         true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, a -> advisor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     assertThat(server.getCombinedGroups())
         .contains(membershipGroup);
@@ -163,8 +157,7 @@ public class CacheServerImplTest {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
         true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, a -> advisor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     assertThat(server.getCombinedGroups())
         .contains(membershipGroup1, membershipGroup2, membershipGroup3);
@@ -180,8 +173,7 @@ public class CacheServerImplTest {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
         true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, a -> advisor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup1 = "group1";
     String specifiedGroup2 = "group2";
     String specifiedGroup3 = "group3";
@@ -198,8 +190,7 @@ public class CacheServerImplTest {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
         true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, a -> advisor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     server.start();
 
@@ -211,8 +202,7 @@ public class CacheServerImplTest {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
         true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, a -> advisor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        (a, b, c) -> clientHealthMonitor, a -> advisor);
     server.start();
 
     server.stop();

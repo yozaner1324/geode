@@ -104,7 +104,7 @@ public class InternalCacheBuilderTestUtil {
       InternalDistributedSystem constructedSystem) {
     InternalDistributedSystemConstructor constructor =
         mock(InternalDistributedSystemConstructor.class, "internal distributed system constructor");
-    when(constructor.construct(any(), any(), any(), any()))
+    when(constructor.construct(any(), any(), any()))
         .thenReturn(constructedSystem);
     return constructor;
   }
@@ -112,7 +112,7 @@ public class InternalCacheBuilderTestUtil {
   public static InternalCacheConstructor constructorOf(InternalCache constructedCache) {
     InternalCacheConstructor constructor =
         mock(InternalCacheConstructor.class, "internal cache constructor");
-    when(constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any()))
+    when(constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any()))
         .thenReturn(constructedCache);
     return constructor;
   }
@@ -138,13 +138,13 @@ public class InternalCacheBuilderTestUtil {
       };
 
   public static final InternalDistributedSystemConstructor THROWING_SYSTEM_CONSTRUCTOR =
-      (configProperties, securityConfig, userMeterRegistries, classLoaderService) -> {
+      (configProperties, securityConfig, userMeterRegistries) -> {
         throw new AssertionError("throwing system constructor");
       };
 
   public static final InternalCacheConstructor THROWING_CACHE_CONSTRUCTOR =
       (isClient, poolFactory, internalDistributedSystem, cacheConfig, useAsyncEventListeners,
-          typeRegistry, classLoaderService) -> {
+          typeRegistry) -> {
         throw new AssertionError("throwing cache constructor");
       };
 }

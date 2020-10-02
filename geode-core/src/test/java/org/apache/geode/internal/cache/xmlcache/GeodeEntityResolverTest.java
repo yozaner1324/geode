@@ -19,22 +19,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 public class GeodeEntityResolverTest {
 
   private static final GeodeEntityResolver geodeEntityResolver = new GeodeEntityResolver();
-
-  @BeforeClass
-  public static void setup() {
-    geodeEntityResolver.init(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
-  }
 
   @Test
   public void resolvesWithHttpUrl() throws IOException, SAXException {

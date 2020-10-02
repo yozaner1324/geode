@@ -25,6 +25,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class ProtobufProtocolServiceJUnitTest {
+
   @Test
   public void initializeStatistics() {
     ProtobufProtocolService service = new ProtobufProtocolService();

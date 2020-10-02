@@ -19,14 +19,13 @@ import org.apache.geode.distributed.internal.membership.api.MemberStartupExcepti
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Membership services in GMS all implement this interface
  *
  */
 public interface Service<ID extends MemberIdentifier> {
-  void init(Services<ID> service, ClassLoaderService classLoaderService)
+  void init(Services<ID> service)
       throws MembershipConfigurationException;
 
   /**

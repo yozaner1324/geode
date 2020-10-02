@@ -75,8 +75,7 @@ public class RegionDestroyFunction implements InternalFunction<String> {
           regionPath.startsWith(SEPARATOR) ? regionPath.substring(1) : regionPath;
 
       XmlEntity xmlEntity =
-          new XmlEntity(CacheXml.REGION, "name", regionName,
-              cache.getInternalDistributedSystem().getClassLoaderService());
+          new XmlEntity(CacheXml.REGION, "name", regionName);
       context.getResultSender().lastResult(new CliFunctionResult(memberName, xmlEntity,
           String.format("Region '%s' destroyed successfully", regionPath)));
 

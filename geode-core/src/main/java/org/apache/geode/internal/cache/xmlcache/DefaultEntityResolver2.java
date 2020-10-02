@@ -22,6 +22,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
@@ -36,6 +38,19 @@ public abstract class DefaultEntityResolver2 implements EntityResolver2 {
 
   protected ClassLoaderService classLoaderService;
 
+  public DefaultEntityResolver2() {
+    this.classLoaderService = getClassLoaderService();
+  }
+
+  private ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
+  }
+
   @Override
   public InputSource resolveEntity(final String publicId, final String systemId)
       throws SAXException, IOException {
@@ -46,10 +61,6 @@ public abstract class DefaultEntityResolver2 implements EntityResolver2 {
   public InputSource getExternalSubset(final String name, final String baseURI)
       throws SAXException, IOException {
     return null;
-  }
-
-  public void init(ClassLoaderService classLoaderService) {
-    this.classLoaderService = classLoaderService;
   }
 
   /**

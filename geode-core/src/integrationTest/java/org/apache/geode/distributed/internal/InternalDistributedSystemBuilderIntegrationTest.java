@@ -26,11 +26,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 public class InternalDistributedSystemBuilderIntegrationTest {
 
@@ -40,7 +38,7 @@ public class InternalDistributedSystemBuilderIntegrationTest {
   @Before
   public void setup() {
     metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any(), any())).thenReturn(mock(MetricsService.class));
+    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
   }
 
   @After
@@ -55,9 +53,8 @@ public class InternalDistributedSystemBuilderIntegrationTest {
     configProperties.setProperty(NAME, theName);
 
     system =
-        new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder,
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()))
-                .build();
+        new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder)
+            .build();
 
     assertThat(system.isConnected()).isTrue();
     assertThat(system.getName()).isEqualTo(theName);
@@ -71,10 +68,9 @@ public class InternalDistributedSystemBuilderIntegrationTest {
     SecurityConfig securityConfig = new SecurityConfig(theSecurityManager, thePostProcessor);
     Properties configProperties = new Properties();
 
-    system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()))
-            .setSecurityConfig(securityConfig)
-            .build();
+    system = new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder)
+        .setSecurityConfig(securityConfig)
+        .build();
 
     assertThat(system.getSecurityService().getSecurityManager())
         .isSameAs(theSecurityManager);

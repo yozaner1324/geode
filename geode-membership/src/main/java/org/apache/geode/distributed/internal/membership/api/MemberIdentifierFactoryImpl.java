@@ -20,12 +20,11 @@ import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * The default {@link MemberIdentifierFactory} which produces {@link MemberIdentifier} objects. For
  * use in
- * {@link MembershipBuilder#newMembershipBuilder(TcpSocketCreator, TcpClient, DSFIDSerializer, MemberIdentifierFactory, ClassLoaderService)}
+ * {@link MembershipBuilder#newMembershipBuilder(TcpSocketCreator, TcpClient, DSFIDSerializer, MemberIdentifierFactory)}
  */
 public class MemberIdentifierFactoryImpl
     implements MemberIdentifierFactory<MemberIdentifier> {

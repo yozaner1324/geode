@@ -26,7 +26,6 @@ import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Provides logging configuration by managing a {@link LoggingProvider} for the logging backend.
@@ -78,9 +77,9 @@ public class Configuration implements LogConfigListener {
     this.loggingProvider = loggingProvider;
   }
 
-  public static Configuration create(ClassLoaderService classLoaderService) {
+  public static Configuration create() {
     return create(getLogLevelUpdateOccurs(), getLogLevelUpdateScope(),
-        new LoggingProviderLoader(classLoaderService)
+        new LoggingProviderLoader()
             .load());
   }
 
@@ -91,9 +90,9 @@ public class Configuration implements LogConfigListener {
 
   @VisibleForTesting
   public static Configuration create(final LogLevelUpdateOccurs logLevelUpdateOccurs,
-      final LogLevelUpdateScope logLevelUpdateScope, ClassLoaderService classLoaderService) {
+      final LogLevelUpdateScope logLevelUpdateScope) {
     return create(logLevelUpdateOccurs, logLevelUpdateScope,
-        new LoggingProviderLoader(classLoaderService).load());
+        new LoggingProviderLoader().load());
   }
 
   @VisibleForTesting

@@ -26,10 +26,10 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.internal.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.services.result.ServiceResult;
 
 /**
@@ -66,7 +66,6 @@ public abstract class AbstractEntityResolverTest {
         classLoaderService.loadService(DefaultEntityResolver2.class);
     if (serviceLoadResult.isSuccessful()) {
       for (DefaultEntityResolver2 geodeEntityResolver : serviceLoadResult.getMessage()) {
-        geodeEntityResolver.init(classLoaderService);
         if (getEntityResolver().getClass().isAssignableFrom(geodeEntityResolver.getClass())) {
           found = true;
           break;

@@ -52,9 +52,7 @@ import org.apache.geode.cache.CacheExistsException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalCacheConstructor;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalDistributedSystemConstructor;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.MetricsService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Unit tests for {@link InternalCacheBuilder} when
@@ -81,8 +79,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         null, new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         constructorOf(constructedSystem()),
-        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache()),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache()));
 
     assertThatThrownBy(internalCacheBuilder::create)
         .isInstanceOf(NullPointerException.class);
@@ -93,8 +90,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), null, metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         constructorOf(constructedSystem()),
-        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache()),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache()));
 
     assertThatThrownBy(internalCacheBuilder::create)
         .isInstanceOf(NullPointerException.class);
@@ -109,12 +105,11 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         configProperties, new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
-        systemConstructor, THROWING_CACHE_SUPPLIER, constructorOf(constructedCache),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        systemConstructor, THROWING_CACHE_SUPPLIER, constructorOf(constructedCache));
 
     internalCacheBuilder.create();
 
-    verify(systemConstructor).construct(same(configProperties), any(), any(), any());
+    verify(systemConstructor).construct(same(configProperties), any(), any());
   }
 
   @Test
@@ -124,7 +119,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         constructorOf(constructedSystem()), THROWING_CACHE_SUPPLIER,
-        constructorOf(constructedCache), new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        constructorOf(constructedCache));
 
     InternalCache result = internalCacheBuilder.create();
 
@@ -138,8 +133,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
-        constructorOf(constructedSystem), THROWING_CACHE_SUPPLIER, constructorOf(constructedCache),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        constructorOf(constructedSystem), THROWING_CACHE_SUPPLIER, constructorOf(constructedCache));
 
     internalCacheBuilder.create();
 
@@ -154,13 +148,12 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
-        constructorOf(constructedSystem), THROWING_CACHE_SUPPLIER, cacheConstructor,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        constructorOf(constructedSystem), THROWING_CACHE_SUPPLIER, cacheConstructor);
 
     internalCacheBuilder.create();
 
     verify(cacheConstructor)
-        .construct(anyBoolean(), any(), same(constructedSystem), any(), anyBoolean(), any(), any());
+        .construct(anyBoolean(), any(), same(constructedSystem), any(), anyBoolean(), any());
   }
 
 
@@ -169,8 +162,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR);
 
     Throwable thrown = catchThrowable(() -> internalCacheBuilder.create(null));
 
@@ -184,8 +176,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache), new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache));
 
     InternalCache result = internalCacheBuilder
         .create(systemWithNoCache());
@@ -201,8 +192,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache), new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache));
 
     internalCacheBuilder
         .create(givenSystem);
@@ -219,14 +209,13 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, cacheConstructor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, cacheConstructor);
 
     internalCacheBuilder
         .create(givenSystem);
 
     verify(cacheConstructor)
-        .construct(anyBoolean(), any(), same(givenSystem), any(), anyBoolean(), any(), any());
+        .construct(anyBoolean(), any(), same(givenSystem), any(), anyBoolean(), any());
   }
 
   @Test
@@ -238,8 +227,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache), new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, constructorOf(constructedCache));
 
     InternalCache result = internalCacheBuilder
         .create(givenSystem);
@@ -256,8 +244,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
-        THROWING_SYSTEM_CONSTRUCTOR, THROWING_CACHE_SUPPLIER, constructorOf(constructedCache),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        THROWING_SYSTEM_CONSTRUCTOR, THROWING_CACHE_SUPPLIER, constructorOf(constructedCache));
 
     internalCacheBuilder
         .create(givenSystem);
@@ -275,14 +262,13 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, cacheConstructor, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, cacheConstructor);
 
     internalCacheBuilder
         .create(givenSystem);
 
     verify(cacheConstructor)
-        .construct(anyBoolean(), any(), same(givenSystem), any(), anyBoolean(), any(), any());
+        .construct(anyBoolean(), any(), same(givenSystem), any(), anyBoolean(), any());
   }
 
   @Test
@@ -293,8 +279,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR);
 
     Throwable thrown = catchThrowable(() -> internalCacheBuilder
         .setIsExistingOk(false)
@@ -311,8 +296,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR);
 
     ignoreThrowable(() -> internalCacheBuilder
         .setIsExistingOk(false)
@@ -331,8 +315,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), throwingCacheConfig(thrownByCacheConfig), metricsSessionBuilder,
         THROWING_SYSTEM_SUPPLIER,
-        THROWING_SYSTEM_CONSTRUCTOR, THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        THROWING_SYSTEM_CONSTRUCTOR, THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR);
 
     Throwable thrown = catchThrowable(() -> internalCacheBuilder
         .setIsExistingOk(true)
@@ -351,7 +334,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         new Properties(), throwingCacheConfig(new IllegalStateException("incompatible")),
         metricsSessionBuilder,
         THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR, THROWING_CACHE_SUPPLIER,
-        THROWING_CACHE_CONSTRUCTOR, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        THROWING_CACHE_CONSTRUCTOR);
 
     ignoreThrowable(() -> internalCacheBuilder
         .setIsExistingOk(true)
@@ -368,8 +351,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
         THROWING_SYSTEM_CONSTRUCTOR,
-        THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR);
 
     InternalCache result = internalCacheBuilder
         .setIsExistingOk(true)
@@ -386,8 +368,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(), metricsSessionBuilder, THROWING_SYSTEM_SUPPLIER,
-        THROWING_SYSTEM_CONSTRUCTOR, THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        THROWING_SYSTEM_CONSTRUCTOR, THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR);
 
     internalCacheBuilder
         .setIsExistingOk(true)

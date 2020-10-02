@@ -40,10 +40,8 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -204,8 +202,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
         configurationRegion.get(ConfigurationPersistenceService.CLUSTER_CONFIG);
 
     // Verify the configuration contains no gateway-receiver elements
-    Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectedReceivers);
   }

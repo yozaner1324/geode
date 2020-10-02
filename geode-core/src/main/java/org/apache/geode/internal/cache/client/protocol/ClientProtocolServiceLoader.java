@@ -18,24 +18,32 @@ package org.apache.geode.internal.cache.client.protocol;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 public class ClientProtocolServiceLoader {
   private final List<ClientProtocolService> clientProtocolServices;
 
-  public ClientProtocolServiceLoader(ClassLoaderService classLoaderService) {
-    clientProtocolServices = initializeProtocolServices(classLoaderService);
+  private final ClassLoaderService classLoaderService;
+
+  public ClientProtocolServiceLoader() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+
+    classLoaderService = result.getMessage();
+    clientProtocolServices = initializeProtocolServices();
   }
 
-  private List<ClientProtocolService> initializeProtocolServices(
-      ClassLoaderService classLoaderService) {
+  private List<ClientProtocolService> initializeProtocolServices() {
     List<ClientProtocolService> resultList = new LinkedList<>();
     classLoaderService.loadService(ClientProtocolService.class)
-        .ifSuccessful(clientProtocolServices -> clientProtocolServices.forEach((service -> {
-          service.init(classLoaderService);
-          resultList.add(service);
-        })));
+        .ifSuccessful(resultList::addAll);
     return resultList;
   }
 

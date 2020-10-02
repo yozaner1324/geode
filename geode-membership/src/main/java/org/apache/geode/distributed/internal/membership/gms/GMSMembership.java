@@ -64,7 +64,6 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -1869,8 +1868,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     @Override
     /* Service interface */
-    public void init(Services<ID> services,
-        ClassLoaderService classLoaderService) throws MembershipConfigurationException {
+    public void init(Services<ID> services) throws MembershipConfigurationException {
       GMSMembership.this.services = services;
 
       MembershipConfig config = services.getConfig();

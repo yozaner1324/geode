@@ -43,9 +43,7 @@ import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationRequiredException;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -72,13 +70,12 @@ public class ServerConnectionTest {
     when(inetAddress.getHostAddress()).thenReturn("localhost");
     when(socket.getInetAddress()).thenReturn(inetAddress);
 
-    serverConnection =
-        new ServerConnectionFactory(new DefaultClassLoaderServiceImpl(LogService.getLogger()))
-            .makeServerConnection(socket,
-                mock(InternalCache.class),
-                mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, null,
-                CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor,
-                mock(SecurityService.class));
+    serverConnection = new ServerConnectionFactory()
+        .makeServerConnection(socket,
+            mock(InternalCache.class),
+            mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, null,
+            CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor,
+            mock(SecurityService.class));
 
     serverConnection.setHandshake(handshake);
   }

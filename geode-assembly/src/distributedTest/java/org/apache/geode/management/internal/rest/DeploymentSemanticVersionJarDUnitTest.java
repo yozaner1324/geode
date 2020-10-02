@@ -30,13 +30,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -217,8 +221,17 @@ public class DeploymentSemanticVersionJarDUnitTest {
       throws Exception {
     assertThat(ClassPathLoader.getLatest().getJarDeployer()
         .getDeployedJar(artifactId)).isNotNull();
-    Class<?> klass = ClassPathLoader.getLatest().forName(className);
+    Class<?> klass = getClassLoaderService().forName(className).getMessage().get(0);
     assertThat(klass).isNotNull();
     assertThat(klass.getMethod("getVersion").invoke(klass.newInstance())).isEqualTo(version);
+  }
+
+  private static ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
   }
 }

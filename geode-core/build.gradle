@@ -319,6 +319,7 @@ dependencies {
     //Geode-common has annotations and other pieces used geode-core
     api(project(':geode-common'))
     implementation(project(':geode-logging'))
+    implementation(project(':geode-jar-deployer'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-unsafe'))
     implementation(project(':geode-serialization'))
@@ -354,7 +355,6 @@ dependencies {
     testRuntime('commons-validator:commons-validator')
     testRuntime('com.pholser:junit-quickcheck-generators')
 
-  integrationTestImplementation(project(":geode-common-services"))
   integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
@@ -381,8 +381,6 @@ dependencies {
     integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
     distributedTestImplementation(project(':geode-gfsh'))
-    distributedTestImplementation(project(':geode-common-services'))
-
     distributedTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }

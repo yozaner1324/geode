@@ -41,8 +41,6 @@ import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 
 public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
@@ -55,8 +53,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   /** make sure we can create regions with concurrencyChecksEnabled=true */
   @Test
   public void testConcurrencyChecksEnabled() throws Exception {
-    CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    CacheCreation cache = new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setScope(Scope.DISTRIBUTED_ACK);
     attrs.setDataPolicy(DataPolicy.REPLICATE);
@@ -112,7 +109,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   @Test
   public void testGatewayConflictResolver() throws Exception {
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     cache.setGatewayConflictResolver(new MyGatewayConflictResolver());
     testXml(cache);
     Cache c = getCache();
@@ -126,7 +123,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   public void testAsyncEventQueue() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     String id = "WBCLChannel";
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
@@ -162,7 +159,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   public void testConcurrentAsyncEventQueue() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     String id = "WBCLChannel";
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
@@ -201,7 +198,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
   public void testAsyncEventQueueWithGatewayEventFilter() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     String id = "WBCLChannel";
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();

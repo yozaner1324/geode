@@ -33,8 +33,6 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class AlterAsyncEventQueueCommandTest {
@@ -51,8 +49,7 @@ public class AlterAsyncEventQueueCommandTest {
   public void setUp() {
     command = spy(AlterAsyncEventQueueCommand.class);
     service =
-        spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger())));
+        spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class)));
     configRegion = mock(AbstractRegion.class);
 
     doReturn(service).when(command).getConfigurationPersistenceService();

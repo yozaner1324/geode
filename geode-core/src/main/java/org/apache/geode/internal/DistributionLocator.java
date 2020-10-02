@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -154,8 +153,7 @@ public class DistributionLocator {
       try {
 
         InternalLocator locator = InternalLocator.startLocator(port, new File(DEFAULT_LOG_FILE),
-            null, null, address, true, (Properties) null, hostnameForClients,
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+            null, null, address, true, (Properties) null, hostnameForClients);
 
         ManagerInfo.setLocatorStarted(directory, port, address);
         locator.waitToStop();

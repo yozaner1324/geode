@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
@@ -30,6 +31,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.AcceptMessages;
 import org.apache.geode.internal.protocol.protobuf.v1.state.RequireAuthentication;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -41,8 +43,17 @@ public class HandshakeRequestOperationHandler implements
   private static final Logger logger = LogService.getLogger();
   private final ClassLoaderService classLoaderService;
 
-  public HandshakeRequestOperationHandler(ClassLoaderService classLoaderService) {
-    this.classLoaderService = classLoaderService;
+  public HandshakeRequestOperationHandler() {
+    this.classLoaderService = getClassLoaderService();
+  }
+
+  private ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
   }
 
   @Override

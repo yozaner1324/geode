@@ -87,7 +87,6 @@ import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * The <code>DistributionManager</code> uses a {@link Membership} to distribute
@@ -297,8 +296,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * @param system The distributed system to which this distribution manager will send messages.
    */
   static ClusterDistributionManager create(InternalDistributedSystem system,
-      final MembershipLocator<InternalDistributedMember> membershipLocator,
-      ClassLoaderService classLoaderService) {
+      final MembershipLocator<InternalDistributedMember> membershipLocator) {
 
     ClusterDistributionManager distributionManager = null;
     boolean beforeJoined = true;
@@ -325,8 +323,8 @@ public class ClusterDistributionManager implements DistributionManager {
       long start = System.currentTimeMillis();
 
       distributionManager =
-          new ClusterDistributionManager(system, transport, system.getAlertingService(),
-              membershipLocator, classLoaderService);
+          new ClusterDistributionManager(transport, system, system.getAlertingService(),
+              membershipLocator);
       distributionManager.assertDistributionManagerType();
 
       beforeJoined = false; // we have now joined the system
@@ -431,7 +429,7 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private ClusterDistributionManager(RemoteTransportConfig transport,
       InternalDistributedSystem system, AlertingService alertingService,
-      MembershipLocator<InternalDistributedMember> locator, ClassLoaderService classLoaderService) {
+      MembershipLocator<InternalDistributedMember> locator) {
 
     this.system = system;
     this.transport = transport;
@@ -464,7 +462,7 @@ public class ClusterDistributionManager implements DistributionManager {
       DMListener listener = new DMListener(this);
       distribution = DistributionImpl
           .createDistribution(this, transport, system, listener,
-              this::handleIncomingDMsg, locator, classLoaderService);
+              this::handleIncomingDMsg, locator);
 
       sb.append(System.currentTimeMillis() - start);
 
@@ -495,9 +493,8 @@ public class ClusterDistributionManager implements DistributionManager {
   private ClusterDistributionManager(InternalDistributedSystem system,
       RemoteTransportConfig transport,
       AlertingService alertingService,
-      final MembershipLocator<InternalDistributedMember> membershipLocator,
-      ClassLoaderService classLoaderService) {
-    this(transport, system, alertingService, membershipLocator, classLoaderService);
+      final MembershipLocator<InternalDistributedMember> membershipLocator) {
+    this(transport, system, alertingService, membershipLocator);
 
     boolean finishedConstructor = false;
     try {

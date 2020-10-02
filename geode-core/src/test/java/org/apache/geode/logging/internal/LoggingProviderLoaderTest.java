@@ -23,12 +23,10 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -44,8 +42,7 @@ public class LoggingProviderLoaderTest {
 
   @Before
   public void setUp() {
-    loggingProviderLoader = new LoggingProviderLoader(new DefaultClassLoaderServiceImpl(
-        LogService.getLogger()));
+    loggingProviderLoader = new LoggingProviderLoader();
   }
 
   @Test
@@ -86,8 +83,7 @@ public class LoggingProviderLoaderTest {
 
   @Test
   public void getLoggingProviderReturnsSimpleLoggingProviderByDefault() {
-    LoggingProvider loggingProvider =
-        new LoggingProviderLoader(new DefaultClassLoaderServiceImpl(LogService.getLogger())).load();
+    LoggingProvider loggingProvider = new LoggingProviderLoader().load();
 
     assertThat(loggingProvider).isInstanceOf(SimpleLoggingProvider.class);
   }

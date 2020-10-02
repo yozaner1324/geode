@@ -49,7 +49,7 @@ import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.util.IOUtils;
 
 /**

@@ -26,16 +26,19 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Stores the information such as partition attributes and meta data details
@@ -71,22 +74,9 @@ public class ClientPartitionAdvisor {
 
     this.totalNumBuckets = totalNumBuckets;
     this.colocatedWith = colocatedWith;
-    try {
-      if (partitionResolverName != null) {
-        this.partitionResolver = (PartitionResolver) ClassPathLoader.getLatest()
-            .forName(partitionResolverName).newInstance();
-      }
-    } catch (Exception e) {
-      if (logger.isErrorEnabled()) {
-        logger.error(e.getMessage(), e);
-      }
-
-      throw new InternalGemFireException(
-          String.format("Cannot create an instance of PartitionResolver : %s",
-              partitionResolverName));
-    }
+    createPartitionResolverForName(partitionResolverName);
     if (fpaSet != null) {
-      fixedPAMap = new ConcurrentHashMap<String, List<Integer>>();
+      fixedPAMap = new ConcurrentHashMap<>();
       int totalFPABuckets = 0;
       for (FixedPartitionAttributes fpa : fpaSet) {
         List attrList = new ArrayList();
@@ -99,6 +89,36 @@ public class ClientPartitionAdvisor {
         this.fpaAttrsCompletes = true;
       }
     }
+  }
+
+  private void createPartitionResolverForName(String partitionResolverName) {
+    ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService()
+        .forName(partitionResolverName);
+
+    serviceResult.ifSuccessful(classes -> {
+      try {
+        this.partitionResolver =
+            (PartitionResolver) classes.get(0).newInstance();
+      } catch (IllegalAccessException | InstantiationException e) {
+        logger.error(e);
+        logPartitionResolverError(partitionResolverName);
+      }
+    }).ifFailure(errorMessage -> logPartitionResolverError(partitionResolverName));
+  }
+
+  private void logPartitionResolverError(String partitionResolverName) {
+    throw new InternalGemFireException(
+        String.format("Cannot create an instance of PartitionResolver : %s",
+            partitionResolverName));
+  }
+
+  private ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
   }
 
   public ServerLocation adviseServerLocation(int bucketId) {

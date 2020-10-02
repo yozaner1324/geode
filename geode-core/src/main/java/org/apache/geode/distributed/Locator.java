@@ -23,8 +23,6 @@ import java.util.Properties;
 
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Represents a distribution locator server that provides discovery information to members and
@@ -103,7 +101,7 @@ public abstract class Locator {
    */
   public static Locator startLocator(int port, File logFile) throws IOException {
 
-    return startLocator(port, logFile, false, null, null, true, true,
+    return startLocator(port, logFile, false, (InetAddress) null, (Properties) null, true, true,
         null);
   }
 
@@ -138,7 +136,7 @@ public abstract class Locator {
   public static Locator startLocatorAndDS(int port, File logFile,
       Properties distributedSystemProperties) throws IOException {
 
-    return startLocator(port, logFile, null, distributedSystemProperties, true, true,
+    return startLocator(port, logFile, (InetAddress) null, distributedSystemProperties, true, true,
         null);
   }
 
@@ -168,7 +166,7 @@ public abstract class Locator {
   public static Locator startLocator(int port, File logFile, InetAddress bindAddress)
       throws IOException {
 
-    return startLocator(port, logFile, false, bindAddress, null, true, true, null);
+    return startLocator(port, logFile, false, bindAddress, (Properties) null, true, true, null);
   }
 
 
@@ -252,7 +250,7 @@ public abstract class Locator {
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
     return InternalLocator.startLocator(port, logFile, null, null, bindAddress, true, dsProperties,
-        hostnameForClients, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        hostnameForClients);
   }
 
   /**
@@ -263,8 +261,7 @@ public abstract class Locator {
       InetAddress bindAddress, java.util.Properties dsProperties, boolean peerLocator,
       boolean serverLocator, String hostnameForClients) throws IOException {
     return InternalLocator.startLocator(port, logFile, null, null, bindAddress,
-        startDistributedSystem, dsProperties, hostnameForClients, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        startDistributedSystem, dsProperties, hostnameForClients);
   }
 
   /**

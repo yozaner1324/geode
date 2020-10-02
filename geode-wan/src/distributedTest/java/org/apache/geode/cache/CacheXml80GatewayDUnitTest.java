@@ -37,8 +37,6 @@ import org.apache.geode.cache30.MyGatewayTransportFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter2;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -53,7 +51,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   public void testGatewayReceiverWithManualStartTRUE() throws Exception {
     // getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
     gatewayReceiverFactory.setBindAddress("");
@@ -83,7 +81,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   public void testAsyncEventQueueWithSubstitutionFilter() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     // Create an AsyncEventQueue with GatewayEventSubstitutionFilter.
     String id = getName();
@@ -109,7 +107,7 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
   public void testGatewaySenderWithSubstitutionFilter() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     // Create a GatewaySender with GatewayEventSubstitutionFilter.
     // Don't start the sender to avoid 'Locators must be configured before starting gateway-sender'

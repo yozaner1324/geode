@@ -36,7 +36,6 @@ import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.MetricsPublishingService;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Manages metrics on behalf of an {@code InternalDistributedSystem}.
@@ -245,11 +244,10 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     private BooleanSupplier hasCacheServer = () -> ServerLauncher.getInstance() != null;
 
     @Override
-    public MetricsService build(InternalDistributedSystem system,
-        ClassLoaderService classLoaderService) {
+    public MetricsService build(InternalDistributedSystem system) {
       CollectingServiceLoader<MetricsPublishingService> loaderSupplier =
           serviceLoaderSupplier != null ? serviceLoaderSupplier.get()
-              : new ListCollectingServiceLoader<>(classLoaderService);
+              : new ListCollectingServiceLoader<>();
 
       return metricsServiceFactory.create(this, loggerSupplier.get(), loaderSupplier,
           compositeRegistrySupplier.get(), persistentMeterRegistries, meterBinderSupplier.get(),

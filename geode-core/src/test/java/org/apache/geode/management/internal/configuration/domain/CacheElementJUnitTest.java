@@ -34,11 +34,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlVersion;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
-import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Test cases for {@link CacheElement}.
@@ -50,13 +47,10 @@ import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 public class CacheElementJUnitTest {
 
   private Document loadSchema(final String schemaLocation) throws Exception {
-    ClassLoaderService classLoaderService =
-        new DefaultClassLoaderServiceImpl(LogService.getLogger());
     final CacheXmlParser entityResolver = new CacheXmlParser();
-    entityResolver.init(classLoaderService);
     final XMLReader xmlReader = XMLReaderFactory.createXMLReader();
     xmlReader.setEntityResolver(entityResolver);
-    return XmlUtils.getDocumentBuilder(classLoaderService)
+    return XmlUtils.getDocumentBuilder()
         .parse(entityResolver.resolveEntity(null, schemaLocation).getByteStream());
   }
 
@@ -96,7 +90,7 @@ public class CacheElementJUnitTest {
 
   /**
    * As of 8.1 the cache type requires that certain elements be listed in sequence. This test
-   * verifies that {@link CacheElement#buildElementMap(Document, ClassLoaderService)} produces a
+   * verifies that {@link CacheElement#buildElementMap(Document)} produces a
    * mapping in the correct
    * order. If we change to use choice for all elements then we can abandon this mapping.
    *
@@ -104,14 +98,11 @@ public class CacheElementJUnitTest {
    */
   @Test
   public void testBuildElementMap() throws Exception {
-    DefaultClassLoaderServiceImpl classLoaderService = new DefaultClassLoaderServiceImpl(
-        LogService.getLogger());
     final Document doc = XmlUtils.createDocumentFromReader(
-        new InputStreamReader(this.getClass().getResourceAsStream("CacheElementJUnitTest.xml")),
-        classLoaderService);
+        new InputStreamReader(this.getClass().getResourceAsStream("CacheElementJUnitTest.xml")));
 
     final LinkedHashMap<String, CacheElement> elementMap =
-        CacheElement.buildElementMap(doc, classLoaderService);
+        CacheElement.buildElementMap(doc);
 
     final Iterator<Entry<String, CacheElement>> entries = elementMap.entrySet().iterator();
 

@@ -31,7 +31,6 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -82,8 +81,7 @@ public class CreateJndiBindingCommandDUnitTest {
       Configuration configuration = ccService.getConfiguration("cluster");
       String xmlContent = configuration.getCacheXmlContent();
 
-      Document document = XmlUtils.createDocumentFromXml(xmlContent,
-          new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+      Document document = XmlUtils.createDocumentFromXml(xmlContent);
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
       assertThat(jndiBindings.getLength()).isEqualTo(1);

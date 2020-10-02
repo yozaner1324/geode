@@ -28,8 +28,8 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",

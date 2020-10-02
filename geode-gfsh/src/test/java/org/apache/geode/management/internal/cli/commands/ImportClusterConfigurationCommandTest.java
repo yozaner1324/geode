@@ -39,10 +39,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class ImportClusterConfigurationCommandTest {
@@ -66,8 +64,6 @@ public class ImportClusterConfigurationCommandTest {
     InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
     when(cache.getInternalDistributedSystem())
         .thenReturn(internalDistributedSystem);
-    when(internalDistributedSystem.getClassLoaderService())
-        .thenReturn(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
     command = spy(ImportClusterConfigurationCommand.class);
     ccService = mock(InternalConfigurationPersistenceService.class);
     xmlFile = tempFolder.newFile("my.xml");

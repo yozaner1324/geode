@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan;
 
 import java.util.Set;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
@@ -23,6 +24,7 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
@@ -30,7 +32,18 @@ public class WANServiceProvider {
   @Immutable
   private static WANFactory factory;
 
-  private static void setup(ClassLoaderService classLoaderService) {
+  private static final ClassLoaderService classLoaderService = getClassLoaderService();
+
+  private static ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
+  }
+
+  private static void setup() {
     if (factory == null) {
       ServiceResult<Set<WANFactory>> loadServiceResult =
           classLoaderService.loadService(WANFactory.class);
@@ -46,9 +59,8 @@ public class WANServiceProvider {
     }
   }
 
-  public static GatewaySenderFactory createGatewaySenderFactory(InternalCache cache,
-      ClassLoaderService classLoaderService) {
-    setup(classLoaderService);
+  public static GatewaySenderFactory createGatewaySenderFactory(InternalCache cache) {
+    setup();
     if (factory == null) {
       throw new IllegalStateException("WAN service is not available.");
     }
@@ -56,27 +68,24 @@ public class WANServiceProvider {
 
   }
 
-  public static GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache,
-      ClassLoaderService classLoaderService) {
-    setup(classLoaderService);
+  public static GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache) {
+    setup();
     if (factory == null) {
       throw new IllegalStateException("WAN service is not available.");
     }
     return factory.createGatewayReceiverFactory(cache);
   }
 
-  public static WanLocatorDiscoverer createLocatorDiscoverer(
-      ClassLoaderService classLoaderService) {
-    setup(classLoaderService);
+  public static WanLocatorDiscoverer createLocatorDiscoverer() {
+    setup();
     if (factory == null) {
       return null;
     }
     return factory.createLocatorDiscoverer();
   }
 
-  public static LocatorMembershipListener createLocatorMembershipListener(
-      ClassLoaderService classLoaderService) {
-    setup(classLoaderService);
+  public static LocatorMembershipListener createLocatorMembershipListener() {
+    setup();
     if (factory == null) {
       return null;
     }

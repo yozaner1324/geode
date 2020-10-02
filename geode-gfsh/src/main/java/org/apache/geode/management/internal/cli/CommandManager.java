@@ -33,9 +33,11 @@ import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
@@ -71,22 +73,21 @@ public class CommandManager {
    * this constructor is used from Gfsh VM. We are getting the user-command-package from system
    * environment. used by Gfsh.
    */
-  public CommandManager(ClassLoaderService classLoaderService) {
-    this(null, null, classLoaderService);
+  public CommandManager() {
+    this(null, null);
   }
 
   /**
    * this is used when getting the instance in a cache server. We are getting the
    * user-command-package from distribution properties. used by OnlineCommandProcessor.
    */
-  public CommandManager(final Properties cacheProperties, InternalCache cache,
-      ClassLoaderService classLoaderService) {
+  public CommandManager(final Properties cacheProperties, InternalCache cache) {
     if (cacheProperties != null) {
       this.cacheProperties = cacheProperties;
     }
     this.cache = cache;
     logWrapper = LogWrapper.getInstance(cache);
-    loadCommands(classLoaderService);
+    loadCommands();
   }
 
   private static void raiseExceptionIfEmpty(Set<Class<?>> foundClasses, String errorFor)
@@ -157,9 +158,14 @@ public class CommandManager {
    *
    * @since GemFire 8.1
    */
-  private void loadPluginCommands(ClassLoaderService classLoaderService) {
+  private void loadPluginCommands() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
     ServiceResult<Set<CommandMarker>> serviceLoadResult =
-        classLoaderService.loadService(CommandMarker.class);
+        result.getMessage().loadService(CommandMarker.class);
 
     serviceLoadResult.ifSuccessful(commandMarkers -> commandMarkers.forEach(commandMarker -> {
       try {
@@ -173,7 +179,7 @@ public class CommandManager {
             errorMessage)));
   }
 
-  private void loadCommands(ClassLoaderService classLoaderService) {
+  private void loadCommands() {
     Set<String> userCommandPackages = getUserCommandPackages();
     Set<String> packagesToScan = new HashSet<>(userCommandPackages);
     packagesToScan.add("org.apache.geode.management.internal.cli.converters");
@@ -184,7 +190,7 @@ public class CommandManager {
     // Create one scanner to be used everywhere
     try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan)) {
       loadUserCommands(scanner, userCommandPackages);
-      loadPluginCommands(classLoaderService);
+      loadPluginCommands();
       loadGeodeCommands(scanner);
       loadConverters(scanner);
     }

@@ -67,7 +67,6 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -76,6 +75,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.internal.deployment.jar.DeployJarFileUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
@@ -86,7 +86,6 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.security.AuthenticationRequiredException;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
   private static final Logger logger = LogService.getLogger();
@@ -125,37 +124,33 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   private final InternalCache cache;
   private final DistributedLockService sharedConfigLockingService;
   private final JAXBService jaxbService;
-  private final ClassLoaderService classLoaderService;
 
   public InternalConfigurationPersistenceService(InternalCache cache, Path workingDirectory,
-      JAXBService jaxbService, ClassLoaderService classLoaderService) {
+      JAXBService jaxbService) {
     this(cache,
         DLockService.getOrCreateService(SHARED_CONFIG_LOCK_SERVICE_NAME,
             cache.getInternalDistributedSystem()),
         jaxbService,
         workingDirectory.resolve(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME),
         workingDirectory
-            .resolve(CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName()),
-        classLoaderService);
+            .resolve(CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName()));
   }
 
   @VisibleForTesting
-  public InternalConfigurationPersistenceService(JAXBService jaxbService,
-      ClassLoaderService classLoaderService) {
-    this(null, null, jaxbService, null, null, classLoaderService);
+  public InternalConfigurationPersistenceService(JAXBService jaxbService) {
+    this(null, null, jaxbService, null, null);
   }
 
   @VisibleForTesting
   InternalConfigurationPersistenceService(InternalCache cache,
       DistributedLockService sharedConfigLockingService, JAXBService jaxbService,
-      Path configDirPath, Path configDiskDirPath, ClassLoaderService classLoaderService) {
+      Path configDirPath, Path configDiskDirPath) {
     this.cache = cache;
     this.configDirPath = configDirPath;
     this.configDiskDirPath = configDiskDirPath;
     this.sharedConfigLockingService = sharedConfigLockingService;
     status.set(SharedConfigurationStatus.NOT_STARTED);
     this.jaxbService = jaxbService;
-    this.classLoaderService = classLoaderService;
   }
 
   public JAXBService getJaxbService() {
@@ -181,8 +176,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         }
         try {
           final Document doc =
-              XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, classLoaderService);
-          XmlUtils.addNewNode(doc, xmlEntity, classLoaderService);
+              XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+          XmlUtils.addNewNode(doc, xmlEntity);
           configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
           configRegion.put(group, configuration);
         } catch (Exception e) {
@@ -213,7 +208,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           try {
             if (xmlContent != null && !xmlContent.isEmpty()) {
               Document doc =
-                  XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, classLoaderService);
+                  XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
               XmlUtils.deleteNode(doc, xmlEntity);
               configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
               configRegion.put(group, configuration);
@@ -251,7 +246,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
             xmlContent = sw.toString();
           }
           try {
-            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent, classLoaderService);
+            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
             // Modify the cache attributes
             XmlUtils.modifyRootAttributes(doc, xmlEntity);
             // Change the xml content of the configuration and put it the config region
@@ -335,12 +330,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   private static void removeOtherVersionsOf(Path groupDir, String jarFileName) {
-    String artifactId = JarDeployer.getArtifactId(jarFileName);
+    String artifactId = DeployJarFileUtils.getArtifactId(jarFileName);
     for (File file : groupDir.toFile().listFiles()) {
       if (file.getName().equals(jarFileName)) {
         continue;
       }
-      if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
+      if (DeployJarFileUtils.getArtifactId(file.getName()).equals(artifactId)) {
         FileUtils.deleteQuietly(file);
       }
     }
@@ -498,7 +493,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       String configurationXml = configuration.getCacheXmlContent();
       if (configurationXml != null && !configurationXml.isEmpty()) {
         try {
-          Document document = XmlUtils.createDocumentFromXml(configurationXml, classLoaderService);
+          Document document = XmlUtils.createDocumentFromXml(configurationXml);
           boolean removedInvalidReceivers = removeInvalidGatewayReceivers(document);
           boolean removedDuplicateReceivers = removeDuplicateGatewayReceivers(document);
           if (removedInvalidReceivers || removedDuplicateReceivers) {
@@ -825,7 +820,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     File cacheXmlFull = new File(groupConfigDir, configuration.getCacheXmlFileName());
     File propertiesFull = new File(groupConfigDir, configuration.getPropertiesFileName());
 
-    configuration.setCacheXmlFile(cacheXmlFull, classLoaderService);
+    configuration.setCacheXmlFile(cacheXmlFull);
     configuration.setPropertiesFile(propertiesFull);
 
     String deployedBy = getDeployedBy();

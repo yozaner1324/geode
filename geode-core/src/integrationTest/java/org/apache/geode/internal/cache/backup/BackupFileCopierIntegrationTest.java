@@ -44,13 +44,13 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
+import org.apache.geode.internal.deployment.jar.DeployedJar;
+import org.apache.geode.internal.deployment.jar.JarDeployer;
 
 public class BackupFileCopierIntegrationTest {
   private static final String CONFIG_DIRECTORY = "config";

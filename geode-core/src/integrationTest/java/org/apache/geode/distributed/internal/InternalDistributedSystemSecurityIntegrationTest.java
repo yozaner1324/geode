@@ -26,11 +26,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category(SecurityTest.class)
@@ -42,7 +40,7 @@ public class InternalDistributedSystemSecurityIntegrationTest {
   @Before
   public void setup() {
     metricsSessionBuilder = mock(MetricsService.Builder.class);
-    when(metricsSessionBuilder.build(any(), any())).thenReturn(mock(MetricsService.class));
+    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
   }
 
   @After
@@ -60,7 +58,7 @@ public class InternalDistributedSystemSecurityIntegrationTest {
 
     system =
         InternalDistributedSystem.connectInternal(configProperties, securityConfig,
-            metricsSessionBuilder, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+            metricsSessionBuilder);
 
     system.disconnect();
 
@@ -76,8 +74,7 @@ public class InternalDistributedSystemSecurityIntegrationTest {
     Properties configProperties = new Properties();
 
     system = InternalDistributedSystem.connectInternal(
-        configProperties, securityConfig, metricsSessionBuilder,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        configProperties, securityConfig, metricsSessionBuilder);
 
     system.disconnect();
 

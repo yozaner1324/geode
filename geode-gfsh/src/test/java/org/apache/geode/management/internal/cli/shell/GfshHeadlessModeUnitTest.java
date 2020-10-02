@@ -24,8 +24,6 @@ import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 public class GfshHeadlessModeUnitTest extends GfshAbstractUnitTest {
 
@@ -33,8 +31,7 @@ public class GfshHeadlessModeUnitTest extends GfshAbstractUnitTest {
   @Before
   public void before() {
     super.before();
-    gfsh = new Gfsh(false, null, new GfshConfig(), new DefaultClassLoaderServiceImpl(
-        LogService.getLogger()));
+    gfsh = new Gfsh(false, null, new GfshConfig());
   }
 
   @Test

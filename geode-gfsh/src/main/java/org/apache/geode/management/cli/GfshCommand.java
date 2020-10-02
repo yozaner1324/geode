@@ -43,7 +43,6 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 @Experimental
 public abstract class GfshCommand implements CommandMarker {
@@ -273,9 +272,5 @@ public abstract class GfshCommand implements CommandMarker {
     } while (System.currentTimeMillis() - startWaitTime < waitTime);
 
     return false;
-  }
-
-  protected ClassLoaderService getClassLoaderService() {
-    return ((InternalCache) this.getCache()).getInternalDistributedSystem().getClassLoaderService();
   }
 }

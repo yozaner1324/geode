@@ -119,7 +119,6 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializer;
-import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
 /**
@@ -187,7 +186,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @since GemFire 4.0
    *
    */
-  public static CacheXmlParser parse(InputStream is, ClassLoaderService classLoaderService) {
+  public static CacheXmlParser parse(InputStream is) {
 
     /*
      * The API doc http://java.sun.com/javase/6/docs/api/org/xml/sax/InputSource.html for the SAX
@@ -209,7 +208,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
 
     CacheXmlParser handler = new CacheXmlParser();
-    handler.init(classLoaderService);
     try {
       SAXParserFactory factory = SAXParserFactory.newInstance();
       factory.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE, true);
@@ -348,7 +346,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     if (this.cache != null) {
       throw new CacheXmlException("Only a single cache or client-cache element is allowed");
     }
-    this.cache = new CacheCreation(true, classLoaderService);
+    this.cache = new CacheCreation(true);
     String lockLease = atts.getValue(LOCK_LEASE);
     if (lockLease != null) {
       this.cache.setLockLease(parseInt(lockLease));
@@ -2841,11 +2839,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       }
     }
     return delegate;
-  }
-
-  @Override
-  public void init(ClassLoaderService classLoaderService) {
-    super.init(classLoaderService);
   }
 
   private void startPdx(Attributes atts) {

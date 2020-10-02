@@ -58,8 +58,6 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category(MembershipTest.class)
@@ -175,8 +173,7 @@ public class GMSLocatorRecoveryIntegrationTest {
       };
       final Membership<MemberIdentifierImpl> membership =
           MembershipBuilder.newMembershipBuilder(socketCreator, locatorClient, serializer,
-              new MemberIdentifierFactoryImpl(), new DefaultClassLoaderServiceImpl(
-                  LogService.getLogger()))
+              new MemberIdentifierFactoryImpl())
               .setConfig(membershipConfig)
               .setMembershipLocator(locator)
               .create();

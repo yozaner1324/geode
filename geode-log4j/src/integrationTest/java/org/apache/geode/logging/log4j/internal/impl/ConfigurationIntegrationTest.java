@@ -40,10 +40,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.logging.internal.Configuration;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -92,8 +90,7 @@ public class ConfigurationIntegrationTest {
     when(logConfig.getLogLevel()).thenReturn(WARNING.intLevel());
 
     Configuration configuration =
-        Configuration.create(ALWAYS, GEODE_LOGGERS, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        Configuration.create(ALWAYS, GEODE_LOGGERS);
     configuration.initialize(logConfigSupplier);
 
     assertThat(geodeLogger.getLevel()).isEqualTo(Level.WARN);
@@ -106,8 +103,7 @@ public class ConfigurationIntegrationTest {
     when(logConfig.getLogLevel()).thenReturn(WARNING.intLevel());
 
     Configuration configuration =
-        Configuration.create(ALWAYS, GEODE_AND_SECURITY_LOGGERS, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        Configuration.create(ALWAYS, GEODE_AND_SECURITY_LOGGERS);
     configuration.initialize(logConfigSupplier);
 
     assertThat(geodeLogger.getLevel()).isEqualTo(Level.WARN);
@@ -120,8 +116,7 @@ public class ConfigurationIntegrationTest {
     when(logConfig.getLogLevel()).thenReturn(WARNING.intLevel());
 
     Configuration configuration =
-        Configuration.create(ALWAYS, ALL_LOGGERS, new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        Configuration.create(ALWAYS, ALL_LOGGERS);
     configuration.initialize(logConfigSupplier);
 
     assertThat(geodeLogger.getLevel()).isEqualTo(Level.WARN);
@@ -134,8 +129,7 @@ public class ConfigurationIntegrationTest {
     when(logConfig.getLogLevel()).thenReturn(WARNING.intLevel());
 
     Configuration configuration =
-        Configuration.create(ALWAYS, GEODE_AND_APPLICATION_LOGGERS,
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        Configuration.create(ALWAYS, GEODE_AND_APPLICATION_LOGGERS);
     configuration.initialize(logConfigSupplier);
 
     assertThat(geodeLogger.getLevel()).isEqualTo(Level.WARN);

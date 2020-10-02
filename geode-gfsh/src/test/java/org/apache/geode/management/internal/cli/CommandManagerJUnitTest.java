@@ -30,7 +30,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.Result;
@@ -38,7 +37,6 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
@@ -91,7 +89,7 @@ public class CommandManagerJUnitTest {
 
   @Before
   public void before() {
-    commandManager = new CommandManager(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    commandManager = new CommandManager();
   }
 
   /**
@@ -130,7 +128,7 @@ public class CommandManagerJUnitTest {
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.USER_COMMAND_PACKAGES, "com.examples");
     CommandManager commandManager =
-        new CommandManager(props, null, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CommandManager(props, null);
 
     assertThat(
         commandManager.getCommandMarkers().stream().anyMatch(c -> c instanceof UserGfshCommand));

@@ -945,6 +945,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-jar-deployer</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-junit</artifactId>
         <version>${version}</version>
         <scope>compile</scope>

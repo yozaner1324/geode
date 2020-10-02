@@ -29,7 +29,7 @@ import java.nio.file.Paths
 // This list is used in a loop to defined the /lib copySpec
 def dependentProjectNames = [
   ':geode-common',
-        ':geode-common-services',
+  ':geode-common-services',
   ':geode-connectors',
   ':geode-core',
   ':geode-cq',
@@ -184,7 +184,7 @@ dependencies {
   javadocOnly project(':extensions:geode-modules-tomcat8')
   javadocOnly project(':geode-experimental-driver')
 
-  testImplementation(project(':geode-common-services'))
+  implementation(project(':geode-common-services'))
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-gfsh'))
   testImplementation(project(':geode-junit')) {
@@ -197,7 +197,6 @@ dependencies {
   acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
-  integrationTestImplementation(project(':geode-common-services'))
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-membership'))
   integrationTestImplementation(project(':geode-gfsh'))
@@ -230,8 +229,7 @@ dependencies {
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
   integrationTestRuntimeOnly('joda-time:joda-time')
 
-
-  distributedTestImplementation(project(':geode-common-services'))
+  distributedTestImplementation(project(':geode-jar-deployer'))
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('io.swagger:swagger-annotations')
   distributedTestImplementation(project(':geode-gfsh'))
@@ -275,7 +273,6 @@ dependencies {
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
   acceptanceTestImplementation('org.gradle:gradle-tooling-api:5.4.1')
-  acceptanceTestImplementation(project(':geode-common-services'))
 
   acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
   acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
@@ -284,7 +281,6 @@ dependencies {
   uiTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  uiTestImplementation(project(':geode-common-services'))
   uiTestImplementation(project(':geode-pulse'))
   uiTestImplementation(project(':geode-pulse:geode-pulse-test'))
   uiTestImplementation(project(':geode-assembly:geode-assembly-test'))
@@ -296,7 +292,6 @@ dependencies {
   uiTestRuntimeOnly('org.seleniumhq.selenium:selenium-chrome-driver')
 
   upgradeTestImplementation(project(':geode-gfsh'))
-  upgradeTestImplementation(project(':geode-common-services'))
   upgradeTestImplementation(project(':geode-logging'))
   upgradeTestImplementation(project(':geode-serialization'))
   upgradeTestImplementation(project(':geode-core'))
@@ -350,11 +345,13 @@ tasks.register('defaultDistributionConfig', JavaExec) {
 tasks.register('defaultCacheConfig', JavaExec) {
   inputs.files {
     project(':geode-core').sourceSets.main.runtimeClasspath
+    project(':geode-common-services').sourceSets.main.runtimeClasspath
   }
   outputs.file file("$buildDir/cache.xml")
   main 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
   classpath project(':geode-logging').sourceSets.main.runtimeClasspath
+  classpath project(':geode-common-services').sourceSets.main.runtimeClasspath
   workingDir buildDir
 
   doFirst {

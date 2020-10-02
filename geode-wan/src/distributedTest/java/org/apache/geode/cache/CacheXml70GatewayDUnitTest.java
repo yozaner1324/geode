@@ -44,8 +44,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
@@ -63,7 +61,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   public void testAsyncEventQueueWithGatewayEventFilter() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     String id = "WBCLChannel";
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
@@ -100,7 +98,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   public void testGatewayReceiver() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
     gatewayReceiverFactory.setBindAddress("");
@@ -129,7 +127,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   public void testParallelGatewaySender() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
     gatewaySenderFactory.setParallel(true);
@@ -168,7 +166,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   public void testSerialGatewaySender() throws Exception {
     getSystem();
     CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     GatewaySenderFactory gatewaySenderFactory = cache.createGatewaySenderFactory();
     gatewaySenderFactory.setParallel(false);
     gatewaySenderFactory.setManualStart(true);

@@ -54,7 +54,6 @@ import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.HostName;
 import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -70,8 +69,6 @@ import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTermi
 import org.apache.geode.management.internal.cli.shell.unsafe.GfshSignalHandler;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.i18n.CliStrings;
-import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Extends an interactive shell provided by
@@ -175,7 +172,7 @@ public class Gfsh extends JLineShell {
    * @param args arguments to be used to create a GemFire shell instance
    */
   protected Gfsh(String[] args) {
-    this(true, args, new GfshConfig(), new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    this(true, args, new GfshConfig());
   }
 
   /**
@@ -185,8 +182,7 @@ public class Gfsh extends JLineShell {
    * @param launchShell whether to make Console available
    * @param args arguments to be used to create a GemFire shell instance or execute command
    */
-  protected Gfsh(boolean launchShell, String[] args, GfshConfig gfshConfig,
-      ClassLoaderService classLoaderService) {
+  protected Gfsh(boolean launchShell, String[] args, GfshConfig gfshConfig) {
     // 1. Disable suppressing of duplicate messages
     JLineLogHandler.setSuppressDuplicateMessages(false);
 
@@ -199,7 +195,7 @@ public class Gfsh extends JLineShell {
 
     // 3. log system properties & gfsh environment TODO: change GFSH to use Geode logging
     @SuppressWarnings("deprecation")
-    final Banner banner = new Banner(classLoaderService);
+    final Banner banner = new Banner();
     this.gfshFileLogger.info(banner.getString());
 
     // 4. Customized History implementation
@@ -209,7 +205,7 @@ public class Gfsh extends JLineShell {
     initializeEnvironment();
     // 7. Create Roo/SpringShell framework objects
     this.executionStrategy = new GfshExecutionStrategy(this);
-    this.parser = new GfshParser(new CommandManager(null, null, classLoaderService));
+    this.parser = new GfshParser(new CommandManager(null, null));
     // 8. Set max History file size
     setHistorySize(gfshConfig.getHistorySize());
 
@@ -252,14 +248,13 @@ public class Gfsh extends JLineShell {
     redirectInternalJavaLoggers();
   }
 
-  public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig,
-      ClassLoaderService classLoaderService) {
+  public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig) {
     Gfsh localGfshInstance = instance;
     if (localGfshInstance == null) {
       synchronized (INSTANCE_LOCK) {
         localGfshInstance = instance;
         if (localGfshInstance == null) {
-          localGfshInstance = new Gfsh(launchShell, args, gfshConfig, classLoaderService);
+          localGfshInstance = new Gfsh(launchShell, args, gfshConfig);
           localGfshInstance.executeInitFileIfPresent();
           instance = localGfshInstance;
         }

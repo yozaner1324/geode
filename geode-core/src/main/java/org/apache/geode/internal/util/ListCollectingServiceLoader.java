@@ -22,7 +22,9 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
@@ -36,8 +38,17 @@ public class ListCollectingServiceLoader<S> implements CollectingServiceLoader<S
   private final ClassLoaderService classLoaderService;
 
   @VisibleForTesting
-  public ListCollectingServiceLoader(ClassLoaderService classLoaderService) {
-    this.classLoaderService = classLoaderService;
+  public ListCollectingServiceLoader() {
+    this.classLoaderService = getClassLoaderService();
+  }
+
+  private ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
   }
 
   @Override

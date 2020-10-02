@@ -24,7 +24,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 public class GatewaySenderDestroyFunction
     implements InternalFunction<GatewaySenderDestroyFunctionArgs> {
@@ -60,12 +59,10 @@ public class GatewaySenderDestroyFunction
     }
 
     try {
-      ClassLoaderService moduleService =
-          cache.getInternalDistributedSystem().getClassLoaderService();
       gatewaySender.stop();
       gatewaySender.destroy();
       XmlEntity xmlEntity =
-          new XmlEntity(CacheXml.GATEWAY_SENDER, "id", senderId, moduleService);
+          new XmlEntity(CacheXml.GATEWAY_SENDER, "id", senderId);
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           String.format("GatewaySender \"%s\" destroyed on \"%s\"", senderId, memberNameOrId)));
     } catch (Exception e) {

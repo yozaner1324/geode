@@ -42,6 +42,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -50,9 +51,9 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.pdx.PdxWriter;
@@ -62,6 +63,8 @@ import org.apache.geode.pdx.internal.PdxOutputStream;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 @Experimental
 public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]> {
@@ -297,7 +300,11 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
 
   // unit test mocks this method
   Class<?> loadClass(String className) throws ClassNotFoundException {
-    return ClassPathLoader.getLatest().forName(className);
+    ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService().forName(className);
+    if (serviceResult.isSuccessful()) {
+      return serviceResult.getMessage().get(0);
+    }
+    throw new ClassNotFoundException("Class " + className + " not found.");
   }
 
   // unit test mocks this method
@@ -328,6 +335,15 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
   // unit test mocks this method
   void copyFile(InputStream input, FileOutputStream output) throws IOException {
     IOUtils.copyLarge(input, output);
+  }
+
+  private ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
   }
 
 }

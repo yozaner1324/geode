@@ -22,12 +22,15 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
 import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Loads a {@link LoggingProvider} using this order of preference:
@@ -43,8 +46,17 @@ public class LoggingProviderLoader {
   private static final Logger logger = LogManager.getLogger();
   private final ClassLoaderService classLoaderService;
 
-  public LoggingProviderLoader(ClassLoaderService classLoaderService) {
-    this.classLoaderService = classLoaderService;
+  public LoggingProviderLoader() {
+    this.classLoaderService = getClassLoaderService();
+  }
+
+  private ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
   }
 
   /**
@@ -66,7 +78,7 @@ public class LoggingProviderLoader {
 
     // 2: use ListCollectingServiceLoader and select highest priority
     SortedMap<Integer, LoggingProvider> loggingProviders = new TreeMap<>();
-    loadServiceProviders(classLoaderService)
+    loadServiceProviders()
         .forEach(provider -> loggingProviders.put(provider.getPriority(), provider));
 
     if (!loggingProviders.isEmpty()) {
@@ -82,9 +94,9 @@ public class LoggingProviderLoader {
     return new SimpleLoggingProvider();
   }
 
-  private Iterable<LoggingProvider> loadServiceProviders(ClassLoaderService classLoaderService) {
+  private Iterable<LoggingProvider> loadServiceProviders() {
     CollectingServiceLoader<LoggingProvider> serviceLoader =
-        new ListCollectingServiceLoader<>(classLoaderService);
+        new ListCollectingServiceLoader<>();
     return serviceLoader.loadServices(LoggingProvider.class);
   }
 

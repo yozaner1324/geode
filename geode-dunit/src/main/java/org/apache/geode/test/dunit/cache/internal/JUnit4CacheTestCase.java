@@ -50,8 +50,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
@@ -143,7 +141,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   public static synchronized void beginCacheXml() {
     closeCache();
-    cache = new TestCacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    cache = new TestCacheCreation();
   }
 
   /**
@@ -579,13 +577,12 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   private static class TestCacheCreation extends CacheCreation {
     private boolean closed = false;
 
-    public TestCacheCreation(ClassLoaderService classLoaderService) {
-      super(classLoaderService);
+    public TestCacheCreation() {
+      super();
     }
 
-    public TestCacheCreation(boolean forParsing,
-        ClassLoaderService classLoaderService) {
-      super(forParsing, classLoaderService);
+    public TestCacheCreation(boolean forParsing) {
+      super(forParsing);
     }
 
     @Override

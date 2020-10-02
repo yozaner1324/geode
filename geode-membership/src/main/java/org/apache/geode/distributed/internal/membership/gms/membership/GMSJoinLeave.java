@@ -66,7 +66,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -1813,8 +1812,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   @Override
-  public void init(Services<ID> service,
-      ClassLoaderService classLoaderService) throws MembershipConfigurationException {
+  public void init(Services<ID> service) throws MembershipConfigurationException {
     this.services = service;
 
     MembershipConfig config = services.getConfig();

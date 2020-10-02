@@ -43,7 +43,6 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -53,7 +52,6 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.exceptions.UserErrorException;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 public class CommandExecutorTest {
 
@@ -75,8 +73,7 @@ public class CommandExecutorTest {
     testCommand = mock(SingleGfshCommand.class,
         withSettings().extraInterfaces(UpdateAllConfigurationGroupsMarker.class));
     ccService =
-        spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger())));
+        spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class)));
     configRegion = mock(AbstractRegion.class);
 
     doReturn(ccService).when(testCommand).getConfigurationPersistenceService();

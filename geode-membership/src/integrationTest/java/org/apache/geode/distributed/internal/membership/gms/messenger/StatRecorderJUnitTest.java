@@ -38,8 +38,6 @@ import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -169,7 +167,7 @@ public class StatRecorderJUnitTest {
 
 
     JGroupsMessenger messenger = new JGroupsMessenger();
-    messenger.init(mockServices, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    messenger.init(mockServices);
     String jgroupsConfig = messenger.jgStackConfig;
     System.out.println(jgroupsConfig);
     assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
@@ -180,7 +178,7 @@ public class StatRecorderJUnitTest {
 
 
     messenger = new JGroupsMessenger();
-    messenger.init(mockServices, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    messenger.init(mockServices);
     assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
   }
 }

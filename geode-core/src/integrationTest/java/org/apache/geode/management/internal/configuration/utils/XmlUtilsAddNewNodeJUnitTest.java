@@ -39,14 +39,11 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
-import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
- * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} and
+ * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity)} and
  * {@link XmlUtils#deleteNode(Document, XmlEntity)}. Simulates the
  * {@link InternalConfigurationPersistenceService} method of extracting {@link XmlEntity} from the
  * new
@@ -77,8 +74,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   @Before
   public void before() throws SAXException, ParserConfigurationException, IOException {
     config = XmlUtils.createDocumentFromReader(new InputStreamReader(
-        this.getClass().getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        this.getClass().getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.xml")));
   }
 
   @AfterClass
@@ -88,7 +84,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} with
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with
    * {@link CacheXml}
    * element with a
    * <code>name</code> attribute, <code>region</code>. It should be added after other
@@ -103,17 +99,15 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(0, nodes.getLength());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewNamed.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewNamed.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     Element element = (Element) nodes.item(0);
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region").withAttribute("name", "r3")
-        .withConfig(changes).build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
-    XmlUtils.addNewNode(config, xmlEntity,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .withConfig(changes).build();
+    XmlUtils.addNewNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -143,7 +137,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} with
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with
    * {@link CacheXml} element that does
    * not have a name or id attribute, <code>jndi-bindings</code>. It should be added between
    * <code>pdx</code> and <code>region</code> elements.
@@ -157,8 +151,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(0, nodes.getLength());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewUnnamed.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewUnnamed.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     Element element = (Element) nodes.item(0);
@@ -166,9 +159,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity =
         XmlEntity.builder().withType("jndi-bindings").withConfig(changes)
-            .build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
-    XmlUtils.addNewNode(config, xmlEntity,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+            .build();
+    XmlUtils.addNewNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -182,7 +174,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} with an
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with an
    * {@link Extension}
    * that does not
    * have a name or id attribute. It should be added to the end of the config xml. Attempts a name
@@ -198,8 +190,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(0, nodes.getLength());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewUnnamedExtension.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeNewUnnamedExtension.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     Element element = (Element) nodes.item(0);
@@ -208,9 +199,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region")
         .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes)
-        .build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
-    XmlUtils.addNewNode(config, xmlEntity,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .build();
+    XmlUtils.addNewNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -227,7 +217,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} with
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with
    * {@link CacheXml}
    * element with a
    * <code>name</code> attribute, <code>region</code>. It should replace existing
@@ -245,8 +235,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceNamed.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceNamed.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     element = (Element) nodes.item(0);
@@ -254,9 +243,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region").withAttribute("name", "r1")
-        .withConfig(changes).build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
-    XmlUtils.addNewNode(config, xmlEntity,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .withConfig(changes).build();
+    XmlUtils.addNewNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -266,7 +254,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} with
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with
    * {@link CacheXml}
    * element that does
    * not have a name or id attribute, <code>pdx</code>. It should replace <code>pdx</code> element.
@@ -283,8 +271,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamed.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamed.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     element = (Element) nodes.item(0);
@@ -293,9 +280,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity =
         XmlEntity.builder().withType("pdx").withConfig(changes)
-            .build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
-    XmlUtils.addNewNode(config, xmlEntity,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+            .build();
+    XmlUtils.addNewNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -305,7 +291,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} with an
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with an
    * {@link Extension}
    * that does not
    * have a name or id attribute, <code>test:cache</code>. It should replace the existing
@@ -324,8 +310,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final org.w3c.dom.Document changes =
         XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass().getResourceAsStream(
-            "XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamedExtension.xml")),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+            "XmlUtilsAddNewNodeJUnitTest.testAddNewNodeReplaceUnnamedExtension.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
     element = (Element) nodes.item(0);
@@ -334,9 +319,8 @@ public class XmlUtilsAddNewNodeJUnitTest {
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("cache")
         .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes)
-        .build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
-    XmlUtils.addNewNode(config, xmlEntity,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .build();
+    XmlUtils.addNewNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
     assertEquals(1, nodes.getLength());
@@ -362,13 +346,12 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeNamed.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeNamed.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(0, nodes.getLength());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("region").withAttribute("name", "r1")
-        .withConfig(changes).build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .withConfig(changes).build();
     XmlUtils.deleteNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -376,7 +359,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} with
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with
    * {@link CacheXml}
    * element that does
    * not have a name or id attribute, <code>pdx</code>. It should remove the existing
@@ -394,14 +377,13 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(CacheXml.GEODE_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeUnnamed.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeUnnamed.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(0, nodes.getLength());
 
     final XmlEntity xmlEntity =
         XmlEntity.builder().withType("pdx").withConfig(changes)
-            .build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+            .build();
     XmlUtils.deleteNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);
@@ -409,7 +391,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
   }
 
   /**
-   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity, ClassLoaderService)} with an
+   * Tests {@link XmlUtils#addNewNode(Document, XmlEntity)} with an
    * {@link Extension}
    * that does not
    * have a name or id attribute, <code>test:cache</code>. It should remove the existing
@@ -427,14 +409,13 @@ public class XmlUtilsAddNewNodeJUnitTest {
     assertEquals(TEST_NAMESPACE, element.getNamespaceURI());
 
     final Document changes = XmlUtils.createDocumentFromReader(new InputStreamReader(this.getClass()
-        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeUnnamedExtension.xml")),
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .getResourceAsStream("XmlUtilsAddNewNodeJUnitTest.testDeleteNodeUnnamedExtension.xml")));
     nodes = XmlUtils.query(changes, xPath, xPathContext);
     assertEquals(0, nodes.getLength());
 
     final XmlEntity xmlEntity = XmlEntity.builder().withType("cache")
         .withNamespace(TEST_PREFIX, TEST_NAMESPACE).withConfig(changes)
-        .build(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        .build();
     XmlUtils.deleteNode(config, xmlEntity);
 
     nodes = XmlUtils.query(config, xPath, xPathContext);

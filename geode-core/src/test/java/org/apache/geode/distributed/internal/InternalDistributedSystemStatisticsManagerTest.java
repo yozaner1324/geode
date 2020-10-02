@@ -38,8 +38,6 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsManagerFactory;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Unit tests for {@link InternalDistributedSystem}.
@@ -70,11 +68,10 @@ public class InternalDistributedSystemStatisticsManagerTest {
     when(statisticsManagerFactory.create(any(), anyLong(), anyBoolean()))
         .thenReturn(statisticsManager);
     internalDistributedSystem =
-        new InternalDistributedSystem.BuilderForTesting(new Properties(),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()))
-                .setDistributionManager(distributionManager)
-                .setStatisticsManagerFactory(statisticsManagerFactory)
-                .build();
+        new InternalDistributedSystem.BuilderForTesting(new Properties())
+            .setDistributionManager(distributionManager)
+            .setStatisticsManagerFactory(statisticsManagerFactory)
+            .build();
   }
 
   @Test
@@ -88,11 +85,10 @@ public class InternalDistributedSystemStatisticsManagerTest {
             .thenReturn(statisticsManagerCreatedByFactory);
 
     InternalDistributedSystem result =
-        new InternalDistributedSystem.BuilderForTesting(new Properties(),
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()))
-                .setDistributionManager(distributionManager)
-                .setStatisticsManagerFactory(statisticsManagerFactory)
-                .build();
+        new InternalDistributedSystem.BuilderForTesting(new Properties())
+            .setDistributionManager(distributionManager)
+            .setStatisticsManagerFactory(statisticsManagerFactory)
+            .build();
 
     assertThat(result.getStatisticsManager())
         .isSameAs(statisticsManagerCreatedByFactory);

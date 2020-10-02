@@ -14,68 +14,84 @@
  */
 package org.apache.geode.internal.util;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.quality.Strictness;
 
 import org.apache.geode.metrics.MetricsPublishingService;
-import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.result.impl.Success;
+import org.apache.geode.metrics.MetricsSession;
 
 public class ListCollectingServiceLoaderTest {
-  @Rule
-  public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
-
   @Test
   public void loadServices_returnsLoadedServices() {
-    MetricsPublishingService service1 = mock(MetricsPublishingService.class);
-    MetricsPublishingService service2 = mock(MetricsPublishingService.class);
-    MetricsPublishingService service3 = mock(MetricsPublishingService.class);
-    Set<Object> expectedServices = new HashSet<>(asList(service1, service2, service3));
-    ClassLoaderService classLoaderService = mock(ClassLoaderService.class);
-
-    when(classLoaderService.loadService(any())).thenReturn(Success.of(expectedServices));
-
     ListCollectingServiceLoader<MetricsPublishingService> collectingServiceLoader =
-        new ListCollectingServiceLoader<>(classLoaderService);
+        new ListCollectingServiceLoader<>();
 
     Collection<MetricsPublishingService> actualServices =
         collectingServiceLoader.loadServices(MetricsPublishingService.class);
 
-    assertThat(actualServices)
-        .containsExactlyInAnyOrder(expectedServices.toArray(new MetricsPublishingService[0]));
+    assertThat(actualServices.size()).isEqualTo(3);
+
+    List<String> serviceClassNames =
+        actualServices.stream().map(service -> service.getClass().getName())
+            .collect(Collectors.toList());
+
+    assertThat(serviceClassNames).containsExactlyInAnyOrder(
+        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService1",
+        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService2",
+        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService4");
   }
 
-  @Test
-  public void loadServices_returnsLoadedServices_whenOneServiceThrows() {
-    MetricsPublishingService service1 = mock(MetricsPublishingService.class);
-    MetricsPublishingService service3 = mock(MetricsPublishingService.class);
-    ClassLoaderService classLoaderService = mock(ClassLoaderService.class);
+  public static class TestMetricsPublishingService1 implements MetricsPublishingService {
 
-    Set<Object> services = new HashSet<>();
-    services.add(service1);
-    services.add(service3);
-    when(classLoaderService.loadService(any())).thenReturn(Success.of(services));
+    @Override
+    public void start(MetricsSession session) {
 
-    ListCollectingServiceLoader<MetricsPublishingService> collectingServiceLoader =
-        new ListCollectingServiceLoader<>(classLoaderService);
+    }
 
-    Collection<MetricsPublishingService> actualServices =
-        collectingServiceLoader.loadServices(MetricsPublishingService.class);
+    @Override
+    public void stop(MetricsSession session) {
 
-    assertThat(actualServices)
-        .containsExactlyInAnyOrder(service1, service3);
+    }
+  }
+  public static class TestMetricsPublishingService2 implements MetricsPublishingService {
+
+    @Override
+    public void start(MetricsSession session) {
+
+    }
+
+    @Override
+    public void stop(MetricsSession session) {
+
+    }
+  }
+  public class TestMetricsPublishingService3 implements MetricsPublishingService {
+
+    @Override
+    public void start(MetricsSession session) {
+
+    }
+
+    @Override
+    public void stop(MetricsSession session) {
+
+    }
+  }
+  public static class TestMetricsPublishingService4 implements MetricsPublishingService {
+
+    @Override
+    public void start(MetricsSession session) {
+
+    }
+
+    @Override
+    public void stop(MetricsSession session) {
+
+    }
   }
 }

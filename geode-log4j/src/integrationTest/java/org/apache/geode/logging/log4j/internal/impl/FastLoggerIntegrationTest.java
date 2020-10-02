@@ -47,7 +47,6 @@ import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -106,8 +105,7 @@ public class FastLoggerIntegrationTest {
     LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
     when(logConfigSupplier.getLogConfig()).thenReturn(logConfig);
 
-    configuration = create(LogLevelUpdateOccurs.NEVER, LogLevelUpdateScope.GEODE_LOGGERS,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    configuration = create(LogLevelUpdateOccurs.NEVER, LogLevelUpdateScope.GEODE_LOGGERS);
     configuration.initialize(logConfigSupplier);
   }
 

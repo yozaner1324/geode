@@ -34,13 +34,11 @@ import org.w3c.dom.NodeList;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -91,9 +89,7 @@ public class DestroyDataSourceCommandDUnitTest {
       InternalConfigurationPersistenceService ccService =
           internalLocator.getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
-      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(),
-          new DefaultClassLoaderServiceImpl(
-              LogService.getLogger()));
+      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
       AssertionsForClassTypes.assertThat(jndiBindings.getLength()).isEqualTo(0);
@@ -157,8 +153,7 @@ public class DestroyDataSourceCommandDUnitTest {
       InternalConfigurationPersistenceService ccService =
           internalLocator.getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
-      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent(),
-          new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
       AssertionsForClassTypes.assertThat(jndiBindings.getLength()).isEqualTo(0);

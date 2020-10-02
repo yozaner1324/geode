@@ -78,8 +78,6 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 @Category({MembershipJUnitTest.class})
 public class MembershipJUnitTest {
@@ -145,8 +143,7 @@ public class MembershipJUnitTest {
       // to be created
       internalLocator =
           InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
-              new Properties(), null, temporaryFolder.getRoot().toPath(),
-              new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+              new Properties(), null, temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -297,8 +294,7 @@ public class MembershipJUnitTest {
             mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter());
     final Membership<InternalDistributedMember> m1 =
         MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
-            socketCreator, locatorClient, serializer, memberIdentifierFactory,
-            new DefaultClassLoaderServiceImpl(LogService.getLogger()))
+            socketCreator, locatorClient, serializer, memberIdentifierFactory)
             .setMembershipLocator(locator)
             .setAuthenticator(authenticator)
             .setStatistics(stats1)
@@ -339,8 +335,7 @@ public class MembershipJUnitTest {
       // to be created
       internalLocator =
           InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
-              temporaryFolder.getRoot().toPath(), new DefaultClassLoaderServiceImpl(
-                  LogService.getLogger()));
+              temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();

@@ -44,8 +44,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Abstract base class for integration tests of {@link ServerLauncher}.
@@ -187,7 +185,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
 
   private File writeCacheXml(final int serverPort) throws IOException {
     CacheCreation creation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
     attrs.setDataPolicy(DataPolicy.REPLICATE);
     attrs.setScope(Scope.DISTRIBUTED_ACK);
@@ -207,7 +205,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
       final int maximumMessageCount, final int messageTimeToLive, final int socketBufferSize)
       throws IOException {
     CacheCreation creation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
     attrs.setDataPolicy(DataPolicy.REPLICATE);
     attrs.setScope(Scope.DISTRIBUTED_ACK);
@@ -232,7 +230,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
 
   private File writeCacheXml() throws IOException {
     CacheCreation creation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
     attrs.setDataPolicy(DataPolicy.REPLICATE);
     attrs.setScope(Scope.DISTRIBUTED_ACK);

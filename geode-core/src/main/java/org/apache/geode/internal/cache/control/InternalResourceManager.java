@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
@@ -47,7 +48,6 @@ import org.apache.geode.cache.control.RestoreRedundancyOperation;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
@@ -55,9 +55,12 @@ import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.runtime.RestoreRedundancyResults;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -128,17 +131,24 @@ public class InternalResourceManager implements ResourceManager {
     this.resourceAdvisor = (ResourceAdvisor) cache.getDistributionAdvisor();
     this.stats = new ResourceManagerStats(cache.getDistributedSystem());
 
+
     // Create a new executor that other classes may use for handling resource
     // related tasks
     this.scheduledExecutor = LoggingExecutors
         .newScheduledThreadPool("ResourceManagerRecoveryThread ", MAX_RESOURCE_MANAGER_EXE_THREADS);
 
     // Initialize the load probe
-    try {
-      Class loadProbeClass = ClassPathLoader.getLatest().forName(PR_LOAD_PROBE_CLASS);
-      this.loadProbe = (LoadProbe) loadProbeClass.newInstance();
-    } catch (Exception e) {
-      throw new InternalGemFireError("Unable to instantiate " + PR_LOAD_PROBE_CLASS, e);
+    ServiceResult<List<Class<?>>> serviceResult =
+        getClassLoaderService().forName(PR_LOAD_PROBE_CLASS);
+    if (serviceResult.isFailure()) {
+      throw new InternalGemFireError("Unable to instantiate " + PR_LOAD_PROBE_CLASS);
+    } else {
+
+      try {
+        this.loadProbe = (LoadProbe) serviceResult.getMessage().get(0).newInstance();
+      } catch (InstantiationException | IllegalAccessException e) {
+        throw new InternalGemFireError("Unable to instantiate " + PR_LOAD_PROBE_CLASS, e);
+      }
     }
 
     // Create a new executor the resource manager and the monitors it creates
@@ -164,6 +174,15 @@ public class InternalResourceManager implements ResourceManager {
     }
 
     this.closed = false;
+  }
+
+  private ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
   }
 
   public void close() {

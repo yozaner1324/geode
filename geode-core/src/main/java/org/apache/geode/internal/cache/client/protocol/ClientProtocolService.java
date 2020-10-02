@@ -19,7 +19,6 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Provides a convenient location for a client protocol service to be loaded into the system.
@@ -43,6 +42,4 @@ public interface ClientProtocolService {
       SecurityService securityService);
 
   int getServiceProtocolVersion();
-
-  void init(ClassLoaderService classLoaderService);
 }

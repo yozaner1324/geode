@@ -72,8 +72,7 @@ public class RegionCreateFunction implements InternalFunction {
       RegionPath regionPath = new RegionPath(regionCreateArgs.getRegionPath());
       getRealizer().create(regionCreateArgs.getConfig(), regionCreateArgs.getRegionPath(), cache);
       XmlEntity xmlEntity =
-          new XmlEntity(CacheXml.REGION, "name", regionPath.getRootRegionName(),
-              cache.getInternalDistributedSystem().getClassLoaderService());
+          new XmlEntity(CacheXml.REGION, "name", regionPath.getRootRegionName());
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity.getXmlDefinition(),
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
               regionCreateArgs.getRegionPath(), memberNameOrId)));

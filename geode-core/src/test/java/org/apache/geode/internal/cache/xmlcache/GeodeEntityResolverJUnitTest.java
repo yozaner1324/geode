@@ -17,8 +17,6 @@ package org.apache.geode.internal.cache.xmlcache;
 import org.junit.Before;
 import org.xml.sax.EntityResolver;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 
 /**
@@ -33,7 +31,6 @@ public class GeodeEntityResolverJUnitTest extends AbstractEntityResolverTest {
   @Before
   public void setup() throws Exception {
     GeodeEntityResolver geodeEntityResolver = new GeodeEntityResolver();
-    geodeEntityResolver.init(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
     this.entityResolver = geodeEntityResolver;
   }
 

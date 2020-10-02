@@ -25,7 +25,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.memcached.GemFireMemcachedServer;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Service loaded at cache initialization that starts the {@link GemFireMemcachedServer}
@@ -36,7 +35,7 @@ public class GeodeMemcachedService implements CacheService {
   private GemFireMemcachedServer memcachedServer;
 
   @Override
-  public boolean init(Cache cache, ClassLoaderService classLoaderService) {
+  public boolean init(Cache cache) {
     InternalCache internalCache = (InternalCache) cache;
     startMemcachedServer(internalCache);
 

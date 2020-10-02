@@ -19,10 +19,12 @@ import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.query.internal.cq.CqService;
@@ -33,12 +35,13 @@ import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 public class QueryConfigurationServiceImpl implements QueryConfigurationService {
   private static final Logger logger = LogService.getLogger();
@@ -85,7 +88,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   }
 
   @Override
-  public boolean init(Cache cache, ClassLoaderService classLoaderService) {
+  public boolean init(Cache cache) {
     if (cache == null) {
       throw new IllegalArgumentException(NULL_CACHE_ERROR_MESSAGE);
     }
@@ -162,23 +165,37 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
         this.authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
-        Class<?> userClass = ClassPathLoader.getLatest().forName(className);
-        if (!Arrays.asList(userClass.getInterfaces()).contains(MethodInvocationAuthorizer.class)) {
-          throw new QueryConfigurationServiceException(
-              String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, userClass.getName(),
-                  MethodInvocationAuthorizer.class.getName()));
+        ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService().forName(className);
+        if (serviceResult.isSuccessful()) {
+          Class<?> userClass = serviceResult.getMessage().get(0);
+          if (!Arrays.asList(userClass.getInterfaces())
+              .contains(MethodInvocationAuthorizer.class)) {
+            throw new QueryConfigurationServiceException(
+                String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, userClass.getName(),
+                    MethodInvocationAuthorizer.class.getName()));
+          }
+
+          MethodInvocationAuthorizer tmpAuthorizer =
+              (MethodInvocationAuthorizer) userClass.newInstance();
+          tmpAuthorizer.initialize(cache, parameters);
+          this.authorizer = tmpAuthorizer;
+        } else {
+          throw new QueryConfigurationServiceException(serviceResult.getErrorMessage());
         }
-
-        MethodInvocationAuthorizer tmpAuthorizer =
-            (MethodInvocationAuthorizer) userClass.newInstance();
-        tmpAuthorizer.initialize(cache, parameters);
-        this.authorizer = tmpAuthorizer;
       }
-
       invalidateContinuousQueryCache(cqService);
     } catch (Exception e) {
       throw new QueryConfigurationServiceException(UPDATE_ERROR_MESSAGE, e);
     }
+  }
+
+  private ClassLoaderService getClassLoaderService() {
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    return result.getMessage();
   }
 
   private static class NoOpAuthorizer implements MethodInvocationAuthorizer {

@@ -25,15 +25,12 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheFactoryStatics;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire
@@ -94,7 +91,6 @@ import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 public class CacheFactory {
 
   private final InternalCacheBuilder internalCacheBuilder;
-  private ClassLoaderService classLoaderService;
 
   /**
    * Creates a default cache factory.
@@ -113,21 +109,7 @@ public class CacheFactory {
    * @since GemFire 6.5
    */
   public CacheFactory(Properties props) {
-    internalCacheBuilder = new InternalCacheBuilder(props, null);
-  }
-
-  /**
-   * Create a CacheFactory initialized with the given gemfire properties. For a list of valid
-   * GemFire properties and their meanings see {@linkplain ConfigurationProperties}.
-   *
-   * @param props the gemfire properties to initialize the factory with.
-   * @param classLoaderService the {@link ClassLoaderService} that will be use to load Services and
-   *        resources
-   * @since Geode 1.14
-   */
-  public CacheFactory(Properties props, ClassLoaderService classLoaderService) {
-    this.classLoaderService = classLoaderService;
-    internalCacheBuilder = new InternalCacheBuilder(props, classLoaderService);
+    internalCacheBuilder = new InternalCacheBuilder(props);
   }
 
   /**
@@ -157,10 +139,6 @@ public class CacheFactory {
    */
   public Cache create()
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
-    if (classLoaderService == null) {
-      internalCacheBuilder.setModuleService(new DefaultClassLoaderServiceImpl(
-          LogService.getLogger()));
-    }
     return internalCacheBuilder.create();
   }
 
@@ -371,8 +349,7 @@ public class CacheFactory {
   @Deprecated
   public static Cache create(DistributedSystem system) throws CacheExistsException,
       TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
-    return CacheFactoryStatics.create(system,
-        new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    return CacheFactoryStatics.create(system);
   }
 
   /**
@@ -426,11 +403,5 @@ public class CacheFactory {
    */
   public static String getVersion() {
     return GemFireVersion.getGemFireVersion();
-  }
-
-  public CacheFactory setModuleService(ClassLoaderService classLoaderService) {
-    internalCacheBuilder.setModuleService(classLoaderService);
-    this.classLoaderService = classLoaderService;
-    return this;
   }
 }

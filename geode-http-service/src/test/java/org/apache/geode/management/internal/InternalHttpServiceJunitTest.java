@@ -29,8 +29,6 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalHttpService;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 /**
  * The InternalHttpServiceJunitTest class is a test suite of test cases testing the contract and
@@ -62,7 +60,7 @@ public class InternalHttpServiceJunitTest {
     setup("", 8090);
 
     final InternalHttpService jetty = new InternalHttpService();
-    boolean didInit = jetty.init(cache, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    boolean didInit = jetty.init(cache);
 
     assertThat(didInit).as("Jetty did not initialize").isTrue();
     assertThat(jetty.getHttpServer().getConnectors()[0]).isNotNull();
@@ -75,7 +73,7 @@ public class InternalHttpServiceJunitTest {
     setup("127.0.0.1", 10480);
 
     final InternalHttpService jetty = new InternalHttpService();
-    boolean didInit = jetty.init(cache, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    boolean didInit = jetty.init(cache);
 
     assertThat(didInit).as("Jetty did not initialize").isTrue();
     assertThat(jetty.getHttpServer().getConnectors()[0]).isNotNull();

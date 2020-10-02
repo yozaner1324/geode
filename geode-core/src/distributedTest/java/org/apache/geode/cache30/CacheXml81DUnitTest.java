@@ -33,8 +33,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.XmlParser;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.dunit.IgnoredException;
 
 /**
@@ -65,7 +63,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   @Test
   public void testCacheExtension() throws Exception {
     final CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     final MockCacheExtension extension = new MockCacheExtension("testCacheExtension");
     cache.getExtensionPoint().addExtension(extension);
 
@@ -99,7 +97,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   public void testRegionExtension() throws Exception {
     final String regionName = "testRegionExtension";
     final CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     Extensible<Region<?, ?>> region =
         (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
@@ -138,7 +136,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   public void testLocatorInException() throws Exception {
     final String regionName = "testRegionExtension";
     final CacheCreation cache =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     Extensible<Region<?, ?>> region =
         (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);

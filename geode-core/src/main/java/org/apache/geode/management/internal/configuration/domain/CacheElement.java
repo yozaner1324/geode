@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.DefaultEntityResolver2;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Domain class to determine the order of an element Currently being used to store order information
@@ -101,8 +100,7 @@ public class CacheElement {
    * @return Element map
    * @since GemFire 8.1
    */
-  public static LinkedHashMap<String, CacheElement> buildElementMap(final Document doc,
-      ClassLoaderService classLoaderService)
+  public static LinkedHashMap<String, CacheElement> buildElementMap(final Document doc)
       throws IOException, XPathExpressionException, SAXException, ParserConfigurationException {
     Node cacheNode = doc.getFirstChild();
     if ("#comment".equals(cacheNode.getNodeName())) {
@@ -115,8 +113,7 @@ public class CacheElement {
     final LinkedHashMap<String, CacheElement> elementMap = new LinkedHashMap<>();
 
     buildElementMapCacheType(elementMap,
-        resolveSchema(schemaLocationMap, CacheXml.GEODE_NAMESPACE, classLoaderService),
-        classLoaderService);
+        resolveSchema(schemaLocationMap, CacheXml.GEODE_NAMESPACE));
 
     // if we are ever concerned with the order of extensions or children process them here.
 
@@ -134,9 +131,8 @@ public class CacheElement {
    * @since GemFire 8.1
    */
   private static InputSource resolveSchema(final Map<String, String> schemaLocationMap,
-      String namespaceUri, ClassLoaderService classLoaderService) throws IOException {
+      String namespaceUri) throws IOException {
     final DefaultEntityResolver2 entityResolver = new CacheXmlParser();
-    entityResolver.init(classLoaderService);
     InputSource inputSource = null;
 
     // Try loading schema from locations until we find one.
@@ -164,9 +160,9 @@ public class CacheElement {
    * @since GemFire 8.1
    */
   private static void buildElementMapCacheType(final LinkedHashMap<String, CacheElement> elementMap,
-      final InputSource inputSource, ClassLoaderService classLoaderService)
+      final InputSource inputSource)
       throws SAXException, IOException, ParserConfigurationException, XPathExpressionException {
-    final Document doc = XmlUtils.getDocumentBuilder(classLoaderService).parse(inputSource);
+    final Document doc = XmlUtils.getDocumentBuilder().parse(inputSource);
 
     int rank = 0;
 

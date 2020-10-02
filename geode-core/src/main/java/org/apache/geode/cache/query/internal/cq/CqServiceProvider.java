@@ -17,13 +17,14 @@ package org.apache.geode.cache.query.internal.cq;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.ServiceLoader;
 import java.util.Set;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -32,6 +33,8 @@ public class CqServiceProvider {
 
   @Immutable
   private static CqServiceFactory factory;
+
+  private static ClassLoaderService classLoaderService;
 
   /**
    * System property to maintain the CQ event references for optimizing the updates. This will allow
@@ -47,19 +50,28 @@ public class CqServiceProvider {
   public static final boolean VMOTION_DURING_CQ_REGISTRATION_FLAG = false;
 
   static {
-    ServiceLoader<CqServiceFactory> loader = ServiceLoader.load(CqServiceFactory.class);
-    Iterator<CqServiceFactory> itr = loader.iterator();
-    if (!itr.hasNext()) {
-      factory = null;
-    } else {
-      factory = itr.next();
-      factory.initialize();
+    ServiceResult<ClassLoaderService> result =
+        ServiceRegistryInstance.getService(ClassLoaderService.class);
+    if (result.isFailure()) {
+      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
+    }
+    classLoaderService = result.getMessage();
+    ServiceResult<Set<CqServiceFactory>> loadServiceResult =
+        classLoaderService.loadService(CqServiceFactory.class);
+    if (loadServiceResult.isSuccessful()) {
+      Iterator<CqServiceFactory> itr = loadServiceResult.getMessage().iterator();
+      if (!itr.hasNext()) {
+        factory = null;
+      } else {
+        factory = itr.next();
+        factory.initialize();
+      }
     }
   }
 
-  public static synchronized CqService create(InternalCache cache,
-      ClassLoaderService classLoaderService) {
-    setup(classLoaderService);
+  public static synchronized CqService create(InternalCache cache) {
+
+    setup();
     if (factory == null) {
       return new MissingCqService();
     }
@@ -67,7 +79,7 @@ public class CqServiceProvider {
     return factory.create(cache);
   }
 
-  private static void setup(ClassLoaderService classLoaderService) {
+  private static void setup() {
     if (factory == null) {
       ServiceResult<Set<CqServiceFactory>> loadServiceResult =
           classLoaderService.loadService(CqServiceFactory.class);

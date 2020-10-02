@@ -51,8 +51,6 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 public class CacheCreationTest {
 
@@ -75,7 +73,7 @@ public class CacheCreationTest {
   @Test
   public void verifyRunInitializerWithInitializerAndNullPropsCallsInitAndInitialize() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     Declarable initializer = mock(Declarable.class);
     Properties props = null;
     cacheCreation.setInitializer(initializer, props);
@@ -89,7 +87,7 @@ public class CacheCreationTest {
   @Test
   public void verifyRunInitializerWithInitializerAndPropsCallsInitAndInitialize() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     Declarable initializer = mock(Declarable.class);
     Properties props = new Properties();
     props.setProperty("key", "value");
@@ -104,7 +102,7 @@ public class CacheCreationTest {
   @Test
   public void verifyInitializeDeclarablesMapWithNoDeclarablesPassesEmptyMap() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     cacheCreation.initializeDeclarablesMap(cache);
 
@@ -114,7 +112,7 @@ public class CacheCreationTest {
   @Test
   public void verifyInitializeDeclarablesMapWithDeclarablesPassesExpectedMap() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     Map<Declarable, Properties> expected = new HashMap<>();
     Declarable declarable1 = mock(Declarable.class);
     cacheCreation.addDeclarableProperties(declarable1, null);
@@ -133,7 +131,7 @@ public class CacheCreationTest {
   @Test
   public void verifyInitializeDeclarablesMapWithDeclarableCallInitAndInitialize() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     Declarable declarable = mock(Declarable.class);
     Properties properties = new Properties();
     properties.setProperty("k2", "v2");
@@ -148,7 +146,7 @@ public class CacheCreationTest {
   @Test
   public void verifyInitializeDeclarablesMapWithDeclarableThatThrowsWillThrowCacheXmlException() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     Declarable declarable = mock(Declarable.class);
     Properties properties = null;
     cacheCreation.addDeclarableProperties(declarable, properties);
@@ -164,7 +162,7 @@ public class CacheCreationTest {
   @Test
   public void declarativeRegionIsCreated() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     RegionCreation declarativeRegion = mock(RegionCreation.class);
     Map<String, Region<?, ?>> declarativeRegions = new HashMap<>();
     declarativeRegions.put("testRegion", declarativeRegion);
@@ -177,7 +175,7 @@ public class CacheCreationTest {
   @Test
   public void defaultCacheServerIsNotCreatedWithDefaultPortWhenNoDeclarativeServerIsConfigured() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), cache,
         ServerLauncherParameters.INSTANCE.withDisableDefaultServer(false));
@@ -188,7 +186,7 @@ public class CacheCreationTest {
   @Test
   public void defaultCacheServerIsNotCreatedWhenDisableDefaultCacheServerIsTrue() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), cache,
         ServerLauncherParameters.INSTANCE.withDisableDefaultServer(false));
@@ -199,7 +197,7 @@ public class CacheCreationTest {
   @Test
   public void defaultCacheServerIsCreatedWithConfiguredPortWhenNoDeclarativeServerIsConfigured() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     CacheServerImpl mockServer = mock(CacheServerImpl.class);
     when(cache.addCacheServer()).thenReturn(mockServer);
     List<CacheServer> cacheServers = new ArrayList<>();
@@ -218,7 +216,7 @@ public class CacheCreationTest {
   @Test
   public void declarativeCacheServerIsCreatedWithConfiguredServerPort() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     CacheServer cacheServer = new CacheServerCreation(cacheCreation, false);
     cacheServer.setPort(8888);
     cacheCreation.getCacheServers().add(cacheServer);
@@ -238,7 +236,7 @@ public class CacheCreationTest {
   @Test
   public void cacheServerCreationIsSkippedWhenAServerExistsForAGivenPort() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     CacheServer cacheServer = new CacheServerCreation(cacheCreation, false);
     cacheServer.setPort(40406);
     cacheCreation.getCacheServers().add(cacheServer);
@@ -257,7 +255,7 @@ public class CacheCreationTest {
   @Test
   public void userCanCreateMultipleCacheServersDeclaratively() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     CacheServer cacheServer1 = new CacheServerCreation(cacheCreation, false);
     cacheServer1.setPort(40406);
     CacheServer cacheServer2 = new CacheServerCreation(cacheCreation, false);
@@ -278,7 +276,7 @@ public class CacheCreationTest {
   @Test
   public void shouldThrowExceptionWhenUserTriesToDeclareMultipleCacheServersWithPort() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     cacheCreation.getCacheServers().add(new CacheServerCreation(cacheCreation, false));
     cacheCreation.getCacheServers().add(new CacheServerCreation(cacheCreation, false));
     int configuredServerPort = 50505;
@@ -298,7 +296,7 @@ public class CacheCreationTest {
   @Test
   public void shouldCreateGatewaySenderAfterRegions() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     GatewayReceiver receiver = mock(GatewayReceiver.class);
     cacheCreation.addGatewayReceiver(receiver);
     cacheCreation.addRootRegion(new RegionCreation(cacheCreation, "region"));
@@ -317,7 +315,7 @@ public class CacheCreationTest {
   @Test
   public void serverLauncherParametersShouldOverrideDefaultSettings() {
     CacheCreation cacheCreation =
-        new CacheCreation(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+        new CacheCreation();
     CacheServer cacheServerCreation = new CacheServerCreation(cacheCreation, false);
     cacheCreation.getCacheServers().add(cacheServerCreation);
     CacheServerImpl mockServer = mock(CacheServerImpl.class);

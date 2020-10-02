@@ -15,7 +15,6 @@
 package org.apache.geode.logging.internal;
 
 import org.apache.geode.logging.internal.spi.LoggingProvider;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Fetches the configuration info from {@link LoggingProvider} for invocation from static context.
@@ -23,7 +22,7 @@ import org.apache.geode.services.classloader.ClassLoaderService;
  */
 public class ConfigurationInfo {
 
-  public static String getConfigurationInfo(ClassLoaderService classLoaderService) {
-    return new LoggingProviderLoader(classLoaderService).load().getConfigurationInfo();
+  public static String getConfigurationInfo() {
+    return new LoggingProviderLoader().load().getConfigurationInfo();
   }
 }

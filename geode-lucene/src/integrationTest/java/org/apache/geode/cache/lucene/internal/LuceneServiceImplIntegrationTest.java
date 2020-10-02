@@ -35,8 +35,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -59,7 +57,7 @@ public class LuceneServiceImplIntegrationTest {
   @Test
   public void getCacheShouldReturnTheCorrectCache() {
     cache = getCache();
-    new LuceneServiceImpl().init(cache, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    new LuceneServiceImpl().init(cache);
     LuceneService service = LuceneServiceProvider.get(cache);
     assertTrue(service.getCache().equals(cache));
   }
@@ -71,7 +69,7 @@ public class LuceneServiceImplIntegrationTest {
     assertNull(function);
 
     cache = getCache();
-    new LuceneServiceImpl().init(cache, new DefaultClassLoaderServiceImpl(LogService.getLogger()));
+    new LuceneServiceImpl().init(cache);
 
     function = FunctionService.getFunction(LuceneQueryFunction.ID);
     assertNotNull(function);

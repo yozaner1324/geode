@@ -18,14 +18,12 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  *
@@ -51,15 +49,13 @@ public class FetchRegionAttributesFunction extends CliFunction<String> {
    */
   @Override
   public CliFunctionResult executeFunction(FunctionContext<String> context) throws Exception {
-    ClassLoaderService classLoaderService =
-        ((InternalCache) context.getCache()).getInternalDistributedSystem().getClassLoaderService();
     String regionPath = context.getArguments();
     if (regionPath == null) {
       throw new IllegalArgumentException(
           CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
     }
     XmlEntity xmlEntity =
-        new XmlEntity(CacheXml.REGION, "name", regionPath.substring(1), classLoaderService);
+        new XmlEntity(CacheXml.REGION, "name", regionPath.substring(1));
     return new CliFunctionResult(context.getMemberName(), xmlEntity.getXmlDefinition());
   }
 

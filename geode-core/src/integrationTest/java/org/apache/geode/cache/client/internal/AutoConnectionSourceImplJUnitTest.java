@@ -81,10 +81,8 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoad
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -301,8 +299,7 @@ public class AutoConnectionSourceImplJUnitTest {
 
     TcpServer server2 =
         new TcpServer(secondPort, InetAddress.getLocalHost(), handler,
-            "tcp server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader(
-                new DefaultClassLoaderServiceImpl(LogService.getLogger()))),
+            "tcp server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
             DistributionStats::getStatTime,
             Executors::newCachedThreadPool,
             SocketCreatorFactory
@@ -391,8 +388,7 @@ public class AutoConnectionSourceImplJUnitTest {
     server = new TcpServer(port, InetAddress.getLocalHost(), handler,
         "Tcp Server",
         new ProtocolCheckerImpl(null,
-            new ClientProtocolServiceLoader(
-                new DefaultClassLoaderServiceImpl(LogService.getLogger()))),
+            new ClientProtocolServiceLoader()),
         DistributionStats::getStatTime,
         Executors::newCachedThreadPool,
         SocketCreatorFactory

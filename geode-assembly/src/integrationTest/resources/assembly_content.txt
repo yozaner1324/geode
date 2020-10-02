@@ -967,13 +967,13 @@ javadoc/org/apache/geode/security/package-frame.html
 javadoc/org/apache/geode/security/package-summary.html
 javadoc/org/apache/geode/security/package-tree.html
 javadoc/org/apache/geode/services/classloader/ClassLoaderService.html
-javadoc/org/apache/geode/services/classloader/impl/DefaultClassLoaderServiceImpl.html
-javadoc/org/apache/geode/services/classloader/impl/package-frame.html
-javadoc/org/apache/geode/services/classloader/impl/package-summary.html
-javadoc/org/apache/geode/services/classloader/impl/package-tree.html
 javadoc/org/apache/geode/services/classloader/package-frame.html
 javadoc/org/apache/geode/services/classloader/package-summary.html
 javadoc/org/apache/geode/services/classloader/package-tree.html
+javadoc/org/apache/geode/services/registry/ServiceRegistry.html
+javadoc/org/apache/geode/services/registry/package-frame.html
+javadoc/org/apache/geode/services/registry/package-summary.html
+javadoc/org/apache/geode/services/registry/package-tree.html
 javadoc/org/apache/geode/services/result/Result.html
 javadoc/org/apache/geode/services/result/ServiceResult.html
 javadoc/org/apache/geode/services/result/impl/Failure.html
@@ -1016,6 +1016,7 @@ lib/geode-cq-0.0.0.jar
 lib/geode-dependencies.jar
 lib/geode-gfsh-0.0.0.jar
 lib/geode-http-service-0.0.0.jar
+lib/geode-jar-deployer-0.0.0.jar
 lib/geode-jca-0.0.0.rar
 lib/geode-log4j-0.0.0.jar
 lib/geode-logging-0.0.0.jar

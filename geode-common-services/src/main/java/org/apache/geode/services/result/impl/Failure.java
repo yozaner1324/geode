@@ -41,9 +41,15 @@ import org.apache.geode.services.result.ServiceResult;
 public class Failure<SuccessType> implements ServiceResult<SuccessType> {
 
   private final String errorMessage;
+  private final Throwable backingThrowable;
 
   private Failure(String errorMessage) {
+    this(errorMessage, null);
+  }
+
+  private Failure(String errorMessage, Throwable throwable) {
     this.errorMessage = errorMessage;
+    this.backingThrowable = throwable;
   }
 
   /**

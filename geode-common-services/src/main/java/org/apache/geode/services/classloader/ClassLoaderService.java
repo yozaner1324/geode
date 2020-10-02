@@ -14,14 +14,18 @@
  */
 package org.apache.geode.services.classloader;
 
+import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.services.result.ServiceResult;
 
+@Experimental
 public interface ClassLoaderService {
 
   /**
@@ -54,17 +58,21 @@ public interface ClassLoaderService {
    *         used {@link ServiceResult#getErrorMessage()} to get the error message of the
    *         failure.
    */
-  ServiceResult<List<Class<?>>> loadClass(String className);
+  ServiceResult<List<Class<?>>> forName(String className);
 
   /**
    * Finds the resource represented by the given resource file and returns a collection of
    * {@link InputStream}s for the found resources.
    *
-   * @param resourceFile the name of the resource to be found.
+   * @param resourceFilePath the name of the resource to be found.
    * @return a {@link ServiceResult} containing a {@link List} of {@link InputStream}s representing
    *         the desired resource.
    */
-  ServiceResult<List<InputStream>> getResourceAsStream(String resourceFile);
+  ServiceResult<List<InputStream>> getResourceAsStream(String resourceFilePath);
+
+  ServiceResult<URL> getResource(String resourceFilePath);
+
+  ServiceResult<URL> getResource(Class<?> clazz, String resourceFilePath);
 
   /**
    * Sets the {@link Logger} to be used by the {@link ClassLoaderService}.
@@ -72,4 +80,6 @@ public interface ClassLoaderService {
    * @param logger the {@link Logger} to be used.
    */
   void setLogger(Logger logger);
+
+  void setWorkingDirectory(File deployWorkingDir);
 }

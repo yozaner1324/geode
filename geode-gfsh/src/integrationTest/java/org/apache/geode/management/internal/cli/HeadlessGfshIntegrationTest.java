@@ -41,10 +41,8 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 import org.apache.geode.test.junit.categories.GfshTest;
 
 /**
@@ -78,9 +76,7 @@ public class HeadlessGfshIntegrationTest {
     legacyConnect(properties);
 
     gfsh = new HeadlessGfsh("Test", 25,
-        this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath(),
-        new DefaultClassLoaderServiceImpl(
-            LogService.getLogger()));
+        this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath());
   }
 
   @SuppressWarnings("deprecation")

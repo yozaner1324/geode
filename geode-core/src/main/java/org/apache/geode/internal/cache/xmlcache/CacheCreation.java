@@ -177,7 +177,6 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.geode.services.classloader.ClassLoaderService;
 
 /**
  * Represents a {@link Cache} that is created declaratively. Notice that it implements the
@@ -325,13 +324,12 @@ public class CacheCreation implements InternalCache {
   private final InternalQueryService queryService = createInternalQueryService();
 
   private QueryConfigurationServiceCreation queryConfigurationServiceCreation;
-  private ClassLoaderService classLoaderService;
 
   /**
    * Creates a new {@code CacheCreation} with no root regions
    */
-  public CacheCreation(ClassLoaderService classLoaderService) {
-    this(false, classLoaderService);
+  public CacheCreation() {
+    this(false);
   }
 
   /**
@@ -340,8 +338,7 @@ public class CacheCreation implements InternalCache {
    *
    * @since GemFire 5.7
    */
-  public CacheCreation(boolean forParsing, ClassLoaderService classLoaderService) {
-    this.classLoaderService = classLoaderService;
+  public CacheCreation(boolean forParsing) {
     initializeRegionShortcuts();
     if (!forParsing) {
       createInProgress.set(poolManager);
@@ -1710,12 +1707,12 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory() {
-    return WANServiceProvider.createGatewaySenderFactory(this, classLoaderService);
+    return WANServiceProvider.createGatewaySenderFactory(this);
   }
 
   @Override
   public GatewayReceiverFactory createGatewayReceiverFactory() {
-    return WANServiceProvider.createGatewayReceiverFactory(this, classLoaderService);
+    return WANServiceProvider.createGatewayReceiverFactory(this);
   }
 
   @Override

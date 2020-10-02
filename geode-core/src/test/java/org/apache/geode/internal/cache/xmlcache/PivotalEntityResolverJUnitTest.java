@@ -17,8 +17,6 @@ package org.apache.geode.internal.cache.xmlcache;
 import org.junit.Before;
 import org.xml.sax.EntityResolver;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.services.classloader.impl.DefaultClassLoaderServiceImpl;
 
 
 /**
@@ -33,10 +31,8 @@ public class PivotalEntityResolverJUnitTest extends AbstractEntityResolverTest {
   private final String systemId = "http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd";
 
   @Before
-  public void setup() throws Exception {
-    PivotalEntityResolver pivotalEntityResolver = new PivotalEntityResolver();
-    pivotalEntityResolver.init(new DefaultClassLoaderServiceImpl(LogService.getLogger()));
-    this.entityResolver = pivotalEntityResolver;
+  public void setup() {
+    this.entityResolver = new PivotalEntityResolver();
   }
 
   @Override
