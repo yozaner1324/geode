@@ -323,7 +323,7 @@ public class ClusterDistributionManager implements DistributionManager {
       long start = System.currentTimeMillis();
 
       distributionManager =
-          new ClusterDistributionManager(transport, system, system.getAlertingService(),
+          new ClusterDistributionManager(system, transport, system.getAlertingService(),
               membershipLocator);
       distributionManager.assertDistributionManagerType();
 

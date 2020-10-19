@@ -1005,7 +1005,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       }
     }
 
-    System.err.println("DistributionConfigImpl.DistributionConfigImpl");
     initialize(props);
 
     if (securityPeerAuthInit != null && securityPeerAuthInit.length() > 0) {

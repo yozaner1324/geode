@@ -175,8 +175,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           xmlContent = generateInitialXmlContent();
         }
         try {
-          final Document doc =
-              XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+          Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
           XmlUtils.addNewNode(doc, xmlEntity);
           configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
           configRegion.put(group, configuration);

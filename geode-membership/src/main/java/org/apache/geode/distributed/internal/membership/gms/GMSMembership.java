@@ -565,9 +565,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         this.isJoining = true; // added for bug #44373
 
         // connect
-        boolean ok = services.getJoinLeave().join();
+        boolean joined = services.getJoinLeave().join();
 
-        if (!ok) {
+        if (!joined) {
           throw new MembershipConfigurationException("Unable to join the distributed system.  "
               + "Operation either timed out, was stopped or Locator does not exist.");
         }

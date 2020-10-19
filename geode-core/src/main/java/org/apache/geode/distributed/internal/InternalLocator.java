@@ -742,7 +742,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       internalDistributedSystem =
           InternalDistributedSystem
               .connectInternal(distributedSystemProperties, null,
-                  new InternalDistributedSystemMetricsService.Builder());
+                  new InternalDistributedSystemMetricsService.Builder(),
+                  membershipLocator);
 
       if (peerLocator) {
         // We've created a peer location message handler - it needs to be connected to
