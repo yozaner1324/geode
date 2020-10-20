@@ -39,6 +39,8 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.deployment.FunctionScanner;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 public class DeployJarFunctionUtils {
 
@@ -85,17 +87,23 @@ public class DeployJarFunctionUtils {
                   deployedJarFile.getAbsolutePath());
             }
             try {
-              Class<?> clazz = ClassPathLoader.getLatest().forName(className);
-              Collection<Function<?>> functionsToRegister =
-                  getFunctionsToRegisterFromClass(clazz, deployedJar);
-              for (Function<?> function : functionsToRegister) {
-                FunctionService.registerFunction(function);
-                if (isDebugEnabled) {
-                  logger.debug("Registering function class: {}, from JAR file: {}", className,
-                      deployedJarFile.getAbsolutePath());
+              ServiceResult<Class<?>> serviceResult =
+                  ClassLoaderService.getClassLoaderService().forName(className);
+              if(serviceResult.isSuccessful()) {
+                Class<?> clazz = serviceResult.getMessage();
+                Collection<Function<?>> functionsToRegister =
+                    getFunctionsToRegisterFromClass(clazz, deployedJar);
+                for (Function<?> function : functionsToRegister) {
+                  FunctionService.registerFunction(function);
+                  if (isDebugEnabled) {
+                    logger.debug("Registering function class: {}, from JAR file: {}", className,
+                        deployedJarFile.getAbsolutePath());
+                  }
+                  registeredFunctions.add(function);
                 }
-                registeredFunctions.add(function);
-              }
+              } else {
+                throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+                    , className, serviceResult.getErrorMessage()));              }
             } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
               logger.error("Unable to load all classes from JAR file: {}",
                   deployedJarFile.getAbsolutePath(), cnfex);

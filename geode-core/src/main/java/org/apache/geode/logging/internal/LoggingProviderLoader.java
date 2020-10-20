@@ -47,16 +47,7 @@ public class LoggingProviderLoader {
   private final ClassLoaderService classLoaderService;
 
   public LoggingProviderLoader() {
-    this.classLoaderService = getClassLoaderService();
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
+    this.classLoaderService = ClassLoaderService.getClassLoaderService();
   }
 
   /**
@@ -107,9 +98,14 @@ public class LoggingProviderLoader {
     }
 
     try {
-      Class<? extends LoggingProvider> agentClass =
-          ClassPathLoader.getLatest().forName(agentClassName).asSubclass(LoggingProvider.class);
-      return agentClass.newInstance();
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderService.getClassLoaderService().forName(agentClassName);
+      if(serviceResult.isSuccessful()) {
+        return serviceResult.getMessage().asSubclass(LoggingProvider.class).newInstance();
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+            , agentClassName, serviceResult.getErrorMessage()));
+      }
     } catch (ClassNotFoundException | ClassCastException | InstantiationException
         | IllegalAccessException e) {
       logger.warn("Unable to create LoggingProvider of type {}", agentClassName, e);

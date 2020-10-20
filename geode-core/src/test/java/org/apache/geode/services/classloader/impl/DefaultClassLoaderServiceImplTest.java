@@ -58,23 +58,22 @@ public class DefaultClassLoaderServiceImplTest {
 
   @Test
   public void loadClassExists() {
-    ServiceResult<List<Class<?>>> loadedClassResult =
+    ServiceResult<Class<?>> loadedClassResult =
         classLoaderService.forName("org.apache.geode.services.classloader.impl.TestServiceImpl");
 
     assertThat(loadedClassResult.isSuccessful()).isTrue();
-    assertThat(loadedClassResult.getMessage().size()).isEqualTo(1);
   }
 
   @Test
   public void loadClassExistsMissingPackage() {
-    ServiceResult<List<Class<?>>> loadedClassResult = classLoaderService.forName("TestService");
+    ServiceResult<Class<?>> loadedClassResult = classLoaderService.forName("TestService");
 
     assertThat(loadedClassResult.isFailure()).isTrue();
   }
 
   @Test
   public void loadClassNotExists() {
-    ServiceResult<List<Class<?>>> loadedClassResult =
+    ServiceResult<Class<?>> loadedClassResult =
         classLoaderService.forName("org.apache.geode.services.moduleFakeClassThatIsNotReal");
 
     assertThat(loadedClassResult.isSuccessful()).isFalse();

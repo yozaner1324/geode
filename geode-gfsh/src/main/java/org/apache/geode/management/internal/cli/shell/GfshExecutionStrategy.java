@@ -37,6 +37,8 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Defines the {@link ExecutionStrategy} for commands that are executed in GemFire Shell (gfsh).
@@ -162,8 +164,14 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     // 1. Pre Remote Execution
     if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
       try {
-        interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
-            .newInstance();
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderService.getClassLoaderService().forName(interceptorClass);
+        if(serviceResult.isSuccessful()) {
+          interceptor = (CliAroundInterceptor) serviceResult.getMessage().newInstance();
+        } else {
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+              , interceptorClass, serviceResult.getErrorMessage()));
+        }
       } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
         shell.logWarning("Configuration error", e);
       }

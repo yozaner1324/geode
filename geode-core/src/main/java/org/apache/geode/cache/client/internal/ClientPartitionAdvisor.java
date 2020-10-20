@@ -92,13 +92,13 @@ public class ClientPartitionAdvisor {
   }
 
   private void createPartitionResolverForName(String partitionResolverName) {
-    ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService()
+    ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService()
         .forName(partitionResolverName);
 
     serviceResult.ifSuccessful(classes -> {
       try {
         this.partitionResolver =
-            (PartitionResolver) classes.get(0).newInstance();
+            (PartitionResolver) classes.newInstance();
       } catch (IllegalAccessException | InstantiationException e) {
         logger.error(e);
         logPartitionResolverError(partitionResolverName);
@@ -110,15 +110,6 @@ public class ClientPartitionAdvisor {
     throw new InternalGemFireException(
         String.format("Cannot create an instance of PartitionResolver : %s",
             partitionResolverName));
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 
   public ServerLocation adviseServerLocation(int bucketId) {

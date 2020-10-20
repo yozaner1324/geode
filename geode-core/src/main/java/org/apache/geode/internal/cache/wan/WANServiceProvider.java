@@ -32,16 +32,7 @@ public class WANServiceProvider {
   @Immutable
   private static WANFactory factory;
 
-  private static final ClassLoaderService classLoaderService = getClassLoaderService();
-
-  private static ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
-  }
+  private static final ClassLoaderService classLoaderService = ClassLoaderService.getClassLoaderService();
 
   private static void setup() {
     if (factory == null) {

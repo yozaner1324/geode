@@ -42,6 +42,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.functions.CliFunctionResult.StatusState;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
@@ -151,7 +153,15 @@ public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.Async
       return null;
     }
 
-    return ClassPathLoader.getLatest().forName(className).newInstance();
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderService.getClassLoaderService().forName(className);
+
+    if(serviceResult.isSuccessful()) {
+      return serviceResult.getMessage().newInstance();
+    } else {
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+          , className, serviceResult.getErrorMessage()));
+    }
   }
 
   @Override

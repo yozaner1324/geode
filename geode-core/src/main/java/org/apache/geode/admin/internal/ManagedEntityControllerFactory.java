@@ -52,17 +52,8 @@ public class ManagedEntityControllerFactory {
   }
 
   public static boolean isEnabledManagedEntityController() {
-    return getClassLoaderService().forName(ENABLED_MANAGED_ENTITY_CONTROLLER_CLASS_NAME)
+    return ClassLoaderService.getClassLoaderService().forName(ENABLED_MANAGED_ENTITY_CONTROLLER_CLASS_NAME)
         .isSuccessful();
-  }
-
-  private static ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 
   private static ManagedEntityController createEnabledManagedEntityController(

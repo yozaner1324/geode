@@ -109,11 +109,10 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
                   .getOtherNormalDistributionManagerIds();
           InternalDistributedMember otherMember = others.stream().findFirst().get();
 
-          ServiceResult<List<Class<?>>> serviceResult =
-              getClassLoaderService()
+          ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService()
                   .forName("ClusterConfigServerRestartWithJarDeployFunction$Student");
           if (serviceResult.isSuccessful()) {
-            Class<?> studentClass = serviceResult.getMessage().get(0);
+            Class<?> studentClass = serviceResult.getMessage();
 
             Object student = studentClass.getConstructor().newInstance();
 
@@ -137,14 +136,5 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
         }
       }
     });
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 }

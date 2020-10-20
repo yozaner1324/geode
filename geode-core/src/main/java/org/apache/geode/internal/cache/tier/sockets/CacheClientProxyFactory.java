@@ -21,13 +21,17 @@ import java.net.Socket;
 
 import org.apache.shiro.subject.Subject;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Creates instances of CacheClientProxy.
@@ -54,10 +58,16 @@ public class CacheClientProxyFactory {
       return DEFAULT;
     }
     try {
-      Class<InternalCacheClientProxyFactory> proxyClass =
-          uncheckedCast(ClassPathLoader.getLatest().forName(proxyClassName));
-      return proxyClass.getConstructor().newInstance();
-    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException
+      ServiceResult<Class<?>> result = ClassLoaderService.getClassLoaderService().forName(proxyClassName);
+      if(result.isSuccessful()) {
+        Class<InternalCacheClientProxyFactory> proxyClass = uncheckedCast(result.getMessage());
+        return proxyClass.getConstructor().newInstance();
+      } else {
+        // Since the result was not successful, ClassNotFound is assumed.
+        return DEFAULT;
+      }
+
+    } catch (NoSuchMethodException | InstantiationException
         | IllegalAccessException | InvocationTargetException e) {
       return DEFAULT;
     }

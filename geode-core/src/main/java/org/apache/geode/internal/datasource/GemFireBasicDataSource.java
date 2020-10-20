@@ -24,6 +24,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * GemFireBasicDataSource extends AbstractDataSource. This is a datasource class which provides
@@ -154,7 +156,13 @@ public class GemFireBasicDataSource extends AbstractDataSource {
 
   private Driver loadDriverUsingClassName()
       throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-    Class<?> driverClass = ClassPathLoader.getLatest().forName(jdbcDriver);
-    return (Driver) driverClass.newInstance();
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderService.getClassLoaderService().forName(jdbcDriver);
+    if(serviceResult.isSuccessful()) {
+      return (Driver) serviceResult.getMessage().newInstance();
+    } else {
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+          , jdbcDriver, serviceResult.getErrorMessage()));
+    }
   }
 }

@@ -40,10 +40,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.configuration.XSDRootElement;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 public class JAXBService {
 
@@ -124,8 +127,12 @@ public class JAXBService {
 
   public void validateWithLocalCacheXSD() {
     // find the local Cache-1.0.xsd
-    URL local_cache_xsd = ClassPathLoader.getLatest()
+    URL local_cache_xsd = null;
+    ServiceResult<URL> result = ClassLoaderService.getClassLoaderService()
         .getResource("META-INF/schemas/geode.apache.org/schema/cache/cache-1.0.xsd");
+    if (result.isSuccessful()) {
+      local_cache_xsd = result.getMessage();
+    }
     validateWith(local_cache_xsd);
   }
 

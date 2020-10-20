@@ -44,16 +44,7 @@ public class HandshakeRequestOperationHandler implements
   private final ClassLoaderService classLoaderService;
 
   public HandshakeRequestOperationHandler() {
-    this.classLoaderService = getClassLoaderService();
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
+    this.classLoaderService = ClassLoaderService.getClassLoaderService();
   }
 
   @Override

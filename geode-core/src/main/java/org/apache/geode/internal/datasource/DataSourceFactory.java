@@ -47,6 +47,8 @@ import org.apache.geode.datasource.PooledDataSourceFactory;
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 public class DataSourceFactory {
 
@@ -56,120 +58,18 @@ public class DataSourceFactory {
       "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
 
   private static final String POOL_PREFIX = "pool.";
+  /*
+   * Test hook for replacing URL
+   */
+  @MutableForTesting
+  private static String TEST_CONNECTION_URL = null;
+  @MutableForTesting
+  private static String TEST_CONNECTION_HOST = null;
+  @MutableForTesting
+  private static String TEST_CONNECTION_PORT = null;
 
   /** Creates a new instance of DataSourceFactory */
   public DataSourceFactory() {}
-
-  /**
-   * This function returns the Basic datasource without any pooling.
-   *
-   * @param configMap a map containing configurations required for datasource.
-   * @return ??
-   */
-  public DataSource getSimpleDataSource(Map configMap) throws DataSourceCreateException {
-    ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
-    if (configs.getURL() == null) {
-      logger.error("DataSourceFactory::getSimpleDataSource:URL String to Database is null");
-      throw new DataSourceCreateException(
-          "DataSourceFactory::getSimpleDataSource:URL String to Database is null");
-    }
-    try {
-      return new GemFireBasicDataSource(configs);
-    } catch (Exception ex) {
-      logger.error(String.format(
-          "DataSourceFactory::getSimpleDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
-          ex.getLocalizedMessage()),
-          ex);
-      throw new DataSourceCreateException(
-          String.format(
-              "DataSourceFactory::getSimpleDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
-              ex.getLocalizedMessage()),
-          ex);
-    }
-  }
-
-  /**
-   * This function creates a data source from the ManagedConnectionFactory class using the
-   * connectionManager.
-   *
-   * @return javax.sql.DataSource
-   */
-  public ClientConnectionFactoryWrapper getManagedDataSource(Map configMap,
-      List<ConfigProperty> props) throws DataSourceCreateException {
-    Object cf = null;
-    ManagedConnectionFactory mcf = null;
-    ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
-    if (configs.getMCFClass() == null) {
-      logger.error(
-          "DataSourceFactory::getManagedDataSource:Managed Connection factory class is not available");
-      throw new DataSourceCreateException(
-          "DataSourceFactory::getManagedDataSource:Managed Connection factory class is not available");
-    } else {
-      try {
-        Class cl = ClassPathLoader.getLatest().forName(configs.getMCFClass());
-        mcf = (ManagedConnectionFactory) cl.newInstance();
-        invokeAllMethods(cl, mcf, props);
-      } catch (Exception ex) {
-        logger.error(String.format(
-            "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
-            ex));
-        throw new DataSourceCreateException(
-            String.format(
-                "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
-                ex));
-      }
-    }
-    // Initialize the managed connection factory class
-    // Instantiate a connection manager with the managed-conn-facory-class
-    // and generate a connection pool.
-    Object cm = null;
-    if (configs.getMCFClass().equals("org.apache.persistence.connection.internal.ConnFactory")) {
-      cm = new FacetsJCAConnectionManagerImpl(mcf, configs);
-    } else {
-      cm = new JCAConnectionManagerImpl(mcf, configs);
-    }
-    try {
-      cf = mcf.createConnectionFactory((ConnectionManager) cm);
-    } catch (Exception ex) {
-      logger.error(
-          "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
-          ex.toString());
-      throw new DataSourceCreateException(
-          String.format(
-              "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
-              ex));
-    }
-    return new ClientConnectionFactoryWrapper(cf, cm);
-  }
-
-  /**
-   * This function returns the datasource with connection pooling.
-   */
-  public DataSource getPooledDataSource(Map configMap, List<ConfigProperty> props)
-      throws DataSourceCreateException {
-    ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
-    String connpoolClassName = configs.getConnectionPoolDSClass();
-    if (connpoolClassName == null) {
-      connpoolClassName = DEFAULT_CONNECTION_POOL_DS_CLASS;
-    }
-    try {
-      Properties poolProperties = createPoolProperties(configMap, props);
-      Properties dataSourceProperties = createDataSourceProperties(props);
-      Class<?> cl = ClassPathLoader.getLatest().forName(connpoolClassName);
-      PooledDataSourceFactory factory = (PooledDataSourceFactory) cl.newInstance();
-      return factory.createDataSource(poolProperties, dataSourceProperties);
-    } catch (Exception ex) {
-      String exception =
-          String.format(
-              "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
-              new Object[] {ex});
-      logger.error(String.format(
-          "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
-          ex),
-          ex);
-      throw new DataSourceCreateException(exception, ex);
-    }
-  }
 
   static Properties createPoolProperties(Map<String, String> configMap,
       List<ConfigProperty> props) {
@@ -227,6 +127,150 @@ public class DataSourceFactory {
     return result;
   }
 
+  /*
+   * Test hook for replacing URL
+   */
+  public static void setTestConnectionUrl(String url) {
+    TEST_CONNECTION_URL = url;
+  }
+
+  /*
+   * Test hook for replacing Host
+   */
+  public static void setTestConnectionHost(String host) {
+    TEST_CONNECTION_HOST = host;
+  }
+
+  /*
+   * Test hook for replacing Port
+   */
+  public static void setTestConnectionPort(String port) {
+    TEST_CONNECTION_PORT = port;
+  }
+
+  /**
+   * This function returns the Basic datasource without any pooling.
+   *
+   * @param configMap a map containing configurations required for datasource.
+   * @return ??
+   */
+  public DataSource getSimpleDataSource(Map configMap) throws DataSourceCreateException {
+    ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
+    if (configs.getURL() == null) {
+      logger.error("DataSourceFactory::getSimpleDataSource:URL String to Database is null");
+      throw new DataSourceCreateException(
+          "DataSourceFactory::getSimpleDataSource:URL String to Database is null");
+    }
+    try {
+      return new GemFireBasicDataSource(configs);
+    } catch (Exception ex) {
+      logger.error(String.format(
+          "DataSourceFactory::getSimpleDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
+          ex.getLocalizedMessage()),
+          ex);
+      throw new DataSourceCreateException(
+          String.format(
+              "DataSourceFactory::getSimpleDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
+              ex.getLocalizedMessage()),
+          ex);
+    }
+  }
+
+  /**
+   * This function creates a data source from the ManagedConnectionFactory class using the
+   * connectionManager.
+   *
+   * @return javax.sql.DataSource
+   */
+  public ClientConnectionFactoryWrapper getManagedDataSource(Map configMap,
+      List<ConfigProperty> props) throws DataSourceCreateException {
+    Object cf = null;
+    ManagedConnectionFactory mcf = null;
+    ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
+    if (configs.getMCFClass() == null) {
+      logger.error(
+          "DataSourceFactory::getManagedDataSource:Managed Connection factory class is not available");
+      throw new DataSourceCreateException(
+          "DataSourceFactory::getManagedDataSource:Managed Connection factory class is not available");
+    } else {
+      try {
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderService.getClassLoaderService().forName(configs.getMCFClass());
+        if (serviceResult.isSuccessful()) {
+          Class cl = serviceResult.getMessage();
+          mcf = (ManagedConnectionFactory) cl.newInstance();
+          invokeAllMethods(cl, mcf, props);
+        } else {
+          throw new RuntimeException(serviceResult.getErrorMessage());
+        }
+      } catch (Exception ex) {
+        logger.error(String.format(
+            "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+            ex));
+        throw new DataSourceCreateException(
+            String.format(
+                "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+                ex));
+      }
+    }
+    // Initialize the managed connection factory class
+    // Instantiate a connection manager with the managed-conn-facory-class
+    // and generate a connection pool.
+    Object cm = null;
+    if (configs.getMCFClass().equals("org.apache.persistence.connection.internal.ConnFactory")) {
+      cm = new FacetsJCAConnectionManagerImpl(mcf, configs);
+    } else {
+      cm = new JCAConnectionManagerImpl(mcf, configs);
+    }
+    try {
+      cf = mcf.createConnectionFactory((ConnectionManager) cm);
+    } catch (Exception ex) {
+      logger.error(
+          "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+          ex.toString());
+      throw new DataSourceCreateException(
+          String.format(
+              "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+              ex));
+    }
+    return new ClientConnectionFactoryWrapper(cf, cm);
+  }
+
+  /**
+   * This function returns the datasource with connection pooling.
+   */
+  public DataSource getPooledDataSource(Map configMap, List<ConfigProperty> props)
+      throws DataSourceCreateException {
+    ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
+    String connpoolClassName = configs.getConnectionPoolDSClass();
+    if (connpoolClassName == null) {
+      connpoolClassName = DEFAULT_CONNECTION_POOL_DS_CLASS;
+    }
+    try {
+      Properties poolProperties = createPoolProperties(configMap, props);
+      Properties dataSourceProperties = createDataSourceProperties(props);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderService.getClassLoaderService().forName(connpoolClassName);
+      if (serviceResult.isSuccessful()) {
+        PooledDataSourceFactory factory =
+            (PooledDataSourceFactory) serviceResult.getMessage().newInstance();
+        return factory.createDataSource(poolProperties, dataSourceProperties);
+      } else {
+        throw new ClassNotFoundException(connpoolClassName);
+      }
+
+    } catch (Exception ex) {
+      String exception =
+          String.format(
+              "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
+              new Object[] {ex});
+      logger.error(String.format(
+          "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
+          ex),
+          ex);
+      throw new DataSourceCreateException(exception, ex);
+    }
+  }
 
   /**
    * This function returns the datasource with connection pooling and transaction participation
@@ -252,10 +296,18 @@ public class DataSourceFactory {
       props.add(new ConfigProperty("portNumber", TEST_CONNECTION_PORT, "int"));
     }
     try {
-      Class cl = ClassPathLoader.getLatest().forName(xaClassName);
-      Object Obj = cl.newInstance();
-      invokeAllMethods(cl, Obj, props);
-      return new GemFireTransactionDataSource((XADataSource) Obj, configs);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderService.getClassLoaderService().forName(xaClassName);
+      if (serviceResult.isSuccessful()) {
+        Class cl = serviceResult.getMessage();
+        Object Obj = cl.newInstance();
+        invokeAllMethods(cl, Obj, props);
+        return new GemFireTransactionDataSource((XADataSource) Obj, configs);
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            xaClassName, serviceResult.getErrorMessage()));
+      }
+
     } catch (Exception ex) {
       String exception =
           String.format(
@@ -323,38 +375,6 @@ public class DataSourceFactory {
     return configs;
   }
 
-  /*
-   * Test hook for replacing URL
-   */
-  @MutableForTesting
-  private static String TEST_CONNECTION_URL = null;
-  @MutableForTesting
-  private static String TEST_CONNECTION_HOST = null;
-  @MutableForTesting
-  private static String TEST_CONNECTION_PORT = null;
-
-  /*
-   * Test hook for replacing URL
-   */
-  public static void setTestConnectionUrl(String url) {
-    TEST_CONNECTION_URL = url;
-  }
-
-  /*
-   * Test hook for replacing Host
-   */
-  public static void setTestConnectionHost(String host) {
-    TEST_CONNECTION_HOST = host;
-  }
-
-  /*
-   * Test hook for replacing Port
-   */
-  public static void setTestConnectionPort(String port) {
-    TEST_CONNECTION_PORT = port;
-  }
-
-
   /**
    *
    * dynamically invokes all the methods in the specified object.
@@ -394,8 +414,15 @@ public class DataSourceFactory {
           cl = int.class;
           realClass = java.lang.Integer.class;
         } else {
-          cl = ClassPathLoader.getLatest().forName(type);
-          realClass = cl;
+          ServiceResult<Class<?>> serviceResult =
+              ClassLoaderService.getClassLoaderService().forName(type);
+          if (serviceResult.isSuccessful()) {
+            cl = serviceResult.getMessage();
+            realClass = cl;
+          } else {
+            throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+                type, serviceResult.getErrorMessage()));
+          }
         }
         Constructor cr = realClass.getConstructor(new Class[] {java.lang.String.class});
         Object ob = cr.newInstance(new Object[] {value});

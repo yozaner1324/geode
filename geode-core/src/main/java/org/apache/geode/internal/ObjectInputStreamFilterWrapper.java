@@ -33,6 +33,8 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 
 /**
@@ -129,16 +131,16 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
    */
   private boolean createJava8Filter(String serializationFilterSpec,
       Collection<String> sanctionedClasses) {
-    ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
     try {
 
-      filterInfoClass = classPathLoader.forName("sun.misc.ObjectInputFilter$FilterInfo");
-      serialClassMethod = filterInfoClass.getDeclaredMethod("serialClass");
+      this.filterInfoClass = getClassForName("sun.misc.ObjectInputFilter$FilterInfo");
+      serialClassMethod = this.filterInfoClass.getDeclaredMethod("serialClass");
 
-      filterClass = classPathLoader.forName("sun.misc.ObjectInputFilter");
-      checkInputMethod = filterClass.getDeclaredMethod("checkInput", filterInfoClass);
 
-      Class statusClass = classPathLoader.forName("sun.misc.ObjectInputFilter$Status");
+      filterClass = getClassForName("sun.misc.ObjectInputFilter");
+      checkInputMethod = filterClass.getDeclaredMethod("checkInput", this.filterInfoClass);
+
+      Class statusClass = getClassForName("sun.misc.ObjectInputFilter$Status");
       ALLOWED = statusClass.getEnumConstants()[1];
       REJECTED = statusClass.getEnumConstants()[2];
       if (!ALLOWED.toString().equals("ALLOWED") || !REJECTED.toString().equals("REJECTED")) {
@@ -146,7 +148,7 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
             "ObjectInputFilter$Status enumeration in this JDK is not as expected");
       }
 
-      configClass = classPathLoader.forName("sun.misc.ObjectInputFilter$Config");
+      configClass = getClassForName("sun.misc.ObjectInputFilter$Config");
       setObjectInputFilterMethod = configClass.getDeclaredMethod("setObjectInputFilter",
           ObjectInputStream.class, filterClass);
       createFilterMethod = configClass.getDeclaredMethod("createFilter", String.class);
@@ -167,20 +169,30 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
     return true;
   }
 
+  private Class<?> getClassForName(String className) throws ClassNotFoundException {
+    ClassLoaderService classLoaderService = ClassLoaderService.getClassLoaderService();
+    ServiceResult<Class<?>> serviceResult =
+        classLoaderService.forName(className);
+    if(serviceResult.isSuccessful()) {
+      return serviceResult.getMessage();
+    } else {
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+          , className, serviceResult.getErrorMessage()));
+    }
+  }
+
   /** java9 has java.io.ObjectInputFilter and uses ObjectInputStream.setObjectInputFilter() */
   private void createJava9Filter(String serializationFilterSpec,
       Collection<String> sanctionedClasses) {
     try {
-      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
-
-      filterInfoClass = classPathLoader.forName("java.io.ObjectInputFilter$FilterInfo");
+      filterInfoClass = getClassForName("java.io.ObjectInputFilter$FilterInfo");
       serialClassMethod = filterInfoClass.getDeclaredMethod("serialClass");
 
 
-      filterClass = classPathLoader.forName("java.io.ObjectInputFilter");
+      filterClass = getClassForName("java.io.ObjectInputFilter");
       checkInputMethod = filterClass.getDeclaredMethod("checkInput", filterInfoClass);
 
-      Class statusClass = classPathLoader.forName("java.io.ObjectInputFilter$Status");
+      Class statusClass = getClassForName("java.io.ObjectInputFilter$Status");
       ALLOWED = statusClass.getEnumConstants()[1];
       REJECTED = statusClass.getEnumConstants()[2];
       if (!ALLOWED.toString().equals("ALLOWED") || !REJECTED.toString().equals("REJECTED")) {
@@ -188,7 +200,7 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
             "ObjectInputFilter$Status enumeration in this JDK is not as expected");
       }
 
-      configClass = classPathLoader.forName("java.io.ObjectInputFilter$Config");
+      configClass = getClassForName("java.io.ObjectInputFilter$Config");
       setObjectInputFilterMethod =
           ObjectInputStream.class.getDeclaredMethod("setObjectInputFilter", filterClass);
       createFilterMethod = configClass.getDeclaredMethod("createFilter", String.class);

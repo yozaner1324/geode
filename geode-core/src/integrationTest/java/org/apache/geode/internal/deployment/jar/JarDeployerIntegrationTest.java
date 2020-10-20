@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -180,23 +179,14 @@ public class JarDeployerIntegrationTest {
     if (!SystemUtils.isWindows()) {
       assertThat(deployedDir.list()).containsExactly("abc.v1.jar");
     }
-    assertThat(getClassLoaderService().forName("jddunit.function.Def").isFailure())
+    assertThat(ClassLoaderService.getClassLoaderService().forName("jddunit.function.Def").isFailure())
         .isTrue();
   }
 
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
-  }
-
   private String getVersion(String classname) throws Exception {
-    ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService().forName(classname);
+    ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService().forName(classname);
     assertThat(serviceResult.isSuccessful()).isTrue();
-    Class<?> def = (Class<?>) serviceResult.getMessage().get(0);
+    Class<?> def = (Class<?>) serviceResult.getMessage();
     return (String) def.getMethod("getId").invoke(def.newInstance());
   }
 

@@ -55,6 +55,8 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.exceptions.UserErrorException;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 public class ManagementUtils {
   @Immutable
@@ -130,7 +132,14 @@ public class ManagementUtils {
       // Set Constraints
       ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
       if (classToLoadName != null && !classToLoadName.isEmpty()) {
-        loadedClass = (Class<K>) classPathLoader.forName(classToLoadName);
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderService.getClassLoaderService().forName(classToLoadName);
+        if(serviceResult.isSuccessful()) {
+          loadedClass = (Class<K>) serviceResult.getMessage();
+        } else {
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+              , classToLoadName, serviceResult.getErrorMessage()));
+        }
       }
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       throw new RuntimeException(

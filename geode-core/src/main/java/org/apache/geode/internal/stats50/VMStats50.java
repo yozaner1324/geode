@@ -45,6 +45,8 @@ import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -157,19 +159,27 @@ public class VMStats50 implements VMStatsContract {
       Method m3 = null;
       Object bean = null;
       try {
-        Class c =
-            ClassPathLoader.getLatest().forName("com.sun.management.UnixOperatingSystemMXBean");
-        if (c.isInstance(osBean)) {
-          m1 = c.getMethod("getMaxFileDescriptorCount", new Class[] {});
-          m2 = c.getMethod("getOpenFileDescriptorCount", new Class[] {});
-          bean = osBean;
+        String className = "com.sun.management.UnixOperatingSystemMXBean";
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderService.getClassLoaderService()
+                .forName(className);
+        if(serviceResult.isSuccessful()) {
+          Class c = serviceResult.getMessage();
+          if (c.isInstance(osBean)) {
+            m1 = c.getMethod("getMaxFileDescriptorCount", new Class[] {});
+            m2 = c.getMethod("getOpenFileDescriptorCount", new Class[] {});
+            bean = osBean;
+          } else {
+            // leave them null
+          }
+          // Always set ProcessCpuTime
+          m3 = osBean.getClass().getMethod("getProcessCpuTime", new Class[] {});
+          if (m3 != null) {
+            m3.setAccessible(true);
+          }
         } else {
-          // leave them null
-        }
-        // Always set ProcessCpuTime
-        m3 = osBean.getClass().getMethod("getProcessCpuTime", new Class[] {});
-        if (m3 != null) {
-          m3.setAccessible(true);
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+              , className, serviceResult.getErrorMessage()));
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);

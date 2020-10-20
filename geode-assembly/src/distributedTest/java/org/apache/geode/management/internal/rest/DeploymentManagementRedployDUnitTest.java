@@ -241,16 +241,7 @@ public class DeploymentManagementRedployDUnitTest {
       throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().getJarDeployer()
         .getDeployedJar(FilenameUtils.getBaseName(jarName))).isNotNull();
-    assertThat(getClassLoaderService().forName(className).getMessage().get(0)).isNotNull();
-  }
-
-  private static ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
+    assertThat(ClassLoaderService.getClassLoaderService().forName(className).getMessage()).isNotNull();
   }
 
   private static class LoopingFunctionExecutor implements Serializable {

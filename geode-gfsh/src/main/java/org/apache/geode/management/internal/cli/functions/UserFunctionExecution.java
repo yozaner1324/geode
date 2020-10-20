@@ -48,6 +48,8 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * @since GemFire 7.0
@@ -107,9 +109,14 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
   ResultCollector<Object, List<Object>> parseResultCollector(String resultCollectorName)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
     if (resultCollectorName != null && resultCollectorName.length() > 0) {
-      return (ResultCollector<Object, List<Object>>) ClassPathLoader.getLatest()
-          .forName(resultCollectorName)
-          .newInstance();
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderService.getClassLoaderService().forName(resultCollectorName);
+      if(serviceResult.isSuccessful()) {
+        return (ResultCollector<Object, List<Object>>) serviceResult.getMessage().newInstance();
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+            , resultCollectorName, serviceResult.getErrorMessage()));
+      }
     } else {
       return null;
     }

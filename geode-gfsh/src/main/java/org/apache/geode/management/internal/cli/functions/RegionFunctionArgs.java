@@ -33,6 +33,8 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Used to carry arguments between gfsh region command implementations and the functions that do the
@@ -605,8 +607,15 @@ public class RegionFunctionArgs implements Serializable {
       ObjectSizer sizer;
       if (objectSizer != null) {
         try {
-          Class<?> sizerClass = ClassPathLoader.getLatest().forName(objectSizer);
-          sizer = (ObjectSizer) sizerClass.newInstance();
+          ServiceResult<Class<?>> serviceResult =
+              ClassLoaderService.getClassLoaderService().forName(objectSizer);
+          if(serviceResult.isSuccessful()) {
+            Class<?> sizerClass = serviceResult.getMessage();
+            sizer = (ObjectSizer) sizerClass.newInstance();
+          } else {
+            throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+                , objectSizer, serviceResult.getErrorMessage()));
+          }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
           throw new IllegalArgumentException(
               "Unable to instantiate class " + objectSizer + " - " + e.toString());

@@ -19,7 +19,6 @@ import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -165,9 +164,9 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
         this.authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
-        ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService().forName(className);
+        ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService().forName(className);
         if (serviceResult.isSuccessful()) {
-          Class<?> userClass = serviceResult.getMessage().get(0);
+          Class<?> userClass = serviceResult.getMessage();
           if (!Arrays.asList(userClass.getInterfaces())
               .contains(MethodInvocationAuthorizer.class)) {
             throw new QueryConfigurationServiceException(
@@ -187,15 +186,6 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     } catch (Exception e) {
       throw new QueryConfigurationServiceException(UPDATE_ERROR_MESSAGE, e);
     }
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 
   private static class NoOpAuthorizer implements MethodInvocationAuthorizer {

@@ -45,6 +45,8 @@ import org.apache.geode.internal.util.Hex;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Implementation code in this class must be careful to not directly call super class state. Instead
@@ -225,9 +227,14 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
           try {
             String JSON = JSONFormatter.toJSON(this);
             ObjectMapper objMapper = USE_STATIC_MAPPER ? mapper : createObjectMapper();
-            Object classInstance =
-                objMapper.readValue(JSON, ClassPathLoader.getLatest().forName(className));
-            return classInstance;
+            ServiceResult<Class<?>> serviceResult =
+                ClassLoaderService.getClassLoaderService().forName(className);
+            if(serviceResult.isSuccessful()) {
+              return objMapper.readValue(JSON, serviceResult.getMessage());
+            } else {
+              throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+                  , className, serviceResult.getErrorMessage()));
+            }
           } catch (Exception e) {
             throw new PdxSerializationException(
                 "Could not deserialize as java class '" + className + "' could not be resolved", e);

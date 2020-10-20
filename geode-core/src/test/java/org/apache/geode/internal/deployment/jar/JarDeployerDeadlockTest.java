@@ -36,6 +36,8 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.ClassBuilder;
 
 public class JarDeployerDeadlockTest {
@@ -122,8 +124,7 @@ public class JarDeployerDeadlockTest {
         try {
           // Random select a name from the list of class names and try to load it
           String className = this.classNames[random.nextInt(this.classNames.length)];
-          ClassPathLoader.getLatest().forName(className);
-        } catch (ClassNotFoundException expected) { // expected
+          ClassLoaderService.getClassLoaderService().forName(className);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

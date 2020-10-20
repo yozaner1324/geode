@@ -17,12 +17,17 @@ package org.apache.geode.tools.pulse.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
+
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 @Component
 public class ClassPathPropertiesFileLoader implements PropertiesFileLoader {
@@ -31,10 +36,16 @@ public class ClassPathPropertiesFileLoader implements PropertiesFileLoader {
   @Override
   public Properties loadProperties(String propertyFile, ResourceBundle resourceBundle) {
     final Properties properties = new Properties();
-    try (final InputStream stream =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFile)) {
-      logger.info(propertyFile + " " + resourceBundle.getString("LOG_MSG_FILE_FOUND"));
-      properties.load(stream);
+
+    try {
+      ServiceResult<List<InputStream>> result =
+          ClassLoaderService.getClassLoaderService().getResourceAsStream(propertyFile);
+      if (result.isSuccessful()) {
+        logger.info(propertyFile + " " + resourceBundle.getString("LOG_MSG_FILE_FOUND"));
+        properties.load(result.getMessage().get(0));
+      } else {
+        throw new IOException("Could not load property file: " + propertyFile);
+      }
     } catch (IOException e) {
       logger.error(resourceBundle.getString("LOG_MSG_EXCEPTION_LOADING_PROPERTIES_FILE"), e);
     }

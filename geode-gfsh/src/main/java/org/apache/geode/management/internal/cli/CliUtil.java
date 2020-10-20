@@ -32,9 +32,11 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
@@ -43,6 +45,8 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.ManagementUtils;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * This class contains utility methods used by classes used to build the Command Line Interface
@@ -69,12 +73,7 @@ public class CliUtil {
   }
 
   private static boolean canLoadClass(String className) {
-    try {
-      ClassPathLoader.getLatest().forName(className);
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
-    return true;
+      return ClassLoaderService.getClassLoaderService().forName(className).isSuccessful();
   }
 
   public static String getMemberNameOrId(DistributedMember distributedMember) {

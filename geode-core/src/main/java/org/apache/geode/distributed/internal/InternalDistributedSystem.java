@@ -578,7 +578,7 @@ public class InternalDistributedSystem extends DistributedSystem
     alertingService = new InternalAlertingServiceFactory().create();
     LoggingUncaughtExceptionHandler
         .setFailureSetter(error -> SystemFailure.setFailure((VirtualMachineError) error));
-    this.classLoaderService = getClassLoaderService();
+    this.classLoaderService = ClassLoaderService.getClassLoaderService();
     loggingSession = LoggingSession.create();
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();
@@ -598,15 +598,6 @@ public class InternalDistributedSystem extends DistributedSystem
 
     this.functionStatsManager = functionStatsManagerFactory.create(statsDisabled, statisticsManager,
         new MeterRegistrySupplier(() -> this));
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 
   public SecurityService getSecurityService() {

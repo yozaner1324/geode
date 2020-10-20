@@ -18,7 +18,6 @@ package org.apache.geode.internal;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.GemFireConfigException;
@@ -52,21 +51,12 @@ public class ClassLoadUtil {
   public static Class classFromName(String className) throws ClassNotFoundException {
     Class result = checkForPrimType(className);
     if (result == null) {
-      ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService().forName(className);
+      ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService().forName(className);
       if (serviceResult.isSuccessful()) {
-        result = serviceResult.getMessage().get(0);
+        result = serviceResult.getMessage();
       }
     }
     return result;
-  }
-
-  private static ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 
   /**
@@ -84,9 +74,9 @@ public class ClassLoadUtil {
       throw new NoSuchMethodException(className + " cannot be one of the primitive types");
     }
     String methodName = fullyQualifiedMethodName.substring(classIndex + 1);
-    ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService().forName(className);
+    ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService().forName(className);
     if (serviceResult.isSuccessful()) {
-      Class<?> result = serviceResult.getMessage().get(0);
+      Class<?> result = serviceResult.getMessage();
       return result.getMethod(methodName);
     } else {
       throw new ClassNotFoundException(className);

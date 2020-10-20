@@ -27,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -318,13 +319,13 @@ public class DeployWithGroupsDUnitTest implements Serializable {
 
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
-    assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
+    assertThat(ClassLoaderService.getClassLoaderService().forName(className).getMessage()).isNotNull();
   }
 
   private void assertThatCannotLoad(String jarName, String className) {
     assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNull();
-    assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
-        .isExactlyInstanceOf(ClassNotFoundException.class);
+    assertThat(ClassLoaderService.getClassLoaderService().forName(className).isSuccessful())
+        .isFalse();
   }
 
   @Test

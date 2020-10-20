@@ -85,6 +85,8 @@ import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.net.SSLParameterExtension;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 
@@ -879,8 +881,14 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     if (className != null) {
       Object o;
       try {
-        Class c = ClassPathLoader.getLatest().forName(className);
-        o = c.newInstance();
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderService.getClassLoaderService().forName(className);
+        if(serviceResult.isSuccessful()) {
+          o = serviceResult.getMessage().newInstance();
+        } else {
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+              , className, serviceResult.getErrorMessage()));
+        }
       } catch (Exception e) {
         // No cache exists yet, so this can't be logged.
         String s = "An unexpected exception occurred while instantiating a " + className + ": " + e;

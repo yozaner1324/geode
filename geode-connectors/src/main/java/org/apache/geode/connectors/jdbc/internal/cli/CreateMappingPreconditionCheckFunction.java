@@ -300,9 +300,9 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
 
   // unit test mocks this method
   Class<?> loadClass(String className) throws ClassNotFoundException {
-    ServiceResult<List<Class<?>>> serviceResult = getClassLoaderService().forName(className);
+    ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService().forName(className);
     if (serviceResult.isSuccessful()) {
-      return serviceResult.getMessage().get(0);
+      return serviceResult.getMessage();
     }
     throw new ClassNotFoundException("Class " + className + " not found.");
   }
@@ -336,14 +336,4 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
   void copyFile(InputStream input, FileOutputStream output) throws IOException {
     IOUtils.copyLarge(input, output);
   }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
-  }
-
 }

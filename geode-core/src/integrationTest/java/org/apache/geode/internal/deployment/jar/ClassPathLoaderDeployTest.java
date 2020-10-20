@@ -185,13 +185,4 @@ public class ClassPathLoaderDeployTest {
   private void assertThatClassCanBeLoaded(String className) throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
-  }
 }

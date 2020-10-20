@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.test.compiler.ClassBuilder;
 
 /** Integration tests for {@link org.apache.geode.internal.deployment.jar.ClassPathLoader}. */
@@ -536,6 +537,6 @@ public class ClassPathLoaderJUnitTest {
   }
 
   private void assertThatClassCanBeLoaded(String className) throws ClassNotFoundException {
-    assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
+    assertThat(ClassLoaderService.getClassLoaderService().forName(className)).isNotNull();
   }
 }

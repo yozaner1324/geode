@@ -39,16 +39,7 @@ public abstract class DefaultEntityResolver2 implements EntityResolver2 {
   protected ClassLoaderService classLoaderService;
 
   public DefaultEntityResolver2() {
-    this.classLoaderService = getClassLoaderService();
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
+    this.classLoaderService = ClassLoaderService.getClassLoaderService();
   }
 
   @Override

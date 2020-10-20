@@ -53,6 +53,8 @@ import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
 import org.apache.geode.internal.util.DriverJarUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -279,7 +281,14 @@ public class JNDIInvoker {
       if (writer.finerEnabled())
         writer.finer(
             "JNDIInvoker::doTransactionLookup::Trying WebSphere 5.1: " + WS_FACTORY_CLASS_5_1);
-      clazz = ClassPathLoader.getLatest().forName(WS_FACTORY_CLASS_5_1);
+      ServiceResult<Class<?>> serviceResult =
+          ClassLoaderService.getClassLoaderService().forName(WS_FACTORY_CLASS_5_1);
+      if(serviceResult.isSuccessful()) {
+        clazz = serviceResult.getMessage();
+      } else {
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+            , WS_FACTORY_CLASS_5_1, serviceResult.getErrorMessage()));
+      }
       if (writer.fineEnabled())
         writer
             .fine("JNDIInvoker::doTransactionLookup::Found WebSphere 5.1: " + WS_FACTORY_CLASS_5_1);
@@ -288,13 +297,27 @@ public class JNDIInvoker {
         if (writer.finerEnabled())
           writer.finer(
               "JNDIInvoker::doTransactionLookup::Trying WebSphere 5.0: " + WS_FACTORY_CLASS_5_0);
-        clazz = ClassPathLoader.getLatest().forName(WS_FACTORY_CLASS_5_0);
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderService.getClassLoaderService().forName(WS_FACTORY_CLASS_5_0);
+        if(serviceResult.isSuccessful()) {
+          clazz = serviceResult.getMessage();
+        } else {
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+              , WS_FACTORY_CLASS_5_0, serviceResult.getErrorMessage()));
+        }
         if (writer.fineEnabled())
           writer.fine(
               "JNDIInvoker::doTransactionLookup::Found WebSphere 5.0: " + WS_FACTORY_CLASS_5_0);
       } catch (ClassNotFoundException ex2) {
         try {
-          clazz = ClassPathLoader.getLatest().forName(WS_FACTORY_CLASS_4);
+          ServiceResult<Class<?>> serviceResult =
+              ClassLoaderService.getClassLoaderService().forName(WS_FACTORY_CLASS_4);
+          if(serviceResult.isSuccessful()) {
+            clazz = serviceResult.getMessage();
+          } else {
+            throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+                , WS_FACTORY_CLASS_4, serviceResult.getErrorMessage()));
+          }
           String exception =
               "JNDIInvoker::doTransactionLookup::Found WebSphere 4: " + WS_FACTORY_CLASS_4;
           if (writer.fineEnabled())

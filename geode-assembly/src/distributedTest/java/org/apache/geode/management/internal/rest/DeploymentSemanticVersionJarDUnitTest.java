@@ -221,17 +221,8 @@ public class DeploymentSemanticVersionJarDUnitTest {
       throws Exception {
     assertThat(ClassPathLoader.getLatest().getJarDeployer()
         .getDeployedJar(artifactId)).isNotNull();
-    Class<?> klass = getClassLoaderService().forName(className).getMessage().get(0);
+    Class<?> klass = ClassLoaderService.getClassLoaderService().forName(className).getMessage();
     assertThat(klass).isNotNull();
     assertThat(klass.getMethod("getVersion").invoke(klass.newInstance())).isEqualTo(version);
-  }
-
-  private static ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 }

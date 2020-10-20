@@ -27,6 +27,8 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 
 public class DriverJarUtil {
@@ -72,7 +74,14 @@ public class DriverJarUtil {
   // class cleaner
   Driver getDriverInstanceByClassName(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-    return (Driver) ClassPathLoader.getLatest().forName(driverClassName).newInstance();
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderService.getClassLoaderService().forName(driverClassName);
+    if(serviceResult.isSuccessful()) {
+      return (Driver) serviceResult.getMessage().newInstance();
+    } else {
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
+          , driverClassName, serviceResult.getErrorMessage()));
+    }
   }
 
   Enumeration<Driver> getDrivers() {

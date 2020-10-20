@@ -30,6 +30,8 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -206,7 +208,7 @@ public class DeploySemanticVersionJarDUnitTest {
       throws Exception {
     assertThat(ClassPathLoader.getLatest().getJarDeployer()
         .getDeployedJar(artifactId)).isNotNull();
-    Class<?> klass = ClassPathLoader.getLatest().forName(className);
+    Class<?> klass = ClassLoaderService.getClassLoaderService().forName(className).getMessage();
     assertThat(klass).isNotNull();
     assertThat(klass.getMethod("getVersion").invoke(klass.newInstance())).isEqualTo(version);
   }

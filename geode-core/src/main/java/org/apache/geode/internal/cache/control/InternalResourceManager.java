@@ -138,14 +138,14 @@ public class InternalResourceManager implements ResourceManager {
         .newScheduledThreadPool("ResourceManagerRecoveryThread ", MAX_RESOURCE_MANAGER_EXE_THREADS);
 
     // Initialize the load probe
-    ServiceResult<List<Class<?>>> serviceResult =
-        getClassLoaderService().forName(PR_LOAD_PROBE_CLASS);
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderService.getClassLoaderService().forName(PR_LOAD_PROBE_CLASS);
     if (serviceResult.isFailure()) {
       throw new InternalGemFireError("Unable to instantiate " + PR_LOAD_PROBE_CLASS);
     } else {
 
       try {
-        this.loadProbe = (LoadProbe) serviceResult.getMessage().get(0).newInstance();
+        this.loadProbe = (LoadProbe) serviceResult.getMessage().newInstance();
       } catch (InstantiationException | IllegalAccessException e) {
         throw new InternalGemFireError("Unable to instantiate " + PR_LOAD_PROBE_CLASS, e);
       }
@@ -174,15 +174,6 @@ public class InternalResourceManager implements ResourceManager {
     }
 
     this.closed = false;
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 
   public void close() {

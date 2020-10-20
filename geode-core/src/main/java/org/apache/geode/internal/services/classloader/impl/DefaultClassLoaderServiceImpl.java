@@ -85,9 +85,9 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
    * {@inheritDoc}
    */
   @Override
-  public ServiceResult<List<Class<?>>> forName(String className) {
+  public ServiceResult<Class<?>> forName(String className) {
     try {
-      return Success.of(Collections.singletonList(ClassPathLoader.getLatest().forName(className)));
+      return Success.of(ClassPathLoader.getLatest().forName(className));
     } catch (ClassNotFoundException e) {
       return Failure.of(e);
     }

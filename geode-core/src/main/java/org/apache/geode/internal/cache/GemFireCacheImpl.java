@@ -959,7 +959,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.functionServiceRegisterFunction = functionServiceRegisterFunction;
     this.systemTimerFactory = systemTimerFactory;
     this.replyProcessor21Factory = replyProcessor21Factory;
-    this.classLoaderService = getClassLoaderService();
+    this.classLoaderService = ClassLoaderService.getClassLoaderService();
 
     // Synchronized to prevent a new cache from being created before an old one finishes closing
     synchronized (GemFireCacheImpl.class) {
@@ -1094,15 +1094,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     clientMetadataService = clientMetadataServiceFactory.apply(this);
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
   }
 
   @Override

@@ -39,16 +39,7 @@ public class ListCollectingServiceLoader<S> implements CollectingServiceLoader<S
 
   @VisibleForTesting
   public ListCollectingServiceLoader() {
-    this.classLoaderService = getClassLoaderService();
-  }
-
-  private ClassLoaderService getClassLoaderService() {
-    ServiceResult<ClassLoaderService> result =
-        ServiceRegistryInstance.getService(ClassLoaderService.class);
-    if (result.isFailure()) {
-      throw new GemFireConfigException("No ClassLoaderService registered in ServiceRegistry");
-    }
-    return result.getMessage();
+    this.classLoaderService = ClassLoaderService.getClassLoaderService();
   }
 
   @Override
