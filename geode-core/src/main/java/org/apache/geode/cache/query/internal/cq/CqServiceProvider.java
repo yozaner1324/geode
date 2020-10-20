@@ -34,7 +34,8 @@ public class CqServiceProvider {
   @Immutable
   private static CqServiceFactory factory;
 
-  private static ClassLoaderService classLoaderService;
+  @Immutable
+  private static final ClassLoaderService classLoaderService;
 
   /**
    * System property to maintain the CQ event references for optimizing the updates. This will allow

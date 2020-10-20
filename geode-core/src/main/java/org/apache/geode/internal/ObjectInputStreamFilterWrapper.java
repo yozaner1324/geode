@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import sun.misc.ObjectInputFilter;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
@@ -149,8 +148,9 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
       filterClass = getClassForName("sun.misc.ObjectInputFilter");
       checkInputMethod = filterClass.getDeclaredMethod("checkInput", this.filterInfoClass);
 
-      ALLOWED = ObjectInputFilter.Status.ALLOWED;
-      REJECTED = ObjectInputFilter.Status.REJECTED;
+      Class statusClass = getClassForName("sun.misc.ObjectInputFilter$Status");
+      ALLOWED = statusClass.getEnumConstants()[1];
+      REJECTED = statusClass.getEnumConstants()[2];
       if (!ALLOWED.toString().equals("ALLOWED") || !REJECTED.toString().equals("REJECTED")) {
         throw new GemFireConfigException(
             "ObjectInputFilter$Status enumeration in this JDK is not as expected");

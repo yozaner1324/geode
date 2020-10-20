@@ -30,6 +30,7 @@ public class WANServiceProvider {
   @Immutable
   private static WANFactory factory;
 
+  @Immutable
   private static final ClassLoaderService classLoaderService =
       ClassLoaderService.getClassLoaderService();
 
