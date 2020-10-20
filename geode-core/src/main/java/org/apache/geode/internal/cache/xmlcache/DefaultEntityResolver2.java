@@ -16,14 +16,11 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
@@ -63,10 +60,10 @@ public abstract class DefaultEntityResolver2 implements EntityResolver2 {
    */
   protected InputSource getInputSourceForPath(final String publicId, final String systemId,
       final String path) {
-    ServiceResult<List<InputStream>> serviceResult =
+    ServiceResult<InputStream> serviceResult =
         classLoaderService.getResourceAsStream(path);
     if (serviceResult.isSuccessful()) {
-      final InputStream stream = serviceResult.getMessage().get(0);
+      final InputStream stream = serviceResult.getMessage();
       final InputSource inputSource = new InputSource(stream);
       inputSource.setPublicId(publicId);
       inputSource.setSystemId(systemId);

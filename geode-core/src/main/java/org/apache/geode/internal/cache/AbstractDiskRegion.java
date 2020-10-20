@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
@@ -42,7 +41,6 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.classloader.ClassLoaderService;

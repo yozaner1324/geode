@@ -29,7 +29,6 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.JarBuilder;

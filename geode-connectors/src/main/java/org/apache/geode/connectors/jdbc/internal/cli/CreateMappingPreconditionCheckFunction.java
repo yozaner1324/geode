@@ -42,7 +42,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -53,7 +52,6 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.pdx.PdxWriter;
@@ -300,7 +298,8 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
 
   // unit test mocks this method
   Class<?> loadClass(String className) throws ClassNotFoundException {
-    ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService().forName(className);
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderService.getClassLoaderService().forName(className);
     if (serviceResult.isSuccessful()) {
       return serviceResult.getMessage();
     }

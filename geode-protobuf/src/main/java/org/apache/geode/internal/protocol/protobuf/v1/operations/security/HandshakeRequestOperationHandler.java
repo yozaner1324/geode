@@ -19,7 +19,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
@@ -31,7 +30,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.AcceptMessages;
 import org.apache.geode.internal.protocol.protobuf.v1.state.RequireAuthentication;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
 import org.apache.geode.security.AuthenticationFailedException;

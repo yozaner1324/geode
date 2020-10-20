@@ -224,7 +224,8 @@ public class DeployCommandRedeployDUnitTest {
       throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().getJarDeployer()
         .getDeployedJar(FilenameUtils.getBaseName(jarName))).isNotNull();
-    assertThat(ClassLoaderService.getClassLoaderService().forName(className).getMessage()).isNotNull();
+    assertThat(ClassLoaderService.getClassLoaderService().forName(className).getMessage())
+        .isNotNull();
   }
 
   private static class LoopingFunctionExecutor implements Serializable {

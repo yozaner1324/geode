@@ -17,7 +17,6 @@ package org.apache.geode.tools.pulse.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -25,7 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
@@ -38,11 +36,11 @@ public class ClassPathPropertiesFileLoader implements PropertiesFileLoader {
     final Properties properties = new Properties();
 
     try {
-      ServiceResult<List<InputStream>> result =
+      ServiceResult<InputStream> result =
           ClassLoaderService.getClassLoaderService().getResourceAsStream(propertyFile);
       if (result.isSuccessful()) {
         logger.info(propertyFile + " " + resourceBundle.getString("LOG_MSG_FILE_FOUND"));
-        properties.load(result.getMessage().get(0));
+        properties.load(result.getMessage());
       } else {
         throw new IOException("Could not load property file: " + propertyFile);
       }

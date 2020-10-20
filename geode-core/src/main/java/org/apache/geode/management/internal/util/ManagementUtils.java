@@ -134,11 +134,11 @@ public class ManagementUtils {
       if (classToLoadName != null && !classToLoadName.isEmpty()) {
         ServiceResult<Class<?>> serviceResult =
             ClassLoaderService.getClassLoaderService().forName(classToLoadName);
-        if(serviceResult.isSuccessful()) {
+        if (serviceResult.isSuccessful()) {
           loadedClass = (Class<K>) serviceResult.getMessage();
         } else {
-          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-              , classToLoadName, serviceResult.getErrorMessage()));
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+              classToLoadName, serviceResult.getErrorMessage()));
         }
       }
     } catch (ClassNotFoundException | NoClassDefFoundError e) {

@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.FixedPartitionAttributes;
@@ -35,7 +34,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;

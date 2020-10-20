@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.Serializable;
@@ -319,7 +318,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
 
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
-    assertThat(ClassLoaderService.getClassLoaderService().forName(className).getMessage()).isNotNull();
+    assertThat(ClassLoaderService.getClassLoaderService().forName(className).getMessage())
+        .isNotNull();
   }
 
   private void assertThatCannotLoad(String jarName, String className) {

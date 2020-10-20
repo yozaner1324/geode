@@ -19,10 +19,9 @@ package org.apache.geode.internal.services.classloader.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -97,7 +96,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
    * {@inheritDoc}
    */
   @Override
-  public ServiceResult<List<InputStream>> getResourceAsStream(String resourceFilePath) {
+  public ServiceResult<InputStream> getResourceAsStream(String resourceFilePath) {
     InputStream inputStream = ClassPathLoader.getLatest().getResourceAsStream(resourceFilePath);
 
     if (inputStream == null) {
@@ -116,7 +115,16 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
 
     return inputStream == null
         ? Failure.of(String.format("No resource for path: %s could be found", resourceFilePath))
-        : Success.of(Collections.singletonList(inputStream));
+        : Success.of(inputStream);
+  }
+
+  @Override
+  public ServiceResult<InputStream> getResourceAsStream(Class<?> clazz, String resourceFilePath) {
+    InputStream inputStream =
+        ClassPathLoader.getLatest().getResourceAsStream(clazz, resourceFilePath);
+    return inputStream == null
+        ? Failure.of(String.format("No resource for path: %s could be found", resourceFilePath))
+        : Success.of(inputStream);
   }
 
   @Override
@@ -134,6 +142,18 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
     return resource == null
         ? Failure.of("Resource not found for resourcePath: " + resourceFilePath)
         : Success.of(resource);
+  }
+
+  @Override
+  public ServiceResult<Class<?>> getProxyClass(Class<?>... classes) {
+    try {
+      Class<?> proxyClass = ClassPathLoader.getLatest().getProxyClass(classes);
+      return proxyClass == null
+          ? Failure.of("Proxy class not found for classes: " + Arrays.toString(classes))
+          : Success.of(proxyClass);
+    } catch (IllegalArgumentException e) {
+      return Failure.of(e);
+    }
   }
 
   /**

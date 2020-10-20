@@ -252,7 +252,6 @@ import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.internal.shared.StringPrintWriter;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
@@ -1413,8 +1412,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeRegionShortcuts(this);
     }
 
-    // set ClassPathLoader and then deploy cluster config jars
-    ClassPathLoader.setLatestToDefault(system.getConfig().getDeployWorkingDir());
+    // set working directory and then deploy cluster config jars
+    ClassLoaderService.getClassLoaderService()
+        .setWorkingDirectory(system.getConfig().getDeployWorkingDir());
 
     try {
       ccLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);
@@ -1565,7 +1565,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       if (resource.length() > 1 && resource.startsWith("/")) {
         resource = resource.substring(1);
       }
-      url = ClassPathLoader.getLatest().getResource(getClass(), resource);
+      ServiceResult<URL> serviceResult =
+          ClassLoaderService.getClassLoaderService().getResource(getClass(), resource);
+      if (serviceResult.isSuccessful()) {
+        url = serviceResult.getMessage();
+      } else {
+        url = null;
+      }
     } else {
       try {
         url = xmlFile.toURL();

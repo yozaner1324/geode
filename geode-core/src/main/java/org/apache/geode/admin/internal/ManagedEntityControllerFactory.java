@@ -17,14 +17,11 @@ package org.apache.geode.admin.internal;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Creates ManagedEntityController for administration (starting, stopping, etc.) of GemFire
@@ -52,7 +49,8 @@ public class ManagedEntityControllerFactory {
   }
 
   public static boolean isEnabledManagedEntityController() {
-    return ClassLoaderService.getClassLoaderService().forName(ENABLED_MANAGED_ENTITY_CONTROLLER_CLASS_NAME)
+    return ClassLoaderService.getClassLoaderService()
+        .forName(ENABLED_MANAGED_ENTITY_CONTROLLER_CLASS_NAME)
         .isSuccessful();
   }
 

@@ -50,7 +50,6 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
@@ -581,7 +580,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
     }
     ServiceResult<Class<?>> serviceResult =
         ClassLoaderService.getClassLoaderService().forName(klassString);
-    if(serviceResult.isSuccessful()) {
+    if (serviceResult.isSuccessful()) {
 
       Class klass = serviceResult.getMessage();
 
@@ -600,8 +599,8 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
 
       return resultObject;
     } else {
-      throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-          , klassString, serviceResult.getErrorMessage()));
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+          klassString, serviceResult.getErrorMessage()));
     }
   }
 

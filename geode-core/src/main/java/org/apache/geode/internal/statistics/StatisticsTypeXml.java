@@ -39,7 +39,8 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 // @todo davidw Use a SAX parser instead of DOM
 /**
@@ -69,15 +70,13 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
 
       // Public ID for system config DTD
       String location = "/org/apache/geode/" + DTD;
-      InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
-      if (stream != null) {
-        return new InputSource(stream);
-
+      ServiceResult<InputStream> serviceResult =
+          ClassLoaderService.getClassLoaderService().getResourceAsStream(getClass(), location);
+      if (serviceResult.isSuccessful()) {
+        return new InputSource(serviceResult.getMessage());
       } else {
-        throw new SAXNotRecognizedException(
-            String.format("DTD not found: %s", location));
+        throw new SAXNotRecognizedException(String.format("DTD not found: %s", location));
       }
-
     } else {
       throw new SAXNotRecognizedException(
           String.format("Invalid public ID: ' %s '", publicId));

@@ -18,7 +18,6 @@ package org.apache.geode.services.classloader.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -41,16 +40,15 @@ public class DefaultClassLoaderServiceImplTest {
 
   @Test
   public void findResourceAsStreamExists() {
-    ServiceResult<List<InputStream>> resourceAsStream =
+    ServiceResult<InputStream> resourceAsStream =
         classLoaderService.getResourceAsStream(resourceFile);
 
     assertThat(resourceAsStream.isSuccessful()).isTrue();
-    assertThat(resourceAsStream.getMessage().size()).isEqualTo(1);
   }
 
   @Test
   public void findResourceAsStreamNotExists() {
-    ServiceResult<List<InputStream>> resourceAsStream =
+    ServiceResult<InputStream> resourceAsStream =
         classLoaderService.getResourceAsStream("invalidReSource.file");
 
     assertThat(resourceAsStream.isSuccessful()).isFalse();

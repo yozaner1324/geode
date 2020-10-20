@@ -22,7 +22,6 @@ import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ObjectType;
 import org.apache.geode.cache.configuration.ParameterType;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
@@ -34,7 +33,7 @@ public abstract class DeclarableTypeInstantiator {
     try {
       ServiceResult<Class<?>> serviceResult =
           ClassLoaderService.getClassLoaderService().forName(declarableType.getClassName());
-      if(serviceResult.isSuccessful()) {
+      if (serviceResult.isSuccessful()) {
         T declarable = (UncheckedUtils.uncheckedCast(serviceResult.getMessage().newInstance()));
         Properties initProperties = new Properties();
         for (ParameterType parameter : declarableType.getParameters()) {
@@ -43,8 +42,8 @@ public abstract class DeclarableTypeInstantiator {
         declarable.initialize(cache, initProperties);
         return declarable;
       } else {
-        throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-            , declarableType.getClassName(), serviceResult.getErrorMessage()));
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            declarableType.getClassName(), serviceResult.getErrorMessage()));
       }
     } catch (Exception e) {
       throw new RuntimeException(
@@ -69,7 +68,7 @@ public abstract class DeclarableTypeInstantiator {
     try {
       ServiceResult<Class<?>> serviceResult =
           ClassLoaderService.getClassLoaderService().forName(type.getClassName());
-      if(serviceResult.isSuccessful()) {
+      if (serviceResult.isSuccessful()) {
         V object = UncheckedUtils.uncheckedCast(serviceResult.getMessage().newInstance());
         if (object instanceof Declarable) {
           Declarable declarable = (Declarable) object;
@@ -78,8 +77,8 @@ public abstract class DeclarableTypeInstantiator {
         }
         return object;
       } else {
-        throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-            , type.getClassName(), serviceResult.getErrorMessage()));
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            type.getClassName(), serviceResult.getErrorMessage()));
       }
     } catch (Exception e) {
       throw new RuntimeException("Error instantiating class: <" + type.getClassName() + ">", e);
@@ -90,11 +89,11 @@ public abstract class DeclarableTypeInstantiator {
     try {
       ServiceResult<Class<?>> serviceResult =
           ClassLoaderService.getClassLoaderService().forName(className.getClassName());
-      if(serviceResult.isSuccessful()) {
+      if (serviceResult.isSuccessful()) {
         return UncheckedUtils.uncheckedCast(serviceResult.getMessage().newInstance());
       } else {
-        throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-            , className.getClassName(), serviceResult.getErrorMessage()));
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            className.getClassName(), serviceResult.getErrorMessage()));
       }
     } catch (Exception e) {
       throw new RuntimeException("Error instantiating class: <" + className.getClassName() + ">",

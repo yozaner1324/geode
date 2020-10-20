@@ -22,10 +22,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
@@ -100,11 +97,11 @@ public class LoggingProviderLoader {
     try {
       ServiceResult<Class<?>> serviceResult =
           ClassLoaderService.getClassLoaderService().forName(agentClassName);
-      if(serviceResult.isSuccessful()) {
+      if (serviceResult.isSuccessful()) {
         return serviceResult.getMessage().asSubclass(LoggingProvider.class).newInstance();
       } else {
-        throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-            , agentClassName, serviceResult.getErrorMessage()));
+        throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+            agentClassName, serviceResult.getErrorMessage()));
       }
     } catch (ClassNotFoundException | ClassCastException | InstantiationException
         | IllegalAccessException e) {

@@ -28,7 +28,6 @@ import org.apache.geode.cache.EvictionAttributesMutator;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
@@ -193,11 +192,11 @@ public class EvictionAttributesImpl extends EvictionAttributes implements DataSe
       try {
         ServiceResult<Class<?>> serviceResult =
             ClassLoaderService.getClassLoaderService().forName(sizerClassName);
-        if(serviceResult.isSuccessful()) {
+        if (serviceResult.isSuccessful()) {
           sizer = (ObjectSizer) serviceResult.getMessage().newInstance();
         } else {
-          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-              , sizerClassName, serviceResult.getErrorMessage()));
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+              sizerClassName, serviceResult.getErrorMessage()));
         }
       } catch (ClassNotFoundException e) {
         sizer = ObjectSizer.DEFAULT;

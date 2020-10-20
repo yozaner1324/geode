@@ -49,8 +49,9 @@ import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * Provides the JMX Agent configuration properties.
@@ -1680,7 +1681,13 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     }
 
     // finally, try the classpath...
-    return ClassPathLoader.getLatest().getResource(AgentConfigImpl.class, propFileLocation);
+    ServiceResult<URL> serviceResult = ClassLoaderService.getClassLoaderService()
+        .getResource(AgentConfigImpl.class, propFileLocation);
+    if (serviceResult.isSuccessful()) {
+      return serviceResult.getMessage();
+    } else {
+      return null;
+    }
   }
 
   private static boolean okToDisplayPropertyValue(String attName) {

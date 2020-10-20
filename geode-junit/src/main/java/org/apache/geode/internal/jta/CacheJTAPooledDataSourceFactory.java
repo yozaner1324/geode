@@ -21,10 +21,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.datasource.PooledDataSourceFactory;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
@@ -32,7 +29,8 @@ public class CacheJTAPooledDataSourceFactory implements PooledDataSourceFactory 
   @Override
   public DataSource createDataSource(Properties poolProperties, Properties dataSourceProperties) {
     ServiceResult<Class<?>> serviceResult =
-        ClassLoaderService.getClassLoaderService().forName("org.apache.derby.jdbc.EmbeddedDataSource");
+        ClassLoaderService.getClassLoaderService()
+            .forName("org.apache.derby.jdbc.EmbeddedDataSource");
     if (serviceResult.isSuccessful()) {
       try {
         Class<?> cl = serviceResult.getMessage();

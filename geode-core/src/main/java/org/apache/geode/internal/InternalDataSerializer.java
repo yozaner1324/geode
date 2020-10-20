@@ -104,7 +104,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.BasicSerializable;
@@ -3582,7 +3581,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
         if (hasNonPublicInterface) {
           return Proxy.getProxyClass(nonPublicLoader, classObjs);
         } else {
-          return ClassPathLoader.getLatest().getProxyClass(classObjs);
+          ServiceResult<Class<?>> serviceResult =
+              ClassLoaderService.getClassLoaderService().getProxyClass(classObjs);
+          if (serviceResult.isSuccessful()) {
+            return serviceResult.getMessage();
+          } else {
+            throw new ClassNotFoundException(serviceResult.getErrorMessage());
+          }
         }
       } catch (IllegalArgumentException e) {
         throw new ClassNotFoundException(null, e);

@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import sun.misc.ObjectInputFilter;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
@@ -84,14 +85,22 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
     }
 
     try {
-      URL sanctionedSerializables = ClassPathLoader.getLatest()
+      URL sanctionedSerializables = null;
+      ServiceResult<URL> serviceResult = ClassLoaderService.getClassLoaderService()
           .getResource(InternalDataSerializer.class, "sanctioned-geode-core-serializables.txt");
+      if (serviceResult.isSuccessful()) {
+        sanctionedSerializables = serviceResult.getMessage();
+      }
       Collection<String> coreClassNames =
           InternalDataSerializer.loadClassNames(sanctionedSerializables);
 
-      URL sanctionedManagementSerializables = ClassPathLoader.getLatest()
+      URL sanctionedManagementSerializables = null;
+      ServiceResult<URL> managementServiceResult = ClassLoaderService.getClassLoaderService()
           .getResource(InternalDataSerializer.class,
               "sanctioned-geode-management-serializables.txt");
+      if (managementServiceResult.isSuccessful()) {
+        sanctionedManagementSerializables = serviceResult.getMessage();
+      }
       Collection<String> managmentClassNames =
           InternalDataSerializer.loadClassNames(sanctionedManagementSerializables);
 
@@ -140,9 +149,8 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
       filterClass = getClassForName("sun.misc.ObjectInputFilter");
       checkInputMethod = filterClass.getDeclaredMethod("checkInput", this.filterInfoClass);
 
-      Class statusClass = getClassForName("sun.misc.ObjectInputFilter$Status");
-      ALLOWED = statusClass.getEnumConstants()[1];
-      REJECTED = statusClass.getEnumConstants()[2];
+      ALLOWED = ObjectInputFilter.Status.ALLOWED;
+      REJECTED = ObjectInputFilter.Status.REJECTED;
       if (!ALLOWED.toString().equals("ALLOWED") || !REJECTED.toString().equals("REJECTED")) {
         throw new GemFireConfigException(
             "ObjectInputFilter$Status enumeration in this JDK is not as expected");
@@ -173,11 +181,11 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
     ClassLoaderService classLoaderService = ClassLoaderService.getClassLoaderService();
     ServiceResult<Class<?>> serviceResult =
         classLoaderService.forName(className);
-    if(serviceResult.isSuccessful()) {
+    if (serviceResult.isSuccessful()) {
       return serviceResult.getMessage();
     } else {
-      throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-          , className, serviceResult.getErrorMessage()));
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+          className, serviceResult.getErrorMessage()));
     }
   }
 
@@ -259,6 +267,4 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
         handler);
 
   }
-
-
 }

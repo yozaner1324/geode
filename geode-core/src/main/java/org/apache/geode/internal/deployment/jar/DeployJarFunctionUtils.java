@@ -89,7 +89,7 @@ public class DeployJarFunctionUtils {
             try {
               ServiceResult<Class<?>> serviceResult =
                   ClassLoaderService.getClassLoaderService().forName(className);
-              if(serviceResult.isSuccessful()) {
+              if (serviceResult.isSuccessful()) {
                 Class<?> clazz = serviceResult.getMessage();
                 Collection<Function<?>> functionsToRegister =
                     getFunctionsToRegisterFromClass(clazz, deployedJar);
@@ -102,8 +102,10 @@ public class DeployJarFunctionUtils {
                   registeredFunctions.add(function);
                 }
               } else {
-                throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-                    , className, serviceResult.getErrorMessage()));              }
+                throw new ClassNotFoundException(
+                    String.format("No class found for name: %s because %s", className,
+                        serviceResult.getErrorMessage()));
+              }
             } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
               logger.error("Unable to load all classes from JAR file: {}",
                   deployedJarFile.getAbsolutePath(), cnfex);

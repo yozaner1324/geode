@@ -27,7 +27,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
@@ -168,15 +167,16 @@ public class OffHeapStorage implements OffHeapMemoryStats {
       // Do we have the Unsafe class? Throw ClassNotFoundException if not.
       ServiceResult<Class<?>> serviceResult =
           ClassLoaderService.getClassLoaderService().forName("sun.misc.Unsafe");
-      if(serviceResult.isSuccessful()) {
-        // Okay, we have the class. Do we have the copyMemory method (not all JVMs support it)? Throw
+      if (serviceResult.isSuccessful()) {
+        // Okay, we have the class. Do we have the copyMemory method (not all JVMs support it)?
+        // Throw
         // NoSuchMethodException if not.
         @SuppressWarnings("unused")
         Method copyMemory = serviceResult.getMessage().getMethod("copyMemory", Object.class,
             long.class, Object.class, long.class, long.class);
       } else {
         throw new CacheException(
-                "Your Java virtual machine is incompatible with off-heap memory.  Please refer to product documentation for suggested JVMs.") {};
+            "Your Java virtual machine is incompatible with off-heap memory.  Please refer to product documentation for suggested JVMs.") {};
       }
     } catch (NoSuchMethodException e) {
       throw new CacheException(

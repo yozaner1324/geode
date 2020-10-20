@@ -24,7 +24,6 @@ import org.junit.rules.ExternalResource;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
@@ -75,11 +74,11 @@ public class GfshParserRule extends ExternalResource {
         try {
           ServiceResult<Class<?>> serviceResult =
               ClassLoaderService.getClassLoaderService().forName(interceptorClass);
-          if(serviceResult.isSuccessful()) {
+          if (serviceResult.isSuccessful()) {
             interceptor = (CliAroundInterceptor) serviceResult.getMessage().newInstance();
           } else {
-            throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-                , interceptorClass, serviceResult.getErrorMessage()));
+            throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+                interceptorClass, serviceResult.getErrorMessage()));
           }
         } catch (Exception e) {
           throw new RuntimeException(e);

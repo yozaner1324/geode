@@ -26,7 +26,6 @@ import org.springframework.shell.event.ParseResult;
 import org.springframework.util.Assert;
 
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
@@ -166,11 +165,11 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       try {
         ServiceResult<Class<?>> serviceResult =
             ClassLoaderService.getClassLoaderService().forName(interceptorClass);
-        if(serviceResult.isSuccessful()) {
+        if (serviceResult.isSuccessful()) {
           interceptor = (CliAroundInterceptor) serviceResult.getMessage().newInstance();
         } else {
-          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-              , interceptorClass, serviceResult.getErrorMessage()));
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+              interceptorClass, serviceResult.getErrorMessage()));
         }
       } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
         shell.logWarning("Configuration error", e);

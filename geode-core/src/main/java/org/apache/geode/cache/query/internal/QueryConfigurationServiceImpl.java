@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.query.internal.cq.CqService;
@@ -36,7 +35,6 @@ import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.services.classloader.ClassLoaderService;
@@ -164,7 +162,8 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
         this.authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
-        ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService().forName(className);
+        ServiceResult<Class<?>> serviceResult =
+            ClassLoaderService.getClassLoaderService().forName(className);
         if (serviceResult.isSuccessful()) {
           Class<?> userClass = serviceResult.getMessage();
           if (!Arrays.asList(userClass.getInterfaces())

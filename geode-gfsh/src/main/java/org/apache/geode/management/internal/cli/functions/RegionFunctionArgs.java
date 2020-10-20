@@ -30,7 +30,6 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.services.classloader.ClassLoaderService;
@@ -609,12 +608,12 @@ public class RegionFunctionArgs implements Serializable {
         try {
           ServiceResult<Class<?>> serviceResult =
               ClassLoaderService.getClassLoaderService().forName(objectSizer);
-          if(serviceResult.isSuccessful()) {
+          if (serviceResult.isSuccessful()) {
             Class<?> sizerClass = serviceResult.getMessage();
             sizer = (ObjectSizer) sizerClass.newInstance();
           } else {
-            throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-                , objectSizer, serviceResult.getErrorMessage()));
+            throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+                objectSizer, serviceResult.getErrorMessage()));
           }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
           throw new IllegalArgumentException(

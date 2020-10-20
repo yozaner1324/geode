@@ -25,7 +25,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 
 /**
@@ -49,23 +50,12 @@ public class AbstractStringIdResourceBundle {
     sb.append("_").append(l.getLanguage()).append(".txt");
     String resource = sb.toString();
 
-    InputStream is = null;
-    try {
-      is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), resource);
-    } catch (SecurityException se) {
-      // We do not have a logger yet
-      System.err.println(
-          "A SecurityException occurred while attempting to load the resource bundle, defaulting to English."
-              + se.toString());
-      se.printStackTrace();
-      System.err.flush();
-    }
-    if (is == null) {
-      // No matching data file for the requested langauge,
-      // defaulting to English
-      data = null;
+    ServiceResult<InputStream> serviceResult =
+        ClassLoaderService.getClassLoaderService().getResourceAsStream(getClass(), resource);
+    if (serviceResult.isSuccessful()) {
+      data = readDataFile(serviceResult.getMessage());
     } else {
-      data = readDataFile(is);
+      data = null;
     }
   }
 

@@ -37,7 +37,6 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.ClassBuilder;
 
 public class JarDeployerDeadlockTest {

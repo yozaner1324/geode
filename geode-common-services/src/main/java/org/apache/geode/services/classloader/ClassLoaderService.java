@@ -69,11 +69,15 @@ public interface ClassLoaderService {
    * @return a {@link ServiceResult} containing a {@link List} of {@link InputStream}s representing
    *         the desired resource.
    */
-  ServiceResult<List<InputStream>> getResourceAsStream(String resourceFilePath);
+  ServiceResult<InputStream> getResourceAsStream(String resourceFilePath);
+
+  ServiceResult<InputStream> getResourceAsStream(Class<?> clazz, String resourceFilePath);
 
   ServiceResult<URL> getResource(String resourceFilePath);
 
   ServiceResult<URL> getResource(Class<?> clazz, String resourceFilePath);
+
+  ServiceResult<Class<?>> getProxyClass(Class<?>... clazz);
 
   /**
    * Sets the {@link Logger} to be used by the {@link ClassLoaderService}.

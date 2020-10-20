@@ -34,7 +34,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
+import org.apache.geode.services.classloader.ClassLoaderService;
+import org.apache.geode.services.result.ServiceResult;
 
 /**
  * A tool that reads the XML description of MBeans used with the Jakarta Commons Modeler and
@@ -144,12 +145,12 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
     InputSource result;
     {
-      InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
-      if (stream != null) {
-        result = new InputSource(stream);
+      ServiceResult<InputStream> serviceResult =
+          ClassLoaderService.getClassLoaderService().getResourceAsStream(getClass(), location);
+      if (serviceResult.isSuccessful()) {
+        result = new InputSource(serviceResult.getMessage());
       } else {
-        throw new SAXNotRecognizedException(
-            String.format("DTD not found: %s", location));
+        throw new SAXNotRecognizedException(String.format("DTD not found: %s", location));
       }
     }
 

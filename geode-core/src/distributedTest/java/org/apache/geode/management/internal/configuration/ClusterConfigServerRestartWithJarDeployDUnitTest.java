@@ -28,13 +28,11 @@ import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
@@ -110,7 +108,7 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
           InternalDistributedMember otherMember = others.stream().findFirst().get();
 
           ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService()
-                  .forName("ClusterConfigServerRestartWithJarDeployFunction$Student");
+              .forName("ClusterConfigServerRestartWithJarDeployFunction$Student");
           if (serviceResult.isSuccessful()) {
             Class<?> studentClass = serviceResult.getMessage();
 

@@ -28,9 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.JarBuilder;
@@ -179,12 +177,14 @@ public class JarDeployerIntegrationTest {
     if (!SystemUtils.isWindows()) {
       assertThat(deployedDir.list()).containsExactly("abc.v1.jar");
     }
-    assertThat(ClassLoaderService.getClassLoaderService().forName("jddunit.function.Def").isFailure())
-        .isTrue();
+    assertThat(
+        ClassLoaderService.getClassLoaderService().forName("jddunit.function.Def").isFailure())
+            .isTrue();
   }
 
   private String getVersion(String classname) throws Exception {
-    ServiceResult<Class<?>> serviceResult = ClassLoaderService.getClassLoaderService().forName(classname);
+    ServiceResult<Class<?>> serviceResult =
+        ClassLoaderService.getClassLoaderService().forName(classname);
     assertThat(serviceResult.isSuccessful()).isTrue();
     Class<?> def = (Class<?>) serviceResult.getMessage();
     return (String) def.getMethod("getId").invoke(def.newInstance());

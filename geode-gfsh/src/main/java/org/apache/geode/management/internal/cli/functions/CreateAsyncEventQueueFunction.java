@@ -37,7 +37,6 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -156,11 +155,11 @@ public class CreateAsyncEventQueueFunction extends CliFunction<CacheConfig.Async
     ServiceResult<Class<?>> serviceResult =
         ClassLoaderService.getClassLoaderService().forName(className);
 
-    if(serviceResult.isSuccessful()) {
+    if (serviceResult.isSuccessful()) {
       return serviceResult.getMessage().newInstance();
     } else {
-      throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-          , className, serviceResult.getErrorMessage()));
+      throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+          className, serviceResult.getErrorMessage()));
     }
   }
 

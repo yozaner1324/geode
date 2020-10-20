@@ -41,7 +41,6 @@ import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -163,7 +162,7 @@ public class VMStats50 implements VMStatsContract {
         ServiceResult<Class<?>> serviceResult =
             ClassLoaderService.getClassLoaderService()
                 .forName(className);
-        if(serviceResult.isSuccessful()) {
+        if (serviceResult.isSuccessful()) {
           Class c = serviceResult.getMessage();
           if (c.isInstance(osBean)) {
             m1 = c.getMethod("getMaxFileDescriptorCount", new Class[] {});
@@ -178,8 +177,8 @@ public class VMStats50 implements VMStatsContract {
             m3.setAccessible(true);
           }
         } else {
-          throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-              , className, serviceResult.getErrorMessage()));
+          throw new ClassNotFoundException(String.format("No class found for name: %s because %s",
+              className, serviceResult.getErrorMessage()));
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);

@@ -39,18 +39,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.deployment.jar.ClassPathLoader;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.services.classloader.ClassLoaderService;
-import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -241,7 +238,8 @@ public class DeploymentManagementRedployDUnitTest {
       throws ClassNotFoundException {
     assertThat(ClassPathLoader.getLatest().getJarDeployer()
         .getDeployedJar(FilenameUtils.getBaseName(jarName))).isNotNull();
-    assertThat(ClassLoaderService.getClassLoaderService().forName(className).getMessage()).isNotNull();
+    assertThat(ClassLoaderService.getClassLoaderService().forName(className).getMessage())
+        .isNotNull();
   }
 
   private static class LoopingFunctionExecutor implements Serializable {

@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
@@ -229,11 +228,12 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
             ObjectMapper objMapper = USE_STATIC_MAPPER ? mapper : createObjectMapper();
             ServiceResult<Class<?>> serviceResult =
                 ClassLoaderService.getClassLoaderService().forName(className);
-            if(serviceResult.isSuccessful()) {
+            if (serviceResult.isSuccessful()) {
               return objMapper.readValue(JSON, serviceResult.getMessage());
             } else {
-              throw new ClassNotFoundException(String.format("No class found for name: %s because %s"
-                  , className, serviceResult.getErrorMessage()));
+              throw new ClassNotFoundException(
+                  String.format("No class found for name: %s because %s", className,
+                      serviceResult.getErrorMessage()));
             }
           } catch (Exception e) {
             throw new PdxSerializationException(

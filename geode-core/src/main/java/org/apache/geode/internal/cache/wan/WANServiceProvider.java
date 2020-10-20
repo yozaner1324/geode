@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.wan;
 
 import java.util.Set;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
@@ -24,7 +23,6 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
-import org.apache.geode.internal.services.registry.ServiceRegistryInstance;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
 
@@ -32,7 +30,8 @@ public class WANServiceProvider {
   @Immutable
   private static WANFactory factory;
 
-  private static final ClassLoaderService classLoaderService = ClassLoaderService.getClassLoaderService();
+  private static final ClassLoaderService classLoaderService =
+      ClassLoaderService.getClassLoaderService();
 
   private static void setup() {
     if (factory == null) {
