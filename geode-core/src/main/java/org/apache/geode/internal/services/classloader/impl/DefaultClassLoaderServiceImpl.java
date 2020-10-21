@@ -156,6 +156,11 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
     }
   }
 
+  @Override
+  public ClassLoader asClassLoader() {
+    return ClassPathLoader.getLatestAsClassLoader();
+  }
+
   /**
    * {@inheritDoc}
    */

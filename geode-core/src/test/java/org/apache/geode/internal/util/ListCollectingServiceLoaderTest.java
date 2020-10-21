@@ -22,17 +22,14 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import org.apache.geode.metrics.MetricsPublishingService;
-import org.apache.geode.metrics.MetricsSession;
-
 public class ListCollectingServiceLoaderTest {
   @Test
   public void loadServices_returnsLoadedServices() {
-    ListCollectingServiceLoader<MetricsPublishingService> collectingServiceLoader =
+    ListCollectingServiceLoader<TestService> collectingServiceLoader =
         new ListCollectingServiceLoader<>();
 
-    Collection<MetricsPublishingService> actualServices =
-        collectingServiceLoader.loadServices(MetricsPublishingService.class);
+    Collection<TestService> actualServices =
+        collectingServiceLoader.loadServices(TestService.class);
 
     assertThat(actualServices.size()).isEqualTo(3);
 
@@ -41,57 +38,25 @@ public class ListCollectingServiceLoaderTest {
             .collect(Collectors.toList());
 
     assertThat(serviceClassNames).containsExactlyInAnyOrder(
-        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService1",
-        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService2",
-        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService4");
+        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestService1",
+        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestService2",
+        "org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestService4");
   }
 
-  public static class TestMetricsPublishingService1 implements MetricsPublishingService {
+  public interface TestService {
 
-    @Override
-    public void start(MetricsSession session) {
-
-    }
-
-    @Override
-    public void stop(MetricsSession session) {
-
-    }
   }
-  public static class TestMetricsPublishingService2 implements MetricsPublishingService {
 
-    @Override
-    public void start(MetricsSession session) {
+  public static class TestService1 implements TestService {
 
-    }
-
-    @Override
-    public void stop(MetricsSession session) {
-
-    }
   }
-  public class TestMetricsPublishingService3 implements MetricsPublishingService {
+  public static class TestService2 implements TestService {
 
-    @Override
-    public void start(MetricsSession session) {
-
-    }
-
-    @Override
-    public void stop(MetricsSession session) {
-
-    }
   }
-  public static class TestMetricsPublishingService4 implements MetricsPublishingService {
+  public class TestService3 implements TestService {
 
-    @Override
-    public void start(MetricsSession session) {
+  }
+  public static class TestService4 implements TestService {
 
-    }
-
-    @Override
-    public void stop(MetricsSession session) {
-
-    }
   }
 }

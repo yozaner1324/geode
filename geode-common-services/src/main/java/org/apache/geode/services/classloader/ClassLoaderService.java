@@ -96,4 +96,6 @@ public interface ClassLoaderService {
     }
     return result.getMessage();
   }
+
+  ClassLoader asClassLoader();
 }

@@ -31,7 +31,6 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DistributedSystemService;
-import org.apache.geode.internal.deployment.jar.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.services.classloader.ClassLoaderService;
 import org.apache.geode.services.result.ServiceResult;
@@ -84,24 +83,11 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
     }
 
     try {
-      URL sanctionedSerializables = null;
-      ServiceResult<URL> serviceResult = ClassLoaderService.getClassLoaderService()
-          .getResource(InternalDataSerializer.class, "sanctioned-geode-core-serializables.txt");
-      if (serviceResult.isSuccessful()) {
-        sanctionedSerializables = serviceResult.getMessage();
-      }
       Collection<String> coreClassNames =
-          InternalDataSerializer.loadClassNames(sanctionedSerializables);
+          loadSanctionedSerializables("sanctioned-geode-core-serializables.txt");
 
-      URL sanctionedManagementSerializables = null;
-      ServiceResult<URL> managementServiceResult = ClassLoaderService.getClassLoaderService()
-          .getResource(InternalDataSerializer.class,
-              "sanctioned-geode-management-serializables.txt");
-      if (managementServiceResult.isSuccessful()) {
-        sanctionedManagementSerializables = serviceResult.getMessage();
-      }
       Collection<String> managmentClassNames =
-          InternalDataSerializer.loadClassNames(sanctionedManagementSerializables);
+          loadSanctionedSerializables("sanctioned-geode-management-serializables.txt");
 
       sanctionedClasses.addAll(coreClassNames);
       sanctionedClasses.addAll(managmentClassNames);
@@ -119,6 +105,17 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
 
     // try java9 - this throws an exception if it fails to create the filter
     createJava9Filter(serializationFilterSpec, sanctionedClasses);
+  }
+
+  public Collection<String> loadSanctionedSerializables(String sanctionedFileNamePath)
+      throws IOException {
+    URL sanctionedSerializables = null;
+    ServiceResult<URL> serviceResult = ClassLoaderService.getClassLoaderService()
+        .getResource(InternalDataSerializer.class, sanctionedFileNamePath);
+    if (serviceResult.isSuccessful()) {
+      sanctionedSerializables = serviceResult.getMessage();
+    }
+    return InternalDataSerializer.loadClassNames(sanctionedSerializables);
   }
 
   @Override
@@ -262,9 +259,7 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
       }
     };
 
-    ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
-    return Proxy.newProxyInstance(classPathLoader.asClassLoader(), new Class[] {filterClass},
-        handler);
-
+    return Proxy.newProxyInstance(ClassLoaderService.getClassLoaderService().asClassLoader(),
+        new Class[] {filterClass}, handler);
   }
 }

@@ -1,4 +1,0 @@
-org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService1
-org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService2
-org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService3
-org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestMetricsPublishingService4

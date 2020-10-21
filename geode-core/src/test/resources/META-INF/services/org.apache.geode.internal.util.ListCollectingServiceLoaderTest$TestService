@@ -1,0 +1,4 @@
+org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestService1
+org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestService2
+org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestService3
+org.apache.geode.internal.util.ListCollectingServiceLoaderTest$TestService4
