@@ -31,7 +31,6 @@ dependencies {
     implementation(project(':geode-serialization'))
     implementation(project(':geode-unsafe'))
     compileOnly(project(':geode-common-services'))
-    compileOnly(project(':geode-jar-deployer'))
     implementation('org.springframework:spring-web')
     implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')

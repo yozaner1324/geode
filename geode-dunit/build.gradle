@@ -29,7 +29,6 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   compileOnly(project(':geode-common-services'))
-  compileOnly(project(':geode-jar-deployer'))
   implementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }

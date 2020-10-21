@@ -67,6 +67,10 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
    */
   @Override
   public <T> ServiceResult<Set<T>> loadService(Class<T> service) {
+    logger.debug("loadService: " + service);
+    if (service == null) {
+      return Failure.of("service cannot be null");
+    }
     Set<T> result = new HashSet<>();
     Iterator<T> iterator = ServiceLoader.load(service).iterator();
     while (iterator.hasNext()) {
@@ -85,9 +89,14 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
    */
   @Override
   public ServiceResult<Class<?>> forName(String className) {
+    logger.debug("forName: " + className);
+    if (className == null) {
+      return Failure.of("className cannot be null");
+    }
     try {
       return Success.of(ClassPathLoader.getLatest().forName(className));
     } catch (ClassNotFoundException e) {
+      logger.warn("Failure!" + e.getMessage());
       return Failure.of(e);
     }
   }
@@ -97,6 +106,10 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
    */
   @Override
   public ServiceResult<InputStream> getResourceAsStream(String resourceFilePath) {
+    logger.debug("getResourceAsStream: " + resourceFilePath);
+    if(resourceFilePath == null) {
+      return Failure.of("resourceFilePath cannot be null");
+    }
     InputStream inputStream = ClassPathLoader.getLatest().getResourceAsStream(resourceFilePath);
 
     if (inputStream == null) {
@@ -113,6 +126,9 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
       inputStream = ClassLoader.getSystemResourceAsStream(resourceFilePath);
     }
 
+    if (inputStream == null) {
+      logger.warn("Failure! getResourceAsStream");
+    }
     return inputStream == null
         ? Failure.of(String.format("No resource for path: %s could be found", resourceFilePath))
         : Success.of(inputStream);
@@ -120,8 +136,15 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
 
   @Override
   public ServiceResult<InputStream> getResourceAsStream(Class<?> clazz, String resourceFilePath) {
+    logger.debug("getResourceAsStream: " + resourceFilePath);
+    if(resourceFilePath == null) {
+      return Failure.of("resourceFilePath cannot be null");
+    }
     InputStream inputStream =
         ClassPathLoader.getLatest().getResourceAsStream(clazz, resourceFilePath);
+    if (inputStream == null) {
+      logger.warn("Failure! getResourceAsStream");
+    }
     return inputStream == null
         ? Failure.of(String.format("No resource for path: %s could be found", resourceFilePath))
         : Success.of(inputStream);
@@ -129,8 +152,14 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
 
   @Override
   public ServiceResult<URL> getResource(String resourceFilePath) {
+    logger.debug("getResource: " + resourceFilePath);
+    if(resourceFilePath == null) {
+      return Failure.of("resourceFilePath cannot be null");
+    }
     URL resource = ClassPathLoader.getLatest().getResource(resourceFilePath);
-
+    if (resource == null) {
+      logger.warn("Failure! getResource");
+    }
     return resource == null
         ? Failure.of("Resource not found for resourcePath: " + resourceFilePath)
         : Success.of(resource);
@@ -138,7 +167,14 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
 
   @Override
   public ServiceResult<URL> getResource(Class<?> clazz, String resourceFilePath) {
+    logger.debug("getResource: " + resourceFilePath);
+    if(resourceFilePath == null) {
+      return Failure.of("resourceFilePath cannot be null");
+    }
     URL resource = ClassPathLoader.getLatest().getResource(clazz, resourceFilePath);
+    if (resource == null) {
+      logger.warn("Failure! getResource");
+    }
     return resource == null
         ? Failure.of("Resource not found for resourcePath: " + resourceFilePath)
         : Success.of(resource);
@@ -146,12 +182,17 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
 
   @Override
   public ServiceResult<Class<?>> getProxyClass(Class<?>... classes) {
+    logger.debug("getProxyClass: " + Arrays.toString(classes));
+    if (classes == null) {
+      return Failure.of("classes cannot be null");
+    }
     try {
       Class<?> proxyClass = ClassPathLoader.getLatest().getProxyClass(classes);
       return proxyClass == null
           ? Failure.of("Proxy class not found for classes: " + Arrays.toString(classes))
           : Success.of(proxyClass);
     } catch (IllegalArgumentException e) {
+      logger.warn("Failure!" + e.getMessage());
       return Failure.of(e);
     }
   }
