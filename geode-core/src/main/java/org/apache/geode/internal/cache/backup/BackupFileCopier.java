@@ -120,6 +120,10 @@ class BackupFileCopier {
     ensureExistence(userDirectory);
     Map<Path, File> backupResult =
         ClassPathLoader.getLatest().getJarDeployer().backup(userDirectory);
+    for (Map.Entry<Path, File> entry : backupResult.entrySet()) {
+      backupDefinition.addDeployedJarToBackup(entry.getKey(), entry.getValue().toPath());
+    }
+
     return new HashSet<>(backupResult.values());
   }
 

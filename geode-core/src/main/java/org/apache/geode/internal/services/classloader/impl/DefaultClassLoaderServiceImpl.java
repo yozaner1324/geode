@@ -107,7 +107,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
   @Override
   public ServiceResult<InputStream> getResourceAsStream(String resourceFilePath) {
     logger.debug("getResourceAsStream: " + resourceFilePath);
-    if(resourceFilePath == null) {
+    if (resourceFilePath == null) {
       return Failure.of("resourceFilePath cannot be null");
     }
     InputStream inputStream = ClassPathLoader.getLatest().getResourceAsStream(resourceFilePath);
@@ -137,7 +137,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
   @Override
   public ServiceResult<InputStream> getResourceAsStream(Class<?> clazz, String resourceFilePath) {
     logger.debug("getResourceAsStream: " + resourceFilePath);
-    if(resourceFilePath == null) {
+    if (resourceFilePath == null) {
       return Failure.of("resourceFilePath cannot be null");
     }
     InputStream inputStream =
@@ -153,7 +153,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
   @Override
   public ServiceResult<URL> getResource(String resourceFilePath) {
     logger.debug("getResource: " + resourceFilePath);
-    if(resourceFilePath == null) {
+    if (resourceFilePath == null) {
       return Failure.of("resourceFilePath cannot be null");
     }
     URL resource = ClassPathLoader.getLatest().getResource(resourceFilePath);
@@ -168,7 +168,7 @@ public class DefaultClassLoaderServiceImpl implements ClassLoaderService {
   @Override
   public ServiceResult<URL> getResource(Class<?> clazz, String resourceFilePath) {
     logger.debug("getResource: " + resourceFilePath);
-    if(resourceFilePath == null) {
+    if (resourceFilePath == null) {
       return Failure.of("resourceFilePath cannot be null");
     }
     URL resource = ClassPathLoader.getLatest().getResource(clazz, resourceFilePath);
