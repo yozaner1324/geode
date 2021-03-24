@@ -232,9 +232,6 @@ dependencies {
     runtimeOnly('com.sun.istack:istack-commons-runtime') {
         exclude group: '*'
     }
-
-    runtimeOnly(project(':geode-deployment-legacy'))
-
     //Commons lang is used in many different places in core
     implementation('org.apache.commons:commons-lang3')
 
@@ -319,6 +316,10 @@ dependencies {
     implementation(project(':geode-unsafe'))
     implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
+
+    runtimeOnly(project(':geode-deployment:geode-deployment-legacy')) {
+        ext.optional = true
+    }
 
     //geode-management currently has pieces of the public API
     //copied into it, so it is an API dependency
