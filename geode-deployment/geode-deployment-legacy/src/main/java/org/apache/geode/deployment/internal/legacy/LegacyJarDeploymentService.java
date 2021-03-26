@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal.deployment.legacy;
+package org.apache.geode.deployment.internal.legacy;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +33,9 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
+import org.apache.geode.deployment.internal.DeployedJar;
+import org.apache.geode.deployment.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.deployment.DeployedJar;
-import org.apache.geode.internal.deployment.JarDeployer;
 import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;

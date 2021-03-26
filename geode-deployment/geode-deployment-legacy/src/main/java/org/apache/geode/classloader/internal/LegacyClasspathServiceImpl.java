@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal.classloader;
+package org.apache.geode.classloader.internal;
 
 import static java.util.stream.Collectors.joining;
 
@@ -35,6 +35,9 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.internal.classloader.ClasspathService;
+import org.apache.geode.internal.classloader.DeployJarChildFirstClassLoader;
 import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.internal.util.CollectionUtils;

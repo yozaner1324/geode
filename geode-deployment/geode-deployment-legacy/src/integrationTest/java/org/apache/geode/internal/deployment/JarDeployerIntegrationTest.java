@@ -29,6 +29,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.deployment.internal.DeployedJar;
+import org.apache.geode.deployment.internal.JarDeployer;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.configuration.Deployment;

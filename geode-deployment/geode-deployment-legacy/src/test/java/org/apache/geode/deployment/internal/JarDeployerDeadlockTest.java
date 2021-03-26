@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.deployment;
+package org.apache.geode.deployment.internal;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +37,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 

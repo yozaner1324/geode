@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.internal.deployment;
+package org.apache.geode.deployment.internal;
 
 import static java.nio.file.Files.readAllBytes;
 import static java.util.stream.Collectors.toList;
