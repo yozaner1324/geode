@@ -42,7 +42,6 @@ import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This implementation of {@link ClasspathService} will be used by {@link ClassPathLoader} when the
@@ -52,9 +51,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class LegacyClasspathServiceImpl implements ClasspathService {
 
   private static final Logger logger = LogService.getLogger();
-
-  static final String EXCLUDE_TCCL_PROPERTY =
-      GeodeGlossary.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
 
   private final Map<String, DeployJarChildFirstClassLoader> artifactIdsToClassLoader =
       new HashMap<>();
@@ -86,6 +82,7 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
 
   @Override
   public void close() {
+    leafLoader = null;
     artifactIdsToClassLoader.clear();
   }
 
@@ -147,25 +144,8 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
     return getResourceAsStream(name);
   }
 
-  /**
-   * Finds all the resources with the given name. This method will first search the class loader of
-   * the context class for the resource before searching all other {@code ClassLoader}s.
-   *
-   * @param contextClass The class whose class loader will first be searched
-   * @param name The resource name
-   * @return An enumeration of <tt>URL</tt> objects for the resource. If no resources could be
-   *         found, the enumeration will be empty. Resources that the class loader doesn't have
-   *         access to will not be in the enumeration.
-   * @throws IOException If I/O errors occur
-   * @see ClassLoader#getResources(String)
-   */
-  private Enumeration<URL> getResources(final Class<?> contextClass, final String name)
-      throws IOException {
+  public Enumeration<URL> getResources(final String name) throws IOException {
     final LinkedHashSet<URL> urls = new LinkedHashSet<>();
-
-    if (contextClass != null) {
-      CollectionUtils.addAll(urls, contextClass.getClassLoader().getResources(name));
-    }
 
     for (ClassLoader classLoader : getClassLoaders()) {
       Enumeration<URL> resources = classLoader.getResources(name);
@@ -175,10 +155,6 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
     }
 
     return Collections.enumeration(urls);
-  }
-
-  public Enumeration<URL> getResources(final String name) throws IOException {
-    return getResources(null, name);
   }
 
   public URL getResource(final String name) {
@@ -234,12 +210,10 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
           }
         }
         Class<?> clazz = Class.forName(name, true, classLoader);
-        if (clazz != null) {
-          if (isTraceEnabled) {
-            logger.trace("forName found by: {}", classLoader);
-          }
-          return clazz;
+        if (isTraceEnabled) {
+          logger.trace("forName found by: {}", classLoader);
         }
+        return clazz;
       } catch (SecurityException | ClassNotFoundException e) {
         // try next classLoader
       }
@@ -301,13 +275,13 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("excludeTCCL=").append(excludeTCCL);
-    sb.append(", jarDeployer=").append(jarDeploymentService);
-    sb.append(", classLoaders=[");
-    sb.append(getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
-    sb.append("]}");
-    return sb.toString();
+    final StringBuilder stringBuilder = new StringBuilder(getClass().getName());
+    stringBuilder.append("@").append(System.identityHashCode(this)).append("{");
+    stringBuilder.append("excludeTCCL=").append(excludeTCCL);
+    stringBuilder.append(", jarDeployer=").append(jarDeploymentService);
+    stringBuilder.append(", classLoaders=[");
+    stringBuilder.append(getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
+    stringBuilder.append("]}");
+    return stringBuilder.toString();
   }
 }
