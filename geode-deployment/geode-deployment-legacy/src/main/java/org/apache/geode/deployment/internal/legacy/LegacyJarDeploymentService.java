@@ -209,7 +209,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
 
   @Override
   public void close() {
-    String[] deploymentNames = deployments.keySet().toArray(new String[]{});
+    String[] deploymentNames = deployments.keySet().toArray(new String[] {});
     logger
         .debug("Closing LegacyJarDeploymentService. The following Deployments will be removed: {}",
             Arrays.toString(deploymentNames));

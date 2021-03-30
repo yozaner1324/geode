@@ -280,7 +280,8 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
     stringBuilder.append("excludeTCCL=").append(excludeTCCL);
     stringBuilder.append(", jarDeployer=").append(jarDeploymentService);
     stringBuilder.append(", classLoaders=[");
-    stringBuilder.append(getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
+    stringBuilder
+        .append(getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
     stringBuilder.append("]}");
     return stringBuilder.toString();
   }
