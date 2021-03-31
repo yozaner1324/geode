@@ -142,6 +142,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
             .filter(deployment -> deployment.getFileName().equals(fileName))
             .map(Deployment::getDeploymentName)
             .collect(Collectors.toList());
+    jarDeployer.deleteAllVersionsOfJar(fileName);
     logger.debug("Deployments found for file: {}",
         Arrays.toString(deploymentNamesFromFileName.toArray()));
     if (deploymentNamesFromFileName.size() > 1) {
