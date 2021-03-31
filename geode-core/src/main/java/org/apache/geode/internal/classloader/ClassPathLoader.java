@@ -76,16 +76,10 @@ public class ClassPathLoader {
   }
 
   private ClassPathLoader(boolean excludeTCCL, File workingDir) {
-    jarDeploymentService = DeploymentServiceFactory
-        .reinitializeJarDeploymentServiceWithWorkingDirectory(workingDir);
+    jarDeploymentService = DeploymentServiceFactory.getJarDeploymentServiceInstance();
+    jarDeploymentService.reinitializeWithWorkingDirectory(workingDir);
     classPathService = DeploymentServiceFactory.getClasspathServiceInstance();
     classPathService.init(excludeTCCL, jarDeploymentService);
-  }
-
-  @VisibleForTesting
-  static ClassPathLoader setLatestToDefault() {
-    latest = new ClassPathLoader(Boolean.getBoolean(EXCLUDE_TCCL_PROPERTY));
-    return latest;
   }
 
   public static ClassPathLoader setLatestToDefault(File workingDir) {
@@ -105,7 +99,7 @@ public class ClassPathLoader {
     if (latest == null) {
       synchronized (ClassPathLoader.class) {
         if (latest == null) {
-          setLatestToDefault();
+          setLatestToDefault(null);
         }
       }
     }
@@ -197,5 +191,9 @@ public class ClassPathLoader {
 
   public Enumeration<URL> getResources(String name) throws IOException {
     return classPathService.getResources(name);
+  }
+
+  public JarDeploymentService getJarDeploymentService() {
+    return jarDeploymentService;
   }
 }

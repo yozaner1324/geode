@@ -23,7 +23,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
@@ -45,7 +45,7 @@ public class ListDeployedFunction implements InternalFunction<Void> {
     try {
       InternalCache cache = (InternalCache) context.getCache();
       final JarDeploymentService jarDeploymentService =
-          DeploymentServiceFactory.getJarDeploymentServiceInstance();
+          ClassPathLoader.getLatest().getJarDeploymentService();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 

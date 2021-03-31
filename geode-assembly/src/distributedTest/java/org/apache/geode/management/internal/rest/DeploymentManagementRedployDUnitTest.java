@@ -44,7 +44,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
@@ -236,7 +235,7 @@ public class DeploymentManagementRedployDUnitTest {
 
   private static void assertThatCanLoad(String jarName, String className)
       throws ClassNotFoundException {
-    assertThat(DeploymentServiceFactory.getJarDeploymentServiceInstance()
+    assertThat(ClassPathLoader.getLatest().getJarDeploymentService()
         .getDeployed(FilenameUtils.getBaseName(jarName)).isSuccessful()).isTrue();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }

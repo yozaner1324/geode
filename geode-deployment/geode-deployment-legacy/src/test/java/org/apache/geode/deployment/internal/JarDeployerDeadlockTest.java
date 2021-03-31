@@ -37,7 +37,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 
@@ -53,7 +53,7 @@ public class JarDeployerDeadlockTest {
   @Before
   public void setup() throws Exception {
     File workingDir = temporaryFolder.newFolder();
-    DeploymentServiceFactory.getJarDeploymentServiceInstance()
+    ClassPathLoader.getLatest().getJarDeploymentService()
         .reinitializeWithWorkingDirectory(workingDir);
     classBuilder = new ClassBuilder();
   }
@@ -64,7 +64,7 @@ public class JarDeployerDeadlockTest {
       FunctionService.unregisterFunction(functionName);
     }
 
-    DeploymentServiceFactory.shutdownAll();
+    ClassPathLoader.setLatestToDefault(null);
   }
 
   @Test
@@ -73,14 +73,14 @@ public class JarDeployerDeadlockTest {
     byte[] jarBytes = this.classBuilder.createJarFromName("JarClassLoaderJUnitA");
     File jarFile = temporaryFolder.newFile("JarClassLoaderJUnitA.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile));
-    DeploymentServiceFactory.getJarDeploymentServiceInstance()
+    ClassPathLoader.getLatest().getJarDeploymentService()
         .deploy(createDeploymentFromJar(jarFile));
 
     jarBytes = this.classBuilder.createJarFromClassContent("com/jcljunit/JarClassLoaderJUnitB",
         "package com.jcljunit; public class JarClassLoaderJUnitB {}");
     File jarFile2 = temporaryFolder.newFile("JarClassLoaderJUnitB.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile2));
-    DeploymentServiceFactory.getJarDeploymentServiceInstance()
+    ClassPathLoader.getLatest().getJarDeploymentService()
         .deploy(createDeploymentFromJar(jarFile2));
 
     String[] classNames = new String[] {"JarClassLoaderJUnitA", "com.jcljunit.JarClassLoaderJUnitB",

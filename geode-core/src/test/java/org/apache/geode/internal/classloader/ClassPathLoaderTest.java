@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
@@ -83,7 +82,7 @@ public class ClassPathLoaderTest {
     zeroFile.createNewFile();
 
     JarDeploymentService jarDeploymentService =
-        DeploymentServiceFactory.getJarDeploymentServiceInstance();
+        ClassPathLoader.getLatest().getJarDeploymentService();
     assertThatThrownBy(() -> {
       Deployment deployment =
           new Deployment("JarDeployerDUnitZLF.jar", "test", Instant.now().toString());

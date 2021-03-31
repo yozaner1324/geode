@@ -52,7 +52,7 @@ import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.JarBuilder;
@@ -87,7 +87,7 @@ public class BackupFileCopierIntegrationTest {
 
   @After
   public void tearDown() {
-    DeploymentServiceFactory.shutdownAll();
+    ClassPathLoader.setLatestToDefault(null);
   }
 
   @Test

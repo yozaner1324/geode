@@ -242,7 +242,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
@@ -1493,7 +1492,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   void applyJarAndXmlFromClusterConfig() {
     if (configurationResponse == null) {
       // Deploy all the jars from the deploy working dir.
-      DeploymentServiceFactory.getJarDeploymentServiceInstance().loadJarsFromWorkingDirectory();
+      ClassPathLoader.getLatest().getJarDeploymentService().loadJarsFromWorkingDirectory();
     }
     clusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
         system.getConfig().getGroups());
@@ -2163,7 +2162,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   boolean doClose(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS, boolean skipAwait) {
     securityService.close();
-    DeploymentServiceFactory.shutdownAll();
 
     if (waitIfClosing(skipAwait)) {
       return false;
@@ -2470,7 +2468,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         isClosedLatch.countDown();
       } finally {
         CLOSING_THREAD.remove();
-        DeploymentServiceFactory.shutdownAll();
+        ClassPathLoader.setLatestToDefault(null);
       }
       return true;
     }

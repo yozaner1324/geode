@@ -16,13 +16,11 @@
  */
 package org.apache.geode.internal.deployment;
 
-import java.io.File;
 import java.util.ServiceLoader;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
 import org.apache.geode.internal.classloader.ClasspathService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -38,12 +36,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class DeploymentServiceFactory {
 
   private static final Logger logger = LogService.getLogger();
-
-  @Immutable
-  private static final JarDeploymentService jarDeploymentService = createJarDeploymentService();
-
-  @Immutable
-  private static final ClasspathService classpathService = createClassPathService();
 
   private static JarDeploymentService createJarDeploymentService() {
     ServiceLoader<JarDeploymentService> jarDeploymentServices =
@@ -75,7 +67,7 @@ public class DeploymentServiceFactory {
    * @return current instance of the {@link JarDeploymentService}.
    */
   public static JarDeploymentService getJarDeploymentServiceInstance() {
-    return jarDeploymentService;
+    return createJarDeploymentService();
   }
 
   /**
@@ -84,25 +76,6 @@ public class DeploymentServiceFactory {
    * @return current instance of the {@link ClasspathService}.
    */
   public static ClasspathService getClasspathServiceInstance() {
-    return classpathService;
-  }
-
-  /**
-   * Reconfigures the {@link JarDeploymentService} instance with a new working directory.
-   * This cannot be called when there is anything deployed, so it should be called before doing any
-   * deployments.
-   *
-   * @param workingDir a {@link File} representing the new working directory to to deploy jars into.
-   * @return the reconfigured instance of the {@link JarDeploymentService}.
-   */
-  public static JarDeploymentService reinitializeJarDeploymentServiceWithWorkingDirectory(
-      File workingDir) {
-    jarDeploymentService.reinitializeWithWorkingDirectory(workingDir);
-    return jarDeploymentService;
-  }
-
-  public static void shutdownAll() {
-    jarDeploymentService.close();
-    classpathService.close();
+    return createClassPathService();
   }
 }

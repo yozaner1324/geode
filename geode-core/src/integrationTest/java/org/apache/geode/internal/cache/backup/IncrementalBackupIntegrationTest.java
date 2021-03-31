@@ -61,7 +61,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
@@ -337,7 +337,7 @@ public class IncrementalBackupIntegrationTest {
     Deployment jarFileDeployment =
         new Deployment(jarFile.getName(), "test", Instant.now().toString());
     jarFileDeployment.setFile(jarFile);
-    DeploymentServiceFactory.getJarDeploymentServiceInstance().deploy(jarFileDeployment);
+    ClassPathLoader.getLatest().getJarDeploymentService().deploy(jarFileDeployment);
 
     assertThat(jarFile).exists();
 
@@ -378,10 +378,10 @@ public class IncrementalBackupIntegrationTest {
     createCache();
 
     // Remove the "dummy" jar from the VM.
-    for (Deployment deployment : DeploymentServiceFactory.getJarDeploymentServiceInstance()
+    for (Deployment deployment : ClassPathLoader.getLatest().getJarDeploymentService()
         .listDeployed()) {
       if (deployment.getDeploymentName().startsWith(jarName)) {
-        DeploymentServiceFactory.getJarDeploymentServiceInstance()
+        ClassPathLoader.getLatest().getJarDeploymentService()
             .undeployByDeploymentName(deployment.getDeploymentName());
       }
     }
