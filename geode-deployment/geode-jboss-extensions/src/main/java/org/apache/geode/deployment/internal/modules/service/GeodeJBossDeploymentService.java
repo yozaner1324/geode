@@ -64,7 +64,9 @@ public class GeodeJBossDeploymentService implements DeploymentService {
         properties.load(resourceAsStream);
         String geodeExtensions = properties.getProperty("geode.deployments.extensions", "");
         for (String geodeExtension : geodeExtensions.split(",")) {
-          registerGeodeExtension(geodeExtension);
+          if (!geodeExtension.isEmpty()) {
+            registerGeodeExtension(geodeExtension);
+          }
         }
       } catch (IOException e) {
         e.printStackTrace(System.err);

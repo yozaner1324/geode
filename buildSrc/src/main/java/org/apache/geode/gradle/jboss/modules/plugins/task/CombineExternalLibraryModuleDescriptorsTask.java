@@ -16,7 +16,13 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins.task;
 
-import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
+import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
+import org.apache.geode.gradle.jboss.modules.plugins.config.ModulesGeneratorConfig;
 import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
@@ -25,12 +31,7 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
-import javax.inject.Inject;
-import java.io.File;
-import java.util.List;
-import java.util.stream.Collectors;
-
-public class GeodeCombineModuleDescriptorsTask extends GeodeJBossTask {
+public class CombineExternalLibraryModuleDescriptorsTask extends GeodeJBossTask {
 
   @Internal
   public GeodeModuleDescriptorService descriptorService;
@@ -39,9 +40,9 @@ public class GeodeCombineModuleDescriptorsTask extends GeodeJBossTask {
   public String facetToAssemble;
 
   @Inject
-  public GeodeCombineModuleDescriptorsTask(
+  public CombineExternalLibraryModuleDescriptorsTask(
       String facetToAssemble,
-      GeodeJBossModulesGeneratorConfig configuration,
+      ModulesGeneratorConfig configuration,
       GeodeModuleDescriptorService descriptorService) {
     this.descriptorService = descriptorService;
     this.configuration = configuration;

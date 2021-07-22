@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-public class GeodeJBossModulesGeneratorConfig {
+public class ModulesGeneratorConfig {
     public String mainClass;
 
     public Path outputRoot;
@@ -31,22 +31,24 @@ public class GeodeJBossModulesGeneratorConfig {
 
     public Boolean assembleFromSource;
 
-    public GeodeJBossModulesGeneratorConfig(String name) {
+    public Path alternativeDescriptorRoot;
+
+    public ModulesGeneratorConfig(String name) {
         this.name = name;
     }
 
-    public GeodeJBossModulesGeneratorConfig(String name, Path outputRoot) {
+    public ModulesGeneratorConfig(String name, Path outputRoot) {
         this.outputRoot = outputRoot;
         this.name = name;
     }
 
     //This is for testing purposes only
-    public GeodeJBossModulesGeneratorConfig(String name, String mainClass, Path outputRoot) {
+    public ModulesGeneratorConfig(String name, String mainClass, Path outputRoot) {
         this(name);
         this.mainClass = mainClass;
         this.outputRoot = outputRoot;
         this.jbossJdkModules = Arrays.asList("java.se","jdk.unsupported", "jdk.scripting.nashorn",
-            "java.desktop","java.logging","java.rmi","java.xml");
+            "java.desktop");
     }
 
     public boolean shouldAssembleFromSource() {

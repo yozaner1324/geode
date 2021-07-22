@@ -22,19 +22,18 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.apache.geode.gradle.jboss.modules.plugins.config.ModulesGeneratorConfig;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectories;
 import org.gradle.api.tasks.TaskAction;
 
-import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
-
-public class GeodeJBossModulesCombinerTask extends GeodeJBossTask {
+public class AggregateModuleDescriptorsTask extends GeodeJBossTask {
 
   @Internal
   public String facetToAssemble;
 
   @Inject
-  public GeodeJBossModulesCombinerTask(String facetToAssemble, GeodeJBossModulesGeneratorConfig config) {
+  public AggregateModuleDescriptorsTask(String facetToAssemble, ModulesGeneratorConfig config) {
     this.facetToAssemble = facetToAssemble;
     this.configuration = config;
     String facetTaskName = getFacetTaskName("generateModuleDescriptors", facetToAssemble);

@@ -19,15 +19,14 @@ package org.apache.geode.gradle.jboss.modules.plugins.services;
 import java.io.File;
 import java.util.List;
 
+import org.apache.geode.gradle.jboss.modules.plugins.config.ModulesGeneratorConfig;
 import org.gradle.api.Project;
 
-import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
-
 public interface GeodeModuleDescriptorService {
-  void createModuleDescriptor(Project project, GeodeJBossModulesGeneratorConfig geodeJBossModulesGeneratorConfig,
+  void createModuleDescriptor(Project project, ModulesGeneratorConfig modulesGeneratorConfig,
                               File inputFile);
 
-  void createExternalLibraryDependenciesModuleDescriptor(Project project, GeodeJBossModulesGeneratorConfig config);
+  void createExternalLibraryDependenciesModuleDescriptor(Project project, ModulesGeneratorConfig config);
 
-  void combineModuleDescriptors(Project project, GeodeJBossModulesGeneratorConfig config, List<File> inputFiles);
+  void combineModuleDescriptors(Project project, ModulesGeneratorConfig config, List<File> inputFiles);
 }

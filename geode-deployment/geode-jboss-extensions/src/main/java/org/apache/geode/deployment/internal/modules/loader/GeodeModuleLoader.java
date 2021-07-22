@@ -87,10 +87,6 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     if (moduleName == null) {
       throw new IllegalArgumentException("Module name cannot be null");
     }
-    // if (moduleName.startsWith("geode-")) {
-    // throw new RuntimeException("Deployment: "+moduleName+" starting with \"geode-\" are not
-    // allowed.");
-    // }
   }
 
   @Override
@@ -129,9 +125,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
         unregisterModule(extension.getName());
       }
       preloadModule(extension.getName());
-      // compositeModuleFinder.addModuleFinder(extension.getName(),
-      // new LocalModuleFinder(
-      // GeodeExtensionModuleFinder(extension));
+
       registerModulesAsDependencyOfModule(CORE_MODULE_NAME, extension.getName());
     } catch (ModuleLoadException e) {
       return false;

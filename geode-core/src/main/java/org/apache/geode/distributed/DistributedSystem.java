@@ -36,7 +36,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
@@ -630,7 +629,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
       }
     }
 
-    return ClassPathLoader.getLatest().getResource(DistributedSystem.class, fileName);
+    return DistributedSystem.class.getClassLoader().getResource(fileName);
   }
 
   /**

@@ -16,12 +16,12 @@
  */
 package org.apache.geode.gradle.jboss.modules.plugins.generator.xml;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.geode.gradle.jboss.modules.plugins.generator.ModuleDescriptorGenerator;
-import org.apache.geode.gradle.jboss.modules.plugins.generator.domain.ModuleDependency;
-import org.gradle.internal.Pair;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,12 +32,13 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.geode.gradle.jboss.modules.plugins.generator.ModuleDescriptorGenerator;
+import org.apache.geode.gradle.jboss.modules.plugins.generator.domain.ModuleDependency;
+import org.gradle.internal.Pair;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class JBossModuleDescriptorGenerator implements ModuleDescriptorGenerator {
 

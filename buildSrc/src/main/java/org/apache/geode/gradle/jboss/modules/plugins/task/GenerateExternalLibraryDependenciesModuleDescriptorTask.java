@@ -21,6 +21,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.geode.gradle.jboss.modules.plugins.config.ModulesGeneratorConfig;
+import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
@@ -28,15 +30,12 @@ import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
-import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
-import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
-
-public class GeodeExternalLibraryDependenciesModuleGeneratorTask extends GeodeJBossTask {
+public class GenerateExternalLibraryDependenciesModuleDescriptorTask extends GeodeJBossTask {
   @Internal
   public GeodeModuleDescriptorService descriptorService;
 
   @Inject
-  public GeodeExternalLibraryDependenciesModuleGeneratorTask(GeodeJBossModulesGeneratorConfig config, GeodeModuleDescriptorService descriptorService) {
+  public GenerateExternalLibraryDependenciesModuleDescriptorTask(ModulesGeneratorConfig config, GeodeModuleDescriptorService descriptorService) {
     this.configuration = config;
     this. descriptorService = descriptorService;
     dependsOn(getProject().getTasks().named(getFacetTaskName("generateModuleDescriptors", configuration.name)));
@@ -59,7 +58,7 @@ public class GeodeExternalLibraryDependenciesModuleGeneratorTask extends GeodeJB
         .createExternalLibraryDependenciesModuleDescriptor(getProject(), getConfiguration());
   }
 
-  private File resolveFileFromConfiguration(GeodeJBossModulesGeneratorConfig config) {
+  private File resolveFileFromConfiguration(ModulesGeneratorConfig config) {
     return config.outputRoot.resolve(config.name)
         .resolve("external-library-dependencies")
         .resolve(getProject().getVersion().toString())

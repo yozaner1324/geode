@@ -16,13 +16,13 @@
  */
 import org.gradle.util.GradleVersion
 
-
 pluginManagement {
   repositories {
     mavenLocal()
     gradlePluginPortal()
   }
 }
+
 rootProject.name = 'geode'
 
 // We want to see all test results.  This is equivalent to setting --continue on the command line.

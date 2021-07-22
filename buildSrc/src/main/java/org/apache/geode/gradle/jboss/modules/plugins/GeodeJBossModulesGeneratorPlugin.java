@@ -24,19 +24,18 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.geode.gradle.jboss.modules.plugins.config.ModulesGeneratorConfig;
+import org.apache.geode.gradle.jboss.modules.plugins.extension.GeodeJBossModulesExtension;
+import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeJBossModuleDescriptorService;
+import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
+import org.apache.geode.gradle.jboss.modules.plugins.task.AggregateModuleDescriptorsTask;
+import org.apache.geode.gradle.jboss.modules.plugins.task.CombineExternalLibraryModuleDescriptorsTask;
+import org.apache.geode.gradle.jboss.modules.plugins.task.GenerateExternalLibraryDependenciesModuleDescriptorTask;
+import org.apache.geode.gradle.jboss.modules.plugins.task.GenerateModuleDescriptorsTask;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
-
-import org.apache.geode.gradle.jboss.modules.plugins.config.GeodeJBossModulesGeneratorConfig;
-import org.apache.geode.gradle.jboss.modules.plugins.extension.GeodeJBossModulesExtension;
-import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeJBossModuleDescriptorService;
-import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
-import org.apache.geode.gradle.jboss.modules.plugins.task.GeodeCombineModuleDescriptorsTask;
-import org.apache.geode.gradle.jboss.modules.plugins.task.GeodeExternalLibraryDependenciesModuleGeneratorTask;
-import org.apache.geode.gradle.jboss.modules.plugins.task.GeodeJBossModuleGeneratorTask;
-import org.apache.geode.gradle.jboss.modules.plugins.task.GeodeJBossModulesCombinerTask;
 
 public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
 
@@ -46,15 +45,16 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
     moduleDescriptorService = new GeodeJBossModuleDescriptorService();
   }
 
-  private static GeodeJBossModulesGeneratorConfig defaultConfigFromGlobal(
-      GeodeJBossModulesGeneratorConfig globalConfig, GeodeJBossModulesGeneratorConfig config) {
-    GeodeJBossModulesGeneratorConfig newConfig = new GeodeJBossModulesGeneratorConfig(config.name);
+  private static ModulesGeneratorConfig defaultConfigFromGlobal(
+      ModulesGeneratorConfig globalConfig, ModulesGeneratorConfig config) {
+    ModulesGeneratorConfig newConfig = new ModulesGeneratorConfig(config.name);
     newConfig.outputRoot = config.outputRoot == null ? globalConfig.outputRoot : config.outputRoot;
     newConfig.mainClass = config.mainClass == null ? globalConfig.mainClass : config.mainClass;
     newConfig.assembleFromSource = config.assembleFromSource == null ?
         (globalConfig.assembleFromSource != null && globalConfig.assembleFromSource)
         : config.assembleFromSource;
     newConfig.jbossJdkModules = combineLists(globalConfig.jbossJdkModules, config.jbossJdkModules);
+    newConfig.alternativeDescriptorRoot = config.alternativeDescriptorRoot == null ? globalConfig.alternativeDescriptorRoot : config.alternativeDescriptorRoot;
     return newConfig;
   }
 
@@ -72,9 +72,9 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
 
   @Override
   public void apply(Project project) {
-    NamedDomainObjectContainer<GeodeJBossModulesGeneratorConfig> configurationContainer =
-        project.container(GeodeJBossModulesGeneratorConfig.class,
-            GeodeJBossModulesGeneratorConfig::new);
+    NamedDomainObjectContainer<ModulesGeneratorConfig> configurationContainer =
+        project.container(ModulesGeneratorConfig.class,
+            ModulesGeneratorConfig::new);
     GeodeJBossModulesExtension jbossModulesExtension = project.getExtensions()
         .create("jbossModulesExtension", GeodeJBossModulesExtension.class,
             configurationContainer);
@@ -82,19 +82,19 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
     project.getConfigurations().create("jbossModular");
 
     project.afterEvaluate(project1 -> {
-      NamedDomainObjectContainer<GeodeJBossModulesGeneratorConfig> geodeConfigurations =
+      NamedDomainObjectContainer<ModulesGeneratorConfig> geodeConfigurations =
           jbossModulesExtension.geodeConfigurations;
-      Map<String, GeodeJBossModulesGeneratorConfig> configurations =
+      Map<String, ModulesGeneratorConfig> configurations =
           geodeConfigurations.getAsMap();
 
-      for (GeodeJBossModulesGeneratorConfig config : configurations.values()) {
-        GeodeJBossModulesGeneratorConfig globalConfig = configurations.get("main");
+      for (ModulesGeneratorConfig config : configurations.values()) {
+        ModulesGeneratorConfig globalConfig = configurations.get("main");
         if(globalConfig == null) {
           globalConfig = config;
         }
 
         // register task to create module descriptor for each project
-        GeodeJBossModulesGeneratorConfig defaultedConfig = defaultConfigFromGlobal(globalConfig, config);
+        ModulesGeneratorConfig defaultedConfig = defaultConfigFromGlobal(globalConfig, config);
         registerModuleDescriptorGenerationTask(project1, defaultedConfig,
             moduleDescriptorService);
 
@@ -118,10 +118,10 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
 
   private TaskProvider<?> registerLibraryCombinerTask(Project project, String facetToAssemble,
                                                       GeodeModuleDescriptorService descriptorService) {
-    Class geodeCombineModuleDescriptorsTaskClass = GeodeCombineModuleDescriptorsTask.class;
-    GeodeJBossModulesGeneratorConfig
+    Class geodeCombineModuleDescriptorsTaskClass = CombineExternalLibraryModuleDescriptorsTask.class;
+    ModulesGeneratorConfig
         config =
-        new GeodeJBossModulesGeneratorConfig(facetToAssemble, null,
+        new ModulesGeneratorConfig(facetToAssemble, null,
             project.getBuildDir().toPath().resolve("moduleDescriptors"));
     return project.getTasks()
         .register(getFacetTaskName("combineLibraryModuleDescriptors", facetToAssemble), geodeCombineModuleDescriptorsTaskClass,
@@ -129,10 +129,10 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
   }
 
   private TaskProvider<?> registerModuleCombinerTask(Project project, String facetToAssemble) {
-    Class geodeJBossModulesCombinerTaskClass = GeodeJBossModulesCombinerTask.class;
-    GeodeJBossModulesGeneratorConfig
+    Class geodeJBossModulesCombinerTaskClass = AggregateModuleDescriptorsTask.class;
+    ModulesGeneratorConfig
         config =
-        new GeodeJBossModulesGeneratorConfig(facetToAssemble, null,
+        new ModulesGeneratorConfig(facetToAssemble, null,
             project.getBuildDir().toPath().resolve("moduleDescriptors"));
     return project.getTasks()
         .register(getFacetTaskName("combineModuleDescriptors", facetToAssemble), geodeJBossModulesCombinerTaskClass, facetToAssemble,
@@ -140,19 +140,19 @@ public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
   }
 
   private TaskProvider<?> registerExternalLibraryDescriptorGenerationTask(Project project,
-                                                                          GeodeJBossModulesGeneratorConfig configuration,
+                                                                          ModulesGeneratorConfig configuration,
                                                                           GeodeModuleDescriptorService descriptorService) {
     Class thirdPartyJBossModuleGeneratorTaskClass =
-        GeodeExternalLibraryDependenciesModuleGeneratorTask.class;
+        GenerateExternalLibraryDependenciesModuleDescriptorTask.class;
     return project.getTasks()
         .register(getFacetTaskName("generateLibraryModuleDescriptors", configuration.name),
             thirdPartyJBossModuleGeneratorTaskClass, configuration, descriptorService);
   }
 
   private TaskProvider<?> registerModuleDescriptorGenerationTask(Project project,
-                                                                 GeodeJBossModulesGeneratorConfig configuration,
+                                                                 ModulesGeneratorConfig configuration,
                                                                  GeodeModuleDescriptorService descriptorService) {
-    Class geodeJBossModuleGeneratorTaskClass = GeodeJBossModuleGeneratorTask.class;
+    Class geodeJBossModuleGeneratorTaskClass = GenerateModuleDescriptorsTask.class;
     return project.getTasks()
         .register(getFacetTaskName("generateModuleDescriptors", configuration.name),
             geodeJBossModuleGeneratorTaskClass, configuration, descriptorService);

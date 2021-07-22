@@ -41,7 +41,7 @@ dependencies {
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
-  implementation(project(':geode-cq'))
+  compileOnly(project(':geode-cq'))
   implementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
@@ -86,6 +86,7 @@ dependencies {
   distributedTestJbossModular(project(":geode-memcached"))
   distributedTestJbossModular(project(":geode-wan"))
   distributedTestJbossModular(project(":geode-connectors"))
+  distributedTestJbossModular(project(":geode-gfsh"))
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
