@@ -34,6 +34,7 @@ import org.jboss.modules.filter.MultiplePathFilterBuilder;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
 
+import org.apache.geode.deployment.internal.modules.dependency.InboundModuleDependency;
 import org.apache.geode.deployment.internal.modules.extensions.impl.Application;
 import org.apache.geode.deployment.internal.modules.extensions.impl.GeodeExtension;
 import org.apache.geode.deployment.internal.modules.finder.GeodeApplicationModuleFinder;
@@ -52,7 +53,8 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
   private static final ModuleLoader JDK_MODULE_LOADER =
       new ModuleLoader(JDKModuleFinder.getInstance());
   private static final String CORE_MODULE_NAME = "geode-core";
-  private final Map<String, List<String>> moduleDependencyInfoMap = new ConcurrentHashMap<>();
+  private final Map<String, List<InboundModuleDependency>> moduleDependencyInfoMap =
+      new ConcurrentHashMap<>();
 
   public GeodeModuleLoader(GeodeCompositeModuleFinder compositeModuleFinder) {
     super(JDK_MODULE_LOADER, new ModuleFinder[] {compositeModuleFinder});
@@ -79,9 +81,11 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
 
   public void unregisterModule(String moduleName) throws ModuleLoadException {
     validate(moduleName);
-    List<String> inboundModuleDependenciesOnModule =
-        unregisterModuleDependencyFromModules(moduleName);
-    moduleDependencyInfoMap.put(moduleName, inboundModuleDependenciesOnModule);
+    // store dependency info for later use
+    moduleDependencyInfoMap.put(moduleName,
+        compositeModuleFinder.findInboundDependenciesForModule(moduleName));
+
+    unregisterModuleDependencyFromModules(moduleName);
     compositeModuleFinder.removeModuleFinder(moduleName);
     Module loadedModuleLocal = findLoadedModuleLocal(moduleName);
     if (loadedModuleLocal != null) {
@@ -143,11 +147,13 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
   }
 
   private void restoreDependencies(String moduleName) throws ModuleLoadException {
-    List<String> inboundModuleDependencies = moduleDependencyInfoMap.get(moduleName);
+    List<InboundModuleDependency> inboundModuleDependencies =
+        moduleDependencyInfoMap.get(moduleName);
     if (inboundModuleDependencies != null) {
-      for (String inboundDependency : inboundModuleDependencies) {
-        if (findLoadedModuleLocal(inboundDependency) != null) {
-          registerModulesAsDependencyOfModule(inboundDependency, moduleName);
+      for (InboundModuleDependency inboundDependency : inboundModuleDependencies) {
+        if (findLoadedModuleLocal(inboundDependency.getInboundDependencyModuleName()) != null) {
+          registerModulesAsDependencyOfModule(inboundDependency.getInboundDependencyModuleName(),
+              inboundDependency.getExportFilter(), moduleName);
         }
       }
     }
@@ -178,14 +184,13 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     }
   }
 
-  public List<String> unregisterModuleDependencyFromModules(String moduleDependencyToRemove)
+  public void unregisterModuleDependencyFromModules(String moduleDependencyToRemove)
       throws ModuleLoadException {
     List<String> modulesToRelink =
         compositeModuleFinder.removeDependencyFromModules(moduleDependencyToRemove);
     for (String moduleName : modulesToRelink) {
       relinkModule(moduleName);
     }
-    return modulesToRelink;
   }
 
   private PathFilter createDefaultExportFilter() {

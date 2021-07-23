@@ -56,6 +56,11 @@ public class GenerateModuleDescriptorsTask extends GeodeJBossTask {
                 if (facetCompileTask != null) {
                     dependsOn(facetCompileTask);
                 }
+                Task facetProcessResourcesTask = getProject().getTasks()
+                    .findByName("process" + StringUtils.capitalize(configuration.name) + "Resources");
+                if(facetProcessResourcesTask != null) {
+                    dependsOn(facetProcessResourcesTask);
+                }
             } else {
                 dependsOn(getProject().getTasks().withType(Jar.class).named("jar"));
             }

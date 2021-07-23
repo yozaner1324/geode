@@ -25,6 +25,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.modules.AliasModuleSpec;
+import org.jboss.modules.ConcreteModuleSpec;
+import org.jboss.modules.DependencySpec;
+import org.jboss.modules.ModuleDependencySpec;
 import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -33,6 +36,7 @@ import org.jboss.modules.ModuleSpecUtils;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
 
+import org.apache.geode.deployment.internal.modules.dependency.InboundModuleDependency;
 import org.apache.geode.deployment.internal.modules.extensions.Extension;
 
 /**
@@ -195,5 +199,24 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
     }
     dependentModuleNames.addAll(subModuleDependencies);
     return dependentModuleNames;
+  }
+
+  public List<InboundModuleDependency> findInboundDependenciesForModule(String moduleName) {
+    List<InboundModuleDependency> inboundModuleDependencies = new LinkedList<>();
+    for (ModuleSpec moduleSpec : moduleSpecs.values()) {
+      if (moduleSpec instanceof ConcreteModuleSpec) {
+        ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
+        for (DependencySpec dependencySpec : concreteModuleSpec.getDependencies()) {
+          if (dependencySpec instanceof ModuleDependencySpec) {
+            ModuleDependencySpec spec = (ModuleDependencySpec) dependencySpec;
+            if (spec.getName().equals(moduleName)) {
+              inboundModuleDependencies.add(new InboundModuleDependency(
+                  concreteModuleSpec.getName(), spec.getExportFilter()));
+            }
+          }
+        }
+      }
+    }
+    return inboundModuleDependencies;
   }
 }
