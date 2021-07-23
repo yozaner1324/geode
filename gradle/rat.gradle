@@ -189,7 +189,7 @@ rat {
       //Geode Extensions
       'geode-deployment/geode-deployment-jboss-modules/src/main/resources/geodeExtensions.properties',
       'geode-deployment/geode-jboss-extensions/src/test/resources/geodeExtensions.properties',
-      'geode-deployment/geode-deployment-jboss-modules/src/distributedTest/resources/dunitGeodeExtensions.properties'
+      'geode-deployment/geode-deployment-jboss-modules/src/distributedTest/resources/distributedTestGeodeExtensions.properties'
   ]
 }
 
